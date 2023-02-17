@@ -1,0 +1,19 @@
+---
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: home-dualstack
+  namespace: network
+spec:
+  addresses:
+    - 192.168.2.60-192.168.2.90
+    - 2003:e4:1713:2374:dead:deaf:cafe:0000/112
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: home-dualstack
+  namespace: network
+spec:
+  ipAddressPools:
+    - home-dualstack

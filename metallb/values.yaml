@@ -1,0 +1,19 @@
+controller:
+  logLevel: all
+#  image:
+#    registry: quay.io
+#    repository: metallb/controller
+#    tag: v0.13.7
+speaker:
+  logLevel: all
+#  livenessProbe:
+#    enabled: true
+#    failureThreshold: 3
+#    initialDelaySeconds: 300
+#    periodSeconds: 10
+#    successThreshold: 1
+#    timeoutSeconds: 1
+#  image:
+#    registry: quay.io
+#    repository: metallb/speaker
+#    tag: v0.13.7

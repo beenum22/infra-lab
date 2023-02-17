@@ -1,0 +1,82 @@
+repositories:
+  - name: mojo2600
+    url: https://mojo2600.github.io/pihole-kubernetes/
+  - name: external-dns
+    url: https://kubernetes-sigs.github.io/external-dns/
+  - name: hashicorp
+    url: https://helm.releases.hashicorp.com
+  - name: metallb
+    url: https://metallb.github.io/metallb
+  - name: bitnami
+    url: https://charts.bitnami.com/bitnami
+  - name: jetstack
+    url: https://charts.jetstack.io
+  - name: jameswynn
+    url: https://jameswynn.github.io/helm-charts
+  - name: influxdata
+    url: https://helm.influxdata.com/
+
+releases:
+  - name: metallb
+    namespace: network
+    chart: metallb/metallb
+    version: 0.13.7
+    postRenderer: ./metallb/kustomize
+    values:
+      - ./metallb/values.yaml
+  - name: pihole
+    namespace: dns
+    chart: mojo2600/pihole
+    version: 2.11.1
+    needs:
+      - network/metallb
+    values:
+      - /home/pi/stack/pihole.yaml
+  - name: external-dns
+    namespace: dns
+    chart: bitnami/external-dns
+    version: 6.13.2
+    needs:
+      - network/metallb
+    values:
+      - /home/pi/stack/ext_dns.yaml
+  - name: vault
+    namespace: security
+    chart: hashicorp/vault
+    version: 0.23.0
+    needs:
+      - network/metallb
+    values:
+      - /home/pi/stack/vault.yaml
+  - name: cert-manager
+    namespace: security
+    chart: jetstack/cert-manager
+    version: v1.11.0
+    values:
+      - /home/pi/stack/cert-manager/values.yaml
+  #    postRenderer: "/home/pi/stack/cert-manager/kustomize"
+  - name: trust-manager
+    namespace: security
+    chart: jetstack/trust-manager
+    version: v0.4.0
+    values:
+      - /home/pi/stack/trust-manager/values.yaml
+  - name: homepage
+    namespace: monitoring
+    chart: jameswynn/homepage
+    version: 1.1.0
+    values:
+      - /home/pi/stack/homepage/values.yaml.gotmpl
+  - name: influxdb
+    namespace: monitoring
+    chart: influxdata/influxdb2
+    version: 2.1.1
+    values:
+      - /home/pi/stack/influxdata/values.yaml
+  - name: telegraf
+    namespace: monitoring
+    chart: influxdata/telegraf
+    # DS    version: 1.1.7
+    version: 1.8.25
+    values:
+      - /home/pi/stack/influxdata/telegraf_values.yaml
