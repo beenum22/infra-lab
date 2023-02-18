@@ -72,7 +72,7 @@ deploy_k3s() {
 
 destroy_k3s() {
   # Destroys the K3s cluster
-  K3S_UNINSTALL_CMD="/usr/local/bin/k3s-uninstall.sh"
+  K3S_UNINSTALL_CMD="/usr/local/bin/k3s-uninstall.sh${PIPE_OUTPUT}"
 
   root_requirement_exception
 
