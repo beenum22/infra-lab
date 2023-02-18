@@ -23,6 +23,32 @@ show_node_status() {
   pass
 }
 
+exec 3>&2 # logging stream (file descriptor 3) defaults to STDERR
+verbosity=3 # default to show warnings
+silent_lvl=0
+crt_lvl=1
+err_lvl=2
+wrn_lvl=3
+inf_lvl=4
+dbg_lvl=5
+
+notify() {
+  log $silent_lvl "NOTE: $1";
+} # Always prints
+critical() { log $crt_lvl "CRITICAL: $1"; }
+error() { log $err_lvl "ERROR: $1"; }
+warn() { log $wrn_lvl "WARNING: $1"; }
+inf() { log $inf_lvl "INFO: $1"; } # "info" is already a command
+debug() { log $dbg_lvl "DEBUG: $1"; }
+log() {
+    if [ $verbosity -ge $1 ]; then
+        datestring=`date +'%Y-%m-%d %H:%M:%S'`
+        # Expand escaped characters, wrap at 70 chars, indent wrapped lines
+        echo -e "$datestring $2" | fold -w70 -s | sed '2~1s/^/  /' >&3
+    fi
+}
+
+PIPE_OUTPUT=" > /dev/null"
 DEFAULT_IPV4_CLUSTER_CIDR="10.42.0.0/16"
 DEFAULT_IPV4_SERVICE_CIDR="10.43.0.0/16"
 DEFAULT_IPV6_CLUSTER_CIDR="2001:cafe:42:0::/56"
@@ -35,7 +61,7 @@ deploy_k3s() {
   --service-cidr=${DEFAULT_IPV4_SERVICE_CIDR},${DEFAULT_IPV6_SERVICE_CIDR} \
   --kubelet-arg=node-ip=:: \
   --disable servicelb\" \
-  sh -s -"
+  sh -s -${PIPE_OUTPUT}"
 
   root_requirement_exception
 
@@ -51,6 +77,27 @@ destroy_k3s() {
   root_requirement_exception
 
   if ! eval "${K3S_UNINSTALL_CMD}"; then
-    echo "Failed to destroy the K3s cluster"
+    error "Failed to destroy the K3s cluster"
   fi
 }
+#
+#help()
+#{
+#   # Display Help
+#   echo "Handle all the operations related to home Pi cluster."
+#   echo
+#   echo "Syntax: scriptTemplate [-g|h|v|V]"
+#   echo "options:"
+#   echo "g     Print the GPL license notification."
+#   echo "h     Print this Help."
+#   echo "v     Verbose mode."
+#   echo "V     Print software version and exit."
+#   echo
+#}
+
+# Main
+main() {
+  deploy_k3s
+}
+
+main
