@@ -13,7 +13,7 @@ arguments_exception() {
 # Root privileges check
 root_requirement_exception(){
   if [[ $EUID -ne 0 ]]; then
-    echo "You must be a root user" 2>&1
+    error "You must be a root user" 2>&1
     exit 1
   fi
 }
@@ -49,6 +49,7 @@ log() {
 }
 
 PIPE_OUTPUT=" > /dev/null"
+DEFAULT_K3S_UNINSTALL_PATH="/usr/local/bin/k3s-uninstall.sh"
 DEFAULT_IPV4_CLUSTER_CIDR="10.42.0.0/16"
 DEFAULT_IPV4_SERVICE_CIDR="10.43.0.0/16"
 DEFAULT_IPV6_CLUSTER_CIDR="2001:cafe:42:0::/56"
@@ -75,6 +76,10 @@ destroy_k3s() {
   K3S_UNINSTALL_CMD="/usr/local/bin/k3s-uninstall.sh${PIPE_OUTPUT}"
 
   root_requirement_exception
+
+  if test -f "${DEFAULT_K3S_UNINSTALL_PATH}";
+    error "K3s uninstall script not found"
+  fi
 
   if ! eval "${K3S_UNINSTALL_CMD}"; then
     error "Failed to destroy the K3s cluster"
