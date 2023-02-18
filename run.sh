@@ -102,7 +102,7 @@ destroy_k3s() {
 
 # Main
 main() {
-  deploy_k3s
+  destroy_k3s
 }
 
 main
