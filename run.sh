@@ -72,15 +72,17 @@ deploy_k3s() {
 
 destroy_k3s() {
   # Destroys the K3s cluster
-  K3S_UNINSTALL_CMD="/usr/local/bin/k3s-uninstall.sh${PIPE_OUTPUT}"
+  K3S_UNINSTALL_CMD="/usr/local/bin/k3s-uninstall.sh"
 
   root_requirement_exception
 
-  if test -f "${DEFAULT_K3S_UNINSTALL_PATH}"; then
+  if ! test -f "${DEFAULT_K3S_UNINSTALL_PATH}"; then
     error "K3s uninstall script not found"
   fi
 
-  if ! eval "${K3S_UNINSTALL_CMD}"; then
+  if eval "${K3S_UNINSTALL_CMD}"; then
+    info "Successfully destroyed the K3s cluster/deployment"
+  else
     error "Failed to destroy the K3s cluster"
   fi
 }
