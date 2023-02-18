@@ -23,23 +23,22 @@ show_node_status() {
   pass
 }
 
+# Reference: https://gist.github.com/goodmami/6556701
 exec 3>&2 # logging stream (file descriptor 3) defaults to STDERR
 verbosity=3 # default to show warnings
-silent_lvl=0
-crt_lvl=1
-err_lvl=2
-wrn_lvl=3
-inf_lvl=4
-dbg_lvl=5
+SILENT=0
+CRITICAL=1
+ERROR=2
+WARN=3
+INFO=4
+DEBUG=5
 
-notify() {
-  log $silent_lvl "NOTE: $1";
-} # Always prints
-critical() { log $crt_lvl "CRITICAL: $1"; }
-error() { log $err_lvl "ERROR: $1"; }
-warn() { log $wrn_lvl "WARNING: $1"; }
-inf() { log $inf_lvl "INFO: $1"; } # "info" is already a command
-debug() { log $dbg_lvl "DEBUG: $1"; }
+notify() { log $SILENT "NOTE: $1"; } # Always prints
+critical() { log $CRITICAL "CRITICAL: $1"; }
+error() { log $ERROR "ERROR: $1"; }
+warn() { log $WARN "WARNING: $1"; }
+inf() { log $INFO "INFO: $1"; } # "info" is already a command
+debug() { log $DEBUG "DEBUG: $1"; }
 log() {
     if [ $verbosity -ge $1 ]; then
         datestring=`date +'%Y-%m-%d %H:%M:%S'`
@@ -48,7 +47,7 @@ log() {
     fi
 }
 
-PIPE_OUTPUT=" > /dev/null"
+PIPE_OUTPUT=""
 DEFAULT_K3S_UNINSTALL_PATH="/usr/local/bin/k3s-uninstall.sh"
 DEFAULT_IPV4_CLUSTER_CIDR="10.42.0.0/16"
 DEFAULT_IPV4_SERVICE_CIDR="10.43.0.0/16"
