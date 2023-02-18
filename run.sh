@@ -77,7 +77,7 @@ destroy_k3s() {
 
   root_requirement_exception
 
-  if test -f "${DEFAULT_K3S_UNINSTALL_PATH}";
+  if test -f "${DEFAULT_K3S_UNINSTALL_PATH}"; then
     error "K3s uninstall script not found"
   fi
 
