@@ -7,7 +7,7 @@ spec:
   valuesContent: |-
     service:
       annotations:
-        metallb.universe.tf/address-pool: home-dualstack
+        metallb.universe.tf/address-pool: {{ METALLB_POOL_NAME}}
       ipFamilyPolicy: RequireDualStack
       ipFamilies:
         - IPv6
@@ -16,5 +16,5 @@ spec:
       traefik:
         port: 9000
         expose: true
-        exposedPort: 9000
+        exposedPort: {{ TRAEFIK_DASHBOARD_PORT }}
         protocol: TCP

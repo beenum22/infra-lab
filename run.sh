@@ -10,6 +10,9 @@ DEFAULT_IPV4_SERVICE_CIDR="10.43.0.0/16"
 DEFAULT_IPV6_CLUSTER_CIDR="2001:cafe:42:0::/56"
 DEFAULT_IPV6_SERVICE_CIDR="2001:cafe:42:1::/112"
 
+#
+APPS_TIMEOUT=20
+
 # Reference: https://gist.github.com/goodmami/6556701
 exec 3>&2 # logging stream (file descriptor 3) defaults to STDERR
 verbosity=4 # default to show warnings
@@ -131,9 +134,35 @@ leave_k3s() {
   exit 1
 }
 
+get_k3s_status() {
+  if run_cmd "systemctl is-active --quiet k3s.service"; then
+    debug "K3s cluster service is active"
+    return 0
+  else
+    error "k3s cluster service is inactive or doesn't exist."
+    return 1
+  fi
+}
+
 install_apps() {
   # Install all the kubernetes apps using Helm file or optionally kustomize/normal patches
-
+  if get_k3s_status; then
+    error "K3s cluster status checked failed. Apps need K3s cluster to be up. Are you sure the cluster is running?"
+    exit 1
+  fi
+  if [ $(yq '.apps.traefik.dashboard.expose' helm-vars.yaml) == true ]; then
+    TRAEFIK_PORT=$(yq '.apps.traefik.dashboard.port' helm-vars.yaml)
+    METALLB_POOL_NAME=$(yq '.apps.metallb.pools.name' helm-vars.yaml)
+    info "Exposing built-in Traefik Dashboard on '${TRAEFIK_PORT}' port and '${METALLB_POOL_NAME}' MetalLB pool"
+    debug "Copying Traefik Dashboard patch at '/var/lib/rancher/k3s/server/manifests/traefik-patch.yaml' that will be applied by K3s automatically."
+    sed "s/{{ METALLB_POOL_NAME }}/${METALLB_POOL_NAME}/g" traefik/traefik-patch.yaml > /var/lib/rancher/k3s/server/manifests/traefik-patch.yaml
+    info "Waiting ${APPS_TIMEOUT} sec for K3s to expose Traefik Dasbhoard"
+    TIMEOUT=${APPS_TIMEOUT}
+    until [ ${TIMEOUT} -eq 5 ] || command; do
+        sleep 1
+        let TIMEOUT-=1
+    done
+  fi
 }
 
 # Main
