@@ -1,0 +1,20 @@
+infra:
+  k3s:
+    ipv4_cluster_cidr: 10.42.0.0/16
+    ipv4_service_cidr: 10.43.0.0/16
+    ipv6_cluster_cidr: 2001:cafe:42:0::/56
+    ipv6_service_cidr: 2001:cafe:42:1::/112
+
+apps:
+  metallb:
+    namespace: network
+    pools:
+      name: home-dualstack
+      ranges:
+        - 192.168.2.60-192.168.2.90
+        - 2003:e4:1713:2374:dead:deaf:cafe:0000/112
+
+  traefik:
+    dashboard:
+      expose: true
+      port: 9000

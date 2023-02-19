@@ -1,0 +1,20 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    service:
+      annotations:
+        metallb.universe.tf/address-pool: home-dualstack
+      ipFamilyPolicy: RequireDualStack
+      ipFamilies:
+        - IPv6
+        - IPv4
+    ports:
+      traefik:
+        port: 9000
+        expose: true
+        exposedPort: 9000
+        protocol: TCP

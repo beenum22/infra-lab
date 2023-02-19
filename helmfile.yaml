@@ -1,3 +1,8 @@
+environments:
+  default:
+    values:
+      - ./helm-vars.yaml
+
 repositories:
   - name: mojo2600
     url: https://mojo2600.github.io/pihole-kubernetes/

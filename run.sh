@@ -76,6 +76,7 @@ install_k3s() {
   INSTALL_K3S_EXEC=\"--cluster-cidr=${DEFAULT_IPV4_CLUSTER_CIDR},${DEFAULT_IPV6_CLUSTER_CIDR} \
   --service-cidr=${DEFAULT_IPV4_SERVICE_CIDR},${DEFAULT_IPV6_SERVICE_CIDR} \
   --kubelet-arg=node-ip=:: \
+  --node-ip=:: \
   --disable servicelb\" \
   sh -s -${PIPE_OUTPUT}"
 
@@ -83,12 +84,15 @@ install_k3s() {
 
   if run_cmd "kubectl cluster-info"; then
     error "K3s cluster is already installed. Check the status using 'kubectl cluster-info'."
-    exit
+    exit 1
   fi
 
   info "Installing K3s cluster ..."
 
   if run_cmd "${K3S_INSTALL_CMD}"; then
+    info "Copying the K3s config to '~/.kube/config' and setting KUBECONFIG env var"
+    run_cmd "cp /etc/rancher/k3s/k3s.yaml ~/.kube/config && chown $USER ~/.kube/config && chmod 600 ~/.kube/config"
+    run_cmd "if ! grep -qF 'KUBECONFIG=~/.kube/config' /etc/environment; then echo "KUBECONFIG=~/.kube/config" >> /etc/environment; fi"
     info "Successfully installed the K3s cluster"
   else
     error "Failed to uninstall the K3s cluster"
@@ -117,6 +121,21 @@ uninstall_k3s() {
   fi
 }
 
+join_k3s() {
+  error "Joining K3s cluster is currently not supported by the script."
+  exit 1
+}
+
+leave_k3s() {
+  error "Leaving K3s cluster is currently not supported by the script."
+  exit 1
+}
+
+install_apps() {
+  # Install all the kubernetes apps using Helm file or optionally kustomize/normal patches
+
+}
+
 # Main
 main() {
   for arg in "$@"; do
@@ -125,22 +144,29 @@ main() {
 #      'help') set -- "$@" '-h'   ;;
       '--installk3s') set -- "$@" '-i'   ;;
       '--uninstallk3s')   set -- "$@" '-u'   ;;
+      '--joink3s')   set -- "$@" '-j'   ;;
+      '--leavek3s')   set -- "$@" '-l'   ;;
       *)          set -- "$@" "$arg" ;;
     esac
   done
 
   # Default behavior
-  installk3s=false; uninstallk3s=false
+  installk3s=false
+  uninstallk3s=false
+  joink3s=false
+  leavek3s=false
 
   # Parse short options
   OPTIND=1
-  while getopts "i:u" opt
+  while getopts "i:u:j:l" opt
 #  while getopts "hi:u" opt
   do
     case "$opt" in
 #      'h') print_usage; exit 0 ;;
       'i') installk3s=$OPTARG ;;
       'u') uninstallk3s=true ;;
+      'j') joink3s=true ;;
+      'l') leavek3s=true ;;
 #      '?') print_usage >&2; exit 1 ;;
     esac
   done
@@ -149,9 +175,19 @@ main() {
   if [ ${installk3s} == true ]; then
     install_k3s
   fi
+
   if [ ${uninstallk3s} == true ]; then
-      uninstall_k3s
+    uninstall_k3s
   fi
+
+  if [ ${joink3s} == true ]; then
+    join_k3s
+  fi
+
+  if [ ${leavek3s} == true ]; then
+    leave_k3s
+  fi
+
 }
 
 main "$@"
