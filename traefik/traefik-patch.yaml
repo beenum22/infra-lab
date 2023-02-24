@@ -5,9 +5,10 @@ metadata:
   namespace: kube-system
 spec:
   valuesContent: |-
+    # {{ PATCH_TIMESTAMP }}
     service:
       annotations:
-        metallb.universe.tf/address-pool: {{ METALLB_POOL_NAME}}
+        metallb.universe.tf/address-pool: {{ METALLB_POOL_NAME }}
       ipFamilyPolicy: RequireDualStack
       ipFamilies:
         - IPv6
