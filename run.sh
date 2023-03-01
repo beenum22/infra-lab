@@ -185,6 +185,11 @@ expose_traefik() {
   fi
 }
 
+install_metallb() {
+  # Install MetalLB helm chart
+  info "Installing Metallb on '${TRAEFIK_PORT}' port and '${METALLB_POOL_NAME}' MetalLB pool"
+}
+
 # Main
 main() {
   for arg in "$@"; do
@@ -196,6 +201,7 @@ main() {
       '--joink3s')   set -- "$@" '-j'   ;;
       '--leavek3s')   set -- "$@" '-l'   ;;
       '--exposetraefik')   set -- "$@" '-e'   ;;
+      '--installmetallb')   set -- "$@" '-e'   ;;
       '--verbosity')   set -- "$@" '-v'   ;;
       *)          set -- "$@" "$arg" ;;
     esac
@@ -207,11 +213,12 @@ main() {
   joink3s=false
   leavek3s=false
   exposetraefik=false
+  metallb=false
   verbosity=4
 
   # Parse short options
   OPTIND=1
-  while getopts "i:u:j:l:e:v:" opt
+  while getopts "i:u:j:l:e:v:m:" opt
 #  while getopts "hi:u" opt
   do
     case "$opt" in
@@ -222,6 +229,7 @@ main() {
       'l') leavek3s=true ;;
       'e') exposetraefik=true ;;
       'v') verbosity=$OPTARG ;;
+      'v') installmetallb=true ;;
 #      '?') print_usage >&2; exit 1 ;;
     esac
   done
@@ -244,6 +252,10 @@ main() {
   fi
 
   if [ ${exposetraefik} == true ]; then
+      expose_traefik
+  fi
+
+  if [ ${installmetallb} == true ]; then
       expose_traefik
   fi
 
