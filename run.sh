@@ -229,8 +229,10 @@ main() {
       'l') leavek3s=true ;;
       'e') exposetraefik=true ;;
       'v') verbosity=$OPTARG ;;
-      'v') installmetallb=true ;;
+      'm') installmetallb=true ;;
 #      '?') print_usage >&2; exit 1 ;;
+      *) echo "usage: $0 [-v] [-r]" >&2
+             exit 1 ;;
     esac
   done
   shift $(expr $OPTIND - 1) # remove options from positional parameters
