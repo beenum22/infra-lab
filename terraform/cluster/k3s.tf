@@ -6,6 +6,7 @@ resource "random_string" "k3s_token" {
 
 module "lab_k3s_0" {
   source = "./modules/k3s"
+  tag = "v1.27.1-k3s1"
   hostname = data.terraform_remote_state.infra.outputs.instances["lab-k3s-0"]["instance_name"]
   cluster_init = true
   cluster_role = "server"
@@ -30,6 +31,7 @@ module "lab_k3s_1" {
     docker = docker.lab-k3s-1
   }
   source = "./modules/k3s"
+  tag = "v1.27.1-k3s1"
   hostname = data.terraform_remote_state.infra.outputs.instances["lab-k3s-1"]["instance_name"]
   cluster_init = false
   cluster_role = "server"
@@ -56,6 +58,7 @@ module "lab_k3s_2" {
     docker = docker.lab-k3s-2
   }
   source = "./modules/k3s"
+  tag = "v1.27.2-k3s1"
   hostname = data.terraform_remote_state.infra.outputs.instances["lab-k3s-2"]["instance_name"]
   cluster_init = false
   cluster_role = "server"

@@ -8,6 +8,11 @@ variable "image" {
   default = "rancher/k3s"
 }
 
+variable "tag" {
+  type = string
+  default = "latest"
+}
+
 variable "volume_name" {
   type = string
   default = "k3s-volume"

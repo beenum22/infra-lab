@@ -25,7 +25,8 @@ resource "docker_volume" "volume" {
 }
 
 resource "docker_image" "image" {
-  name = var.image
+  name = "${var.image}:${var.tag}"
+  keep_locally = true
 }
 
 resource "docker_container" "container" {
