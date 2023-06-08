@@ -18,9 +18,29 @@ variable "operating_system_version" {
   default = "9"
 }
 
-variable "shape" {
+variable "shape_name" {
   type = string
   default = "VM.Standard.A1.Flex"
+}
+
+variable "image_ocid" {
+  type = string
+  default = "ocid1.image.oc1.eu-frankfurt-1.aaaaaaaaujyukkfkoanatqanh2qe4bxhwwg2j44fjn2folihrfvsxd5jv5bq"
+}
+
+variable "vcpus" {
+  type = number
+  default = 1
+}
+
+variable "memory" {
+  type = number
+  default = 6
+}
+
+variable "boot_volume" {
+  type = number
+  default = 47
 }
 
 variable "cloud_init_commands" {

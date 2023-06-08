@@ -24,32 +24,13 @@ terraform {
 //  availability_domain = var.availability_domain
 //}
 
-data "oci_core_images" "oracle_images" {
-  compartment_id           = var.compartment_id
-  operating_system         = var.operating_system
-  operating_system_version = var.operating_system_version
-  shape                    = var.shape
-  sort_by                  = "TIMECREATED"
-  sort_order               = "DESC"
-}
-
-//output "test" {
-//  value = data.oci_core_subnet.subnets
-//}
-//
-//locals {
-//  ads = [
-//    for ad in data.oci_identity_availability_domains.oracle_ads.availability_domains : ad.name
-//  ]
-//  shapes_config = {
-//  // prepare data with default values for flex shapes. Used to populate shape_config block with default values
-//  // Iterate through data.oci_core_shapes.current_ad.shapes (this exclude duplicate data in multi-ad regions) and create a map { name = { memory_in_gbs = "xx"; ocpus = "xx" } }
-//  for i in data.oci_core_shapes.shapes.shapes : i.name => {
-//    memory_in_gbs = i.memory_in_gbs
-//    ocpus         = i.ocpus
-//  }
-//  }
-//  shape_is_flex = length(regexall("^*.Flex", var.shape)) > 0 # evaluates to boolean true when var.shape contains .Flex
+//data "oci_core_images" "oracle_images" {
+//  compartment_id           = var.compartment_id
+//  operating_system         = var.operating_system
+//  operating_system_version = var.operating_system_version
+//  shape                    = var.shape
+//  sort_by                  = "TIMECREATED"
+//  sort_order               = "DESC"
 //}
 
 data "template_file" "cloud_config" {
@@ -62,55 +43,21 @@ runcmd:
 YAML
 }
 
-//data "template_file" "cloud_config" {
-//  template = <<YAML
-//#cloud-config
-//runcmd:
-//  - echo 'This instance was provisioned by Terraform.' >> /etc/motd
-//  - echo 'Downloading OCI secondary interface configuration script'
-//  - wget -O /tmp/secondary_vnic_all_configure.sh https://docs.oracle.com/en-us/iaas/Content/Resources/Assets/secondary_vnic_all_configure.sh
-//  - chmod +x /tmp/secondary_vnic_all_configure.sh
-//  - until [ $(basename -a /sys/class/net/* | wc -l) -gt 2 ]; do echo "Waiting for secondary VNIC"; sleep 1; done
-//  - until sudo /tmp/secondary_vnic_all_configure.sh -c; do echo "Waiting for secondary VNIC configuration"; done
-//  - echo 'Installing and configuring Docker'
-//  - dnf install -y dnf-utils zip unzip
-//  - dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
-//  - dnf remove -y runc
-//  - dnf install -y docker-ce --nobest
-//  - systemctl enable docker.service
-//  - systemctl start docker.service
-//  - systemctl status docker.service
-//  - usermod -aG docker opc
-//  - echo 'Allowing ports for K3s'
-//  - firewall-cmd --permanent --add-port=22/tcp
-//  - firewall-cmd --permanent --add-port=80/tcp
-//  - firewall-cmd --permanent --add-port=443/tcp
-//  - firewall-cmd --permanent --add-port=2376/tcp
-//  - firewall-cmd --permanent --add-port=2379/tcp
-//  - firewall-cmd --permanent --add-port=2380/tcp
-//  - firewall-cmd --permanent --add-port=6443/tcp
-//  - firewall-cmd --permanent --add-port=8472/udp
-//  - firewall-cmd --permanent --add-port=9099/tcp
-//  - firewall-cmd --permanent --add-port=10250/tcp
-//  - firewall-cmd --permanent --add-port=10254/tcp
-//  - firewall-cmd --permanent --add-port=30000-32767/tcp
-//  - firewall-cmd --permanent --add-port=30000-32767/udp
-//  - firewall-cmd --reload
-//YAML
-//}
-
 module "instance" {
   source = "oracle-terraform-modules/compute-instance/oci"
   instance_count             = 1
   ad_number                  = null
   compartment_ocid           = var.compartment_id
-  instance_display_name      = "${var.name}"
-  source_ocid                = data.oci_core_images.oracle_images.images[0].id
+  instance_display_name      = var.name
+  source_ocid                = var.image_ocid
   subnet_ocids               = [var.subnets[0]["id"]]
   public_ip                  = "NONE" # NONE, RESERVED or EPHEMERAL
   ssh_public_keys            = join("\n", var.ssh_public_keys)
+  instance_flex_ocpus        = length(regexall("Flex", var.shape_name)) > 0 ? var.vcpus : null
+  instance_flex_memory_in_gbs = length(regexall("Flex", var.shape_name)) > 0 ? var.memory : null
+  boot_volume_size_in_gbs    = var.boot_volume
   block_storage_sizes_in_gbs = []
-  shape                      = data.oci_core_images.oracle_images.shape
+  shape                      = var.shape_name
   instance_state             = "RUNNING" # RUNNING or STOPPED
   boot_volume_backup_policy  = "disabled" # disabled, gold, silver or bronze
   user_data                  = base64encode(data.template_file.cloud_config.rendered)

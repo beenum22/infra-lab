@@ -11,16 +11,52 @@ data "oci_core_images" "oracle_images" {
   sort_order               = "DESC"
 }
 
+locals {
+  instances = {
+    "lab-k3s-0" = {
+      shape_name = "VM.Standard.A1.Flex"
+      image_ocid = "ocid1.image.oc1.eu-frankfurt-1.aaaaaaaaujyukkfkoanatqanh2qe4bxhwwg2j44fjn2folihrfvsxd5jv5bq"
+      vcpus = 1
+      memory = 6
+      boot_volume = 47
+    }
+    "lab-k3s-1" = {
+      shape_name = "VM.Standard.A1.Flex"
+      image_ocid = "ocid1.image.oc1.eu-frankfurt-1.aaaaaaaaujyukkfkoanatqanh2qe4bxhwwg2j44fjn2folihrfvsxd5jv5bq"
+      vcpus = 1
+      memory = 6
+      boot_volume = 47
+    }
+    "lab-k3s-2" = {
+      shape_name = "VM.Standard.A1.Flex"
+      image_ocid = "ocid1.image.oc1.eu-frankfurt-1.aaaaaaaaujyukkfkoanatqanh2qe4bxhwwg2j44fjn2folihrfvsxd5jv5bq"
+      vcpus = 2
+      memory = 12
+      boot_volume = 50
+    }
+  }
+}
+
+moved {
+  from = module.k3s_instances[0]
+  to = module.k3s_instances["lab-k3s-0"]
+}
+
+moved {
+  from = module.k3s_instances[1]
+  to = module.k3s_instances["lab-k3s-1"]
+}
+
 module "k3s_instances" {
-  count = var.instances_count
+  for_each = local.instances
   source = "./modules/oci_instance"
-  name = "lab-k3s-${count.index}"
-  shape = data.oci_core_images.oracle_images.shape
+  name = each.key
+  shape_name = each.value["shape_name"]
+  image_ocid  = each.value["image_ocid"]
+  vcpus = each.value["vcpus"]
+  memory = each.value["memory"]
+  boot_volume = each.value["boot_volume"]
   subnets = [
-//    {
-//      id = module.vcn.private_subnet_id
-//      public_access = false
-//    },
     {
       id = module.vcn.public_subnet_id
       public_access = false
