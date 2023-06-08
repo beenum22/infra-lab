@@ -10,7 +10,7 @@ variable "image" {
 
 variable "volume_name" {
   type = string
-  default = "k3s_volume"
+  default = "k3s-volume"
 }
 
 variable "cluster_init" {

@@ -11,8 +11,12 @@ terraform {
   }
 }
 
+resource "docker_volume" "volume" {
+  name = var.volume_name
+}
+
 resource "docker_image" "image" {
-  name = var.image
+  name = "${var.image}:${var.tag}"
 }
 
 resource "docker_container" "container" {
@@ -24,6 +28,10 @@ resource "docker_container" "container" {
       "NET_RAW",
       "NET_ADMIN"
     ]
+  }
+  volumes {
+    container_path = "/var/lib/tailscale/state"
+    volume_name = var.volume_name
   }
   volumes {
     container_path = "/var/lib"
@@ -44,20 +52,28 @@ resource "docker_container" "container" {
     "TS_AUTHKEY=${var.authkey}",
     "TS_SOCKET=/var/run/tailscaled.sock",
     "TS_DEBUG_MTU=1350",
+    "TS_STATE_DIR=/var/lib/tailscale/state"
   ]
 }
 
 data "tailscale_device" "device" {
   name     = "${var.hostname}.${var.tailnet}"
   wait_for = "60s"
-  depends_on = [
-    docker_container.container
-  ]
+  depends_on = [docker_container.container]
 }
 
 resource "tailscale_device_subnet_routes" "routes" {
   device_id = data.tailscale_device.device.id
   routes = var.routes
+  depends_on = [
+    docker_container.container,
+    data.tailscale_device.device
+  ]
+}
+
+resource "tailscale_device_key" "disable_key_expiry" {
+  device_id = data.tailscale_device.device.id
+  key_expiry_disabled = true
   depends_on = [
     docker_container.container,
     data.tailscale_device.device

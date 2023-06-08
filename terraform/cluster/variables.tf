@@ -10,14 +10,9 @@ variable "use_tailscale_ip" {
   default = false
 }
 
-variable "tailscale_authkey" {
-  type = string
-  default = "tskey-auth-kyoQKo1CNTRL-UbTurGjqcXEJVzHD9pVmTEfXj1m3aEUAQ"
-}
-
 variable "tailscale_apikey" {
   type = string
-  default = "tskey-api-kKEjSs6CNTRL-sZJVW2KCNRVP8yKeAdoqLVq412apHnvm8"
+  default = "tskey-api-kr11Wi6CNTRL-gwcSqTHLZNaWmdxHt9kkJaMbevtAZ7ZJ"
 }
 
 variable "tailscale_tailnet" {

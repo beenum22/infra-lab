@@ -5,7 +5,17 @@ variable "name" {
 
 variable "image" {
   type = string
-  default = "tailscale/tailscale:v1.40.0"
+  default = "tailscale/tailscale"
+}
+
+variable "tag" {
+  type = string
+  default = "v1.40.0"
+}
+
+variable "volume_name" {
+  type = string
+  default = "tailscale-state"
 }
 
 variable "authkey" {

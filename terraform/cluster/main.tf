@@ -46,8 +46,9 @@ terraform {
 }
 
 locals {
-  machine_0_ip = var.use_ipv6 ? data.terraform_remote_state.infra.outputs.instances[0]["primary_ipv6_address"] : data.terraform_remote_state.infra.outputs.instances[0]["primary_public_ipv4_address"]
-  machine_1_ip = var.use_ipv6 ? data.terraform_remote_state.infra.outputs.instances[1]["primary_ipv6_address"] : data.terraform_remote_state.infra.outputs.instances[1]["primary_public_ipv4_address"]
+  machine_0_ip = var.use_ipv6 ? data.terraform_remote_state.infra.outputs.instances["lab-k3s-0"]["primary_ipv6_address"] : data.terraform_remote_state.infra.outputs.instances["lab-k3s-0"]["primary_public_ipv4_address"]
+  machine_1_ip = var.use_ipv6 ? data.terraform_remote_state.infra.outputs.instances["lab-k3s-1"]["primary_ipv6_address"] : data.terraform_remote_state.infra.outputs.instances["lab-k3s-1"]["primary_public_ipv4_address"]
+  machine_2_ip = var.use_ipv6 ? data.terraform_remote_state.infra.outputs.instances["lab-k3s-2"]["primary_ipv6_address"] : data.terraform_remote_state.infra.outputs.instances["lab-k3s-2"]["primary_public_ipv4_address"]
 }
 
 provider "tailscale" {
@@ -56,20 +57,15 @@ provider "tailscale" {
 }
 
 provider "docker" {
-  host = "ssh://${data.terraform_remote_state.infra.outputs.instances[0]["instance_user"]}@${local.machine_0_ip}:22"
+  host = "ssh://${data.terraform_remote_state.infra.outputs.instances["lab-k3s-0"]["instance_user"]}@${local.machine_0_ip}:22"
 }
 
 provider "docker" {
   alias = "lab-k3s-1"
-  host = "ssh://${data.terraform_remote_state.infra.outputs.instances[1]["instance_user"]}@${local.machine_1_ip}:22"
+  host = "ssh://${data.terraform_remote_state.infra.outputs.instances["lab-k3s-1"]["instance_user"]}@${local.machine_1_ip}:22"
 }
 
-//provider "docker" {
-//  alias = "lab-k3s-0-public"
-//  host = "ssh://${data.terraform_remote_state.infra.outputs.instances[0]["secondary_public_ipv4_addresses"][0]}:22"
-//}
-//
-//provider "docker" {
-//  alias = "lab-k3s-1-public"
-//  host = "ssh://${data.terraform_remote_state.infra.outputs.instances[1]["secondary_public_ipv4_addresses"][0]}:22"
-//}
+provider "docker" {
+  alias = "lab-k3s-2"
+  host = "ssh://${data.terraform_remote_state.infra.outputs.instances["lab-k3s-2"]["instance_user"]}@${local.machine_2_ip}:22"
+}
