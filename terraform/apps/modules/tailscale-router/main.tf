@@ -116,6 +116,22 @@ resource "kubernetes_stateful_set" "this" {
             }
           }
         }
+        init_container {
+          name = "nat64-helper"
+          image = "alpine:latest"
+          security_context {
+            capabilities {
+              add = [
+                "SYS_MODULE",
+                "NET_ADMIN",
+                "NET_RAW",
+              ]
+            }
+          }
+          command = ["sh", "-c"]
+          args = [
+            "apk add ip6tables && ip6tables -nvL -t nat"]
+        }
         container {
           name = "router"
           image = var.image
@@ -137,7 +153,7 @@ resource "kubernetes_stateful_set" "this" {
           }
           env {
             name = "TS_USERSPACE"
-            value = "true"
+            value = "false"
           }
           env {
             name = "TS_AUTH_KEY"
@@ -156,10 +172,10 @@ resource "kubernetes_stateful_set" "this" {
             name = "TS_EXTRA_ARGS"
             value = join(",", var.extra_args)
           }
-          env {
-            name = "TS_DEBUG_MTU"
-            value = var.mtu
-          }
+#          env {
+#            name = "TS_DEBUG_MTU"
+#            value = var.mtu
+#          }
           resources {}
         }
       }

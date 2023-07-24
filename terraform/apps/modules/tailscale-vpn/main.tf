@@ -147,6 +147,22 @@ resource "kubernetes_stateful_set" "this" {
             path = "/dev/net/tun"
           }
         }
+        init_container {
+          name = "nat64-helper"
+          image = "alpine:latest"
+          security_context {
+            capabilities {
+              add = [
+                "SYS_MODULE",
+                "NET_ADMIN",
+                "NET_RAW",
+              ]
+            }
+          }
+          command = ["sh", "-c"]
+          args = [
+            "apk add ip6tables && ip6tables -nvL -t nat"]
+        }
         container {
           name = "vpn"
           image = "${var.image}:${var.tag}"
@@ -163,7 +179,6 @@ resource "kubernetes_stateful_set" "this" {
               add = [
                 "NET_ADMIN",
                 "NET_RAW",
-                "SYS_MODULE"
               ]
             }
           }
