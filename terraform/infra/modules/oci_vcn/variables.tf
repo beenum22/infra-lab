@@ -17,3 +17,8 @@ variable "enable_public_access" {
   type = bool
   default = true
 }
+
+variable "enable_ssh" {
+  type = bool
+  default = true
+}

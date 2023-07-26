@@ -3,4 +3,5 @@ module "vcn" {
   compartment_id = var.compartment_id
   name = "lab"
   enable_public_access = true
+  enable_ssh = false
 }
