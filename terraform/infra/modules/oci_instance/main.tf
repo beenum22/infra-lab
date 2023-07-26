@@ -51,7 +51,7 @@ module "instance" {
   instance_display_name      = var.name
   source_ocid                = var.image_ocid
   subnet_ocids               = [var.subnets[0]["id"]]
-  public_ip                  = "NONE" # NONE, RESERVED or EPHEMERAL
+  public_ip                  = var.subnets[0].public_access ? "EPHEMERAL" : "NONE" # NONE, RESERVED or EPHEMERAL
   ssh_public_keys            = join("\n", var.ssh_public_keys)
   instance_flex_ocpus        = length(regexall("Flex", var.shape_name)) > 0 ? var.vcpus : null
   instance_flex_memory_in_gbs = length(regexall("Flex", var.shape_name)) > 0 ? var.memory : null

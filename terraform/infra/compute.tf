@@ -59,7 +59,7 @@ module "k3s_instances" {
   subnets = [
     {
       id = module.vcn.public_subnet_id
-      public_access = false
+      public_access = true
     }
   ]
   ssh_public_keys = [
