@@ -20,7 +20,7 @@ variable "chart_name" {
 
 variable "chart_version" {
   type = string
-  default = "2.11.1"
+  default = "2.17.0"
 }
 
 variable "chart_url" {
@@ -30,12 +30,12 @@ variable "chart_url" {
 
 variable "image" {
   type = string
-  default = "pihole/pihole"
+  default = null
 }
 
 variable "tag" {
   type = string
-  default = "2023.03.1"
+  default = null
 }
 
 variable "dualstack" {
@@ -50,7 +50,7 @@ variable "expose" {
 
 variable "ingress_class" {
   type = string
-  default = "traefik"
+  default = "nginx"
 }
 
 variable "issuer" {
@@ -71,4 +71,8 @@ variable "password" {
 variable "publish" {
   type = bool
   default = false
+}
+
+variable "ingress_hostname" {
+  type = string
 }

@@ -13,6 +13,7 @@ module "pihole" {
   ]
   password = var.pihole_password
   ingress_class = "nginx"
+  ingress_hostname = "wormhole.dera.ovh"
   issuer = module.cert_manager.issuer
   publish = true
   depends_on = [

@@ -3,6 +3,7 @@ locals {
     "cert-manager\\.io/cluster-issuer" = var.issuer
     "kubernetes\\.io/ingress\\.class" = var.ingress_class
     "external-dns\\.alpha\\.kubernetes\\.io/internal-hostname" = replace(join("\\,", var.domains), ".", "\\.")
+    "external-dns\\.alpha\\.kubernetes\\.io/target" = var.ingress_hostname
     "hajimari\\.io/enable" = var.publish
     "hajimari\\.io/icon" = "simple-icons:pihole"
     "hajimari\\.io/appName" = "pihole"
@@ -18,16 +19,22 @@ resource "helm_release" "pihole" {
   chart      = var.chart_name
   version    = var.chart_version
   namespace   = var.namespace
-  set {
-    name = "image.repository"
-    value = var.image
+  dynamic "set" {
+    for_each = var.image != null ? [1] : []
+    content {
+      name = "image.repository"
+      value = var.image
+    }
+  }
+  dynamic "set" {
+    for_each = var.image != null ? [1] : []
+    content {
+      name = "image.tag"
+      value = var.tag
+    }
   }
   set {
-    name = "image.tag"
-    value = var.tag
-  }
-  set {
-    name = "dualstack.enabled"
+    name = "dualStack.enabled"
     value = var.dualstack
   }
   set {
