@@ -1,3 +1,9 @@
+locals {
+  ingress_annotations = {
+    "external-dns\\.alpha\\.kubernetes\\.io/internal-hostname" = var.domain
+  }
+}
+
 resource "helm_release" "chart" {
   name       = var.name
   repository = var.chart_url
@@ -35,32 +41,20 @@ resource "helm_release" "chart" {
     value = "IPv4"
     type = "string"
   }
+  dynamic "set" {
+    for_each   = local.ingress_annotations
+    content {
+      name = "controller.service.annotations.${set.key}"
+      value = set.value
+#      type = "string"
+    }
+  }
 }
 
-//resource "kubernetes_service" "second_service" {
-//  metadata {
-//    name = "${var.name}-controller-ipv4"
-//    namespace = var.namespace
-//  }
-//  spec {
-//    selector = {
-//      "app.kubernetes.io/component" = "controller"
-//      "app.kubernetes.io/instance" = var.name
-//      "app.kubernetes.io/name" = var.name
-//    }
-//    port {
-//      name = "http"
-//      port        = 80
-//      target_port = 80
-//      protocol = "TCP"
-//    }
-//
-//    port {
-//      name = "https"
-//      port        = 443
-//      target_port = 443
-//      protocol = "TCP"
-//    }
-//    type = "ClusterIP"
-//  }
-//}
+data "kubernetes_service" "ingress" {
+  metadata {
+    name = "${var.name}-controller"
+    namespace = var.namespace
+  }
+  depends_on = [helm_release.chart]
+}

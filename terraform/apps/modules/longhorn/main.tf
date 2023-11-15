@@ -1,9 +1,27 @@
+locals {
+  ingress_annotations = {
+    "cert-manager\\.io/cluster-issuer" = var.issuer
+    "kubernetes\\.io/ingress\\.class" = var.ingress_class
+    "external-dns\\.alpha\\.kubernetes\\.io/internal-hostname" = replace(join("\\,", var.domains), ".", "\\.")
+    "external-dns\\.alpha\\.kubernetes\\.io/target" = var.ingress_hostname
+    "hajimari\\.io/enable" = var.publish
+    "hajimari\\.io/icon" = "icon-park:cloud-storage"
+    "hajimari\\.io/appName" = "longhorn"
+    "hajimari\\.io/group" = "Cluster"
+    "hajimari\\.io/url" = "https://${var.domains[0]}"
+    "hajimari\\.io/info" = "Shared Cluster Storage"
+  }
+}
+
 resource "helm_release" "chart" {
   name       = var.name
   repository = var.chart_url
   chart      = var.chart_name
   version    = var.chart_version
   namespace   = var.namespace
+  postrender {
+    binary_path = "${path.module}/patch/kustomize"
+  }
   set {
     name = "defaultSettings.deletingConfirmationFlag"
     value = true
@@ -32,62 +50,43 @@ resource "helm_release" "chart" {
     name = "ingress.tlsSecret"
     value = "longhorn-tls"
   }
-  set {
-    name  = "ingress.annotations.kubernetes\\.io/ingress\\.class"
-    value = var.ingress_class
-    type = "string"
-  }
-  set {
-    name  = "ingress.annotations.external-dns\\.alpha\\.kubernetes\\.io/internal-hostname"
-    value = replace(join("\\,", var.domains), ".", "\\.")
-    type = "string"
-  }
-  set {
-    name  = "ingress.annotations.hajimari\\.io/enable"
-    value = var.publish
-    type = "string"
-  }
-  set {
-    name  = "ingress.annotations.hajimari\\.io/icon"
-    value = "simple-icons:pihole"
-  }
-  set {
-    name  = "ingress.annotations.hajimari\\.io/appName"
-    value = "pihole"
-  }
-  set {
-    name  = "ingress.annotations.hajimari\\.io/group"
-    value = "Cluster"
-  }
-  set {
-    name  = "ingress.annotations.hajimari\\.io/url"
-    value = "https://${var.domains[0]}/admin"
-  }
-  set {
-    name  = "ingress.annotations.hajimari\\.io/info"
-    value = "DNS Server with Adblocker"
+  dynamic "set" {
+    for_each   = local.ingress_annotations
+    content {
+      name = "ingress.annotations.${set.key}"
+      value = set.value
+      type = "string"
+    }
   }
   set {
     name  = "persistence.defaultClass"
     value = false
   }
-}
-
-resource "kubernetes_manifest" "cert" {
-  manifest = {
-    "apiVersion" = "cert-manager.io/v1"
-    "kind" = "Certificate"
-    "metadata" = {
-      "name" = "${var.name}-cert"
-      "namespace" = var.namespace
-    }
-    "spec" = {
-      "dnsNames" = var.domains
-      "issuerRef" = {
-        "name" = var.issuer
-        "kind" = "ClusterIssuer"
-      }
-      "secretName" = "${var.name}-tls"
+  dynamic "set" {
+    for_each = var.extra_values
+    content {
+      name = set.key
+      value = set.value
+      type = "string"
     }
   }
 }
+
+#resource "kubernetes_manifest" "cert" {
+#  manifest = {
+#    "apiVersion" = "cert-manager.io/v1"
+#    "kind" = "Certificate"
+#    "metadata" = {
+#      "name" = "${var.name}-cert"
+#      "namespace" = var.namespace
+#    }
+#    "spec" = {
+#      "dnsNames" = var.domains
+#      "issuerRef" = {
+#        "name" = var.issuer
+#        "kind" = "ClusterIssuer"
+#      }
+#      "secretName" = "${var.name}-tls"
+#    }
+#  }
+#}

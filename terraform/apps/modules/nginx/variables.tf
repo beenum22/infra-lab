@@ -37,3 +37,7 @@ variable "tag" {
   type = string
   default = "v1.7.1"
 }
+
+variable "domain" {
+  type = string
+}

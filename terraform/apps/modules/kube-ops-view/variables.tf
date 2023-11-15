@@ -5,7 +5,7 @@ variable "kubeconfig" {
 
 variable "name" {
   type = string
-  default = "filebrowser"
+  default = "kube-ops-view"
 }
 
 variable "namespace" {
@@ -13,44 +13,19 @@ variable "namespace" {
   default = "apps"
 }
 
-variable "storage_class" {
-  type = string
-  default = "local-path"
-}
-
-variable "data_storage" {
-  type = string
-  default = "5Gi"
-}
-
-variable "config_storage" {
-  type = string
-  default = "1Gi"
-}
-
-variable "image" {
-  type = string
-  default = "filebrowser/filebrowser"
-}
-
-variable "tag" {
-  type = string
-  default = "v2.18.0"
-}
-
 variable "chart_name" {
   type = string
-  default = "filebrowser"
+  default = "kube-ops-view"
 }
 
 variable "chart_version" {
   type = string
-  default = "1.4.2"
+  default = "2.10.0"
 }
 
 variable "chart_url" {
   type = string
-  default = "https://k8s-at-home.com/charts/"
+  default = "https://christianknell.github.io/helm-charts"
 }
 
 variable "ingress_class" {
@@ -69,7 +44,7 @@ variable "domains" {
 
 variable "publish" {
   type = bool
-  default = false
+  default = true
 }
 
 variable "ingress_hostname" {

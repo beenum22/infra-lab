@@ -12,21 +12,6 @@ variable "labels" {
   type = map(string)
   default = null
 }
-//
-//variable "chart_url" {
-//  type = string
-//  default = "https://gtaylor.github.io/helm-charts"
-//}
-//
-//variable "chart_name" {
-//  type = string
-//  default = "tailscale-subnet-router"
-//}
-//
-//variable "chart_version" {
-//  type = string
-//  default = "1.2.1"
-//}
 
 variable "name" {
   type = string
@@ -54,7 +39,7 @@ variable "image" {
 
 variable "tag" {
   type = string
-  default = "v1.40.0"
+  default = "latest"
 }
 
 variable "routes" {

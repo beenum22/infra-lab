@@ -206,12 +206,12 @@ resource "kubernetes_stateful_set" "this" {
           }
           env {
             name = "TS_EXTRA_ARGS"
-            value = join(",", var.extra_args)
+            value = join(" ", var.extra_args)
           }
-          env {
-            name = "TS_TAILSCALED_EXTRA_ARGS"
-            value = "-tun kube-tailscale0"
-          }
+#          env {
+#            name = "TS_TAILSCALED_EXTRA_ARGS"
+#            value = "-tun kube-tailscale0"
+#          }
 //          env {
 //            name = "TS_DEBUG_MTU"
 //            value = var.mtu

@@ -43,6 +43,10 @@ variable "ingress_class" {
   default = "nginx"
 }
 
+variable "ingress_hostname" {
+  type = string
+}
+
 variable "issuer" {
   type = string
 }
@@ -55,4 +59,9 @@ variable "domains" {
 variable "publish" {
   type = bool
   default = false
+}
+
+variable "extra_values" {
+  type = map(string)
+  default = {}
 }

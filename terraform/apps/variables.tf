@@ -23,11 +23,21 @@ variable "tailscale_proxy_image" {
 
 variable "tailscale_authkey" {
   type = string
-  default = "tskey-auth-kef8CY5CNTRL-3WG4h7VoVnP5xq8t3AtarPbXNPk74jKL"
+  default = "tskey-auth-k6rWmo6CNTRL-ViFCSCmvYR4KPyCvHXWfR4aBvLzdvj5FT"
+  sensitive = true
+}
+
+variable "tailscale_apikey" {
+  type = string
   sensitive = true
 }
 
 variable "pihole_password" {
+  type = string
+  sensitive = true
+}
+
+variable "pihole_api_key" {
   type = string
   sensitive = true
 }
@@ -48,6 +58,11 @@ variable "cert_manager_ovh_consumer_key" {
 }
 
 variable "mailu_password" {
+  type = string
+  sensitive = true
+}
+
+variable "netdata_password" {
   type = string
   sensitive = true
 }

@@ -5,7 +5,7 @@ variable "kubeconfig" {
 
 variable "name" {
   type = string
-  default = "hajimari"
+  default = "mailserver"
 }
 
 variable "namespace" {
@@ -15,36 +15,32 @@ variable "namespace" {
 
 variable "chart_name" {
   type = string
-  default = "hajimari"
+  default = "mailserver"
 }
 
 variable "chart_version" {
   type = string
-  default = "2.0.2"
+  default = "10.5.0"
 }
 
 variable "chart_url" {
   type = string
-  default = "https://hajimari.io"
+  default = "https://docker-mailserver.github.io/docker-mailserver-helm/"
 }
 
-variable "image" {
-  type = string
-  default = "ghcr.io/toboshii/hajimari"
-}
+//variable "tag" {
+//  type = string
+//  default = "v0.3.1"
+//}
 
-variable "tag" {
+variable "storage_class" {
   type = string
-  default = "v0.3.1"
+  default = "local-path"
 }
 
 variable "ingress_class" {
   type = string
   default = "nginx"
-}
-
-variable "ingress_hostname" {
-  type = string
 }
 
 variable "issuer" {
@@ -56,17 +52,23 @@ variable "domains" {
   default = []
 }
 
-variable "title" {
+variable "mail_domain" {
   type = string
-  default = "Test Dashboard"
+  default = "dera.ovh"
 }
 
-variable "enduser_name" {
+variable "password" {
   type = string
-  default = "Dummies"
+  sensitive = true
 }
 
-variable "target_namespaces" {
-  type = list(string)
-  default = ["default"]
+variable "subnets" {
+  type = object({
+    ipv4 = string
+    ipv6 = string
+  })
+  default = {
+    ipv4 = ""
+    ipv6 = ""
+  }
 }

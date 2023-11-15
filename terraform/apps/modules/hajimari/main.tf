@@ -3,6 +3,7 @@ locals {
     "cert-manager\\.io/cluster-issuer" = var.issuer
     "kubernetes\\.io/ingress\\.class" = var.ingress_class
     "external-dns\\.alpha\\.kubernetes\\.io/internal-hostname" = replace(join("\\,", var.domains), ".", "\\.")
+    "external-dns\\.alpha\\.kubernetes\\.io/target" = var.ingress_hostname
   }
 }
 

@@ -21,3 +21,7 @@ output "pihole" {
 output "nginx" {
   value = module.nginx
 }
+
+output "homepage" {
+  value = module.homepage
+}

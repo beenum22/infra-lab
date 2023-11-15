@@ -134,7 +134,7 @@ resource "kubernetes_stateful_set" "this" {
         }
         container {
           name = "router"
-          image = var.image
+          image = "${var.image}:${var.tag}"
           image_pull_policy = "IfNotPresent"
           security_context {
             capabilities {
@@ -170,7 +170,7 @@ resource "kubernetes_stateful_set" "this" {
           }
           env {
             name = "TS_EXTRA_ARGS"
-            value = join(",", var.extra_args)
+            value = join(" ", var.extra_args)
           }
 #          env {
 #            name = "TS_DEBUG_MTU"

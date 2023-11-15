@@ -5,7 +5,8 @@ locals {
     "external-dns\\.alpha\\.kubernetes\\.io/internal-hostname" = replace(join("\\,", var.domains), ".", "\\.")
     "external-dns\\.alpha\\.kubernetes\\.io/target" = var.ingress_hostname
     "hajimari\\.io/enable" = "true"
-    "hajimari\\.io/icon" = "simple-icons:jitsi"
+//    "hajimari\\.io/icon" = "simple-icons:jitsi"
+    "hajimari\\.io/icon" = "https://upload.wikimedia.org/wikipedia/commons/5/5d/Logo_Jitsi.svg"
     "hajimari\\.io/appName" = "jitsi-meet"
 #    "hajimari\\.io/group" = "Services"
     "hajimari\\.io/url" = "https://${var.domains[0]}"

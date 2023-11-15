@@ -39,7 +39,7 @@ variable "image" {
 
 variable "tag" {
   type = string
-  default = "v1.45.16"
+  default = "latest"
 }
 
 variable "routes" {
@@ -48,7 +48,7 @@ variable "routes" {
 
 variable "extra_args" {
   type = list(string)
-  default = ["--advertise-exit-node"]
+  default = ["--advertise-exit-node", "--accept-dns"]
 }
 
 variable "mtu" {

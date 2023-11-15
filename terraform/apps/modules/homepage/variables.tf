@@ -20,7 +20,7 @@ variable "chart_name" {
 
 variable "chart_version" {
   type = string
-  default = "1.1.0"
+  default = "1.2.1"
 }
 
 variable "chart_url" {
@@ -28,14 +28,8 @@ variable "chart_url" {
   default = "https://jameswynn.github.io/helm-charts"
 }
 
-variable "image" {
+variable "ingress_hostname" {
   type = string
-  default = "ghcr.io/benphelps/homepage"
-}
-
-variable "tag" {
-  type = string
-  default = "v0.6.10"
 }
 
 variable "ingress_class" {
@@ -46,4 +40,20 @@ variable "ingress_class" {
 variable "domains" {
   type = list(string)
   default = []
+}
+
+variable "issuer" {
+  type = string
+}
+
+variable "service_groups" {
+  type = any
+#  type = list(map(list(map(any))))
+#  type = list(any)
+  default = []
+}
+
+variable "extra_values" {
+  type = map(string)
+  default = {}
 }

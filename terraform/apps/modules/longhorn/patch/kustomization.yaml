@@ -5,13 +5,12 @@ kind: Kustomization
 
 # list of Resource Config to be Applied
 resources:
-  - all.yaml
-#  - metallb_pool.yaml
+  - resources.yaml
 
 patches:
-  - path: speaker_patch.yaml
+  - path: frontend.yaml
     target:
-      kind: DaemonSet
+      kind: Service
       name: ".*"
 #      namespace: network
 #  - path: metallb_pool.yaml

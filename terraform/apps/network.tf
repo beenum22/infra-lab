@@ -7,12 +7,14 @@ resource "kubernetes_namespace" "network" {
 module "nginx" {
   source = "./modules/nginx"
   namespace = "network"
+  domain = "wormhole.dera.ovh"
   depends_on = [kubernetes_namespace.network]
 }
 
 module "tailscale_router" {
   source = "./modules/tailscale-router"
   namespace = "network"
+  tag = "v1.50.1"
   replicas = 2
   authkey = var.tailscale_authkey
   routes = [
@@ -29,7 +31,7 @@ module "tailscale_vpn" {
   namespace = "network"
   replicas = 2
 //  image = "beenum/tailscale"
-  tag = "latest"
+  tag = "v1.50.1"
   authkey = var.tailscale_authkey
 //  mtu = "1350"
   routes = []

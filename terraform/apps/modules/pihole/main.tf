@@ -5,7 +5,7 @@ locals {
     "external-dns\\.alpha\\.kubernetes\\.io/internal-hostname" = replace(join("\\,", var.domains), ".", "\\.")
     "external-dns\\.alpha\\.kubernetes\\.io/target" = var.ingress_hostname
     "hajimari\\.io/enable" = var.publish
-    "hajimari\\.io/icon" = "simple-icons:pihole"
+    "hajimari\\.io/icon" = "https://upload.wikimedia.org/wikipedia/commons/0/00/Pi-hole_Logo.png"
     "hajimari\\.io/appName" = "pihole"
     "hajimari\\.io/group" = "Cluster"
     "hajimari\\.io/url" = "https://${var.domains[0]}/admin"

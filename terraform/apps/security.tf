@@ -4,11 +4,6 @@ resource "kubernetes_namespace" "security" {
   }
 }
 
-moved {
-  from = module.cert-manager
-  to = module.cert_manager
-}
-
 module "cert_manager" {
   source = "./modules/cert-manager"
   namespace = kubernetes_namespace.security.metadata[0].name
