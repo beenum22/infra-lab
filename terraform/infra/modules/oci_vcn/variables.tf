@@ -13,11 +13,6 @@ variable "compartment_id" {
   default = "ocid1.tenancy.oc1..aaaaaaaa6pope5hp7f7kxyhpiljh53ww4v2ehsiq4xzjz3u6rpxoqj2bdoua"
 }
 
-variable "enable_public_access" {
-  type = bool
-  default = true
-}
-
 variable "enable_ssh" {
   type = bool
   default = true
