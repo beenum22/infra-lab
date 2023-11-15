@@ -88,7 +88,3 @@ variable "tailscale_authkey" {
 variable "tailnet" {
   type = string
 }
-
-variable "node_ips" {
-  type = map(string)
-}

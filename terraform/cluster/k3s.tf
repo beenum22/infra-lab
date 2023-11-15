@@ -4,78 +4,42 @@ resource "random_string" "k3s_token" {
   override_special = "/@£$"
 }
 
-module "lab_k3s_0" {
+module "lab_k3s_init" {
   source = "./modules/k3s"
-  tag = "v1.27.1-k3s1"
-  hostname = data.terraform_remote_state.infra.outputs.instances["lab-k3s-0"]["instance_name"]
-  cluster_init = true
-  cluster_role = "server"
-  node_ips = {
-    ipv4 = module.tailscale_lab_k3s_0.ipv4_address,
-    ipv6 = module.tailscale_lab_k3s_0.ipv6_address
-  }
+  k3s_version = local.instances.lab-k3s-0.k3s_version
+  hostname = local.instances.lab-k3s-0.hostname
+  cluster_init = local.instances.lab-k3s-0.k3s_init
+  copy_kubeconfig = local.instances.lab-k3s-0.k3s_copy_kubeconfig
+  cluster_role = local.instances.lab-k3s-0.k3s_role
+  node_labels = local.instances.lab-k3s-0.k3s_node_labels
   token = random_string.k3s_token.result
+  tailscale_authkey = "tskey-auth-k6rWmo6CNTRL-ViFCSCmvYR4KPyCvHXWfR4aBvLzdvj5FT"
+  tailnet = var.tailscale_tailnet
   connection_info = {
-    user = data.terraform_remote_state.infra.outputs.instances["lab-k3s-0"]["instance_user"]
-    host = var.use_ipv6 ? "[${local.machine_0_ip}]" : local.machine_0_ip
+    user = local.instances.lab-k3s-0.user
+    host = local.instances.lab-k3s-0.host
     private_key = sensitive(file("~/.ssh/id_rsa"))
   }
   use_ipv6 = true
-  depends_on = [
-    module.tailscale_lab_k3s_0
-  ]
 }
 
-module "lab_k3s_1" {
-  providers = {
-    docker = docker.lab-k3s-1
-  }
+module "lab_k3s" {
   source = "./modules/k3s"
-  tag = "v1.27.1-k3s1"
-  hostname = data.terraform_remote_state.infra.outputs.instances["lab-k3s-1"]["instance_name"]
-  cluster_init = false
-  cluster_role = "server"
-  node_ips = {
-    ipv4 = module.tailscale_lab_k3s_1.ipv4_address,
-    ipv6 = module.tailscale_lab_k3s_1.ipv6_address
-  }
-  token = trim(file("~/.kube/node-token"), "\n")
-  api_host = var.use_ipv6 ? module.tailscale_lab_k3s_0.ipv6_address : module.tailscale_lab_k3s_0.ipv4_address
+  for_each = { for instance, info in local.instances: instance => info if info.k3s_init == false }
+  k3s_version = each.value["k3s_version"]
+  hostname = each.value["hostname"]
+  cluster_init = each.value["k3s_init"]
+  copy_kubeconfig = each.value["k3s_copy_kubeconfig"]
+  cluster_role = each.value["k3s_role"]
+  node_labels = each.value["k3s_node_labels"]
+  token = module.lab_k3s_init.node_token
+  api_host = module.lab_k3s_init.tailscale_ips[1]
+  tailscale_authkey = "tskey-auth-k6rWmo6CNTRL-ViFCSCmvYR4KPyCvHXWfR4aBvLzdvj5FT"
+  tailnet = var.tailscale_tailnet
   connection_info = {
-    user = data.terraform_remote_state.infra.outputs.instances["lab-k3s-1"]["instance_user"]
-    host = var.use_ipv6 ? "[${local.machine_1_ip}]" : local.machine_1_ip
+    user = each.value["user"]
+    host = each.value["host"]
     private_key = sensitive(file("~/.ssh/id_rsa"))
   }
   use_ipv6 = true
-  depends_on = [
-    module.lab_k3s_0,
-    module.tailscale_lab_k3s_1
-  ]
-}
-
-module "lab_k3s_2" {
-  providers = {
-    docker = docker.lab-k3s-2
-  }
-  source = "./modules/k3s"
-  tag = "v1.27.2-k3s1"
-  hostname = data.terraform_remote_state.infra.outputs.instances["lab-k3s-2"]["instance_name"]
-  cluster_init = false
-  cluster_role = "server"
-  node_ips = {
-    ipv4 = module.tailscale_lab_k3s_2.ipv4_address,
-    ipv6 = module.tailscale_lab_k3s_2.ipv6_address
-  }
-  token = trim(file("~/.kube/node-token"), "\n")
-  api_host = var.use_ipv6 ? module.tailscale_lab_k3s_0.ipv6_address : module.tailscale_lab_k3s_0.ipv4_address
-  connection_info = {
-    user = data.terraform_remote_state.infra.outputs.instances["lab-k3s-2"]["instance_user"]
-    host = var.use_ipv6 ? "[${local.machine_2_ip}]" : local.machine_2_ip
-    private_key = sensitive(file("~/.ssh/id_rsa"))
-  }
-  use_ipv6 = true
-  depends_on = [
-    module.lab_k3s_0,
-    module.tailscale_lab_k3s_2
-  ]
 }

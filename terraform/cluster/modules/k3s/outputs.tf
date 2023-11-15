@@ -1,6 +1,6 @@
 output "node_token" {
   value = var.cluster_init ? trim(file("~/.kube/node-token"), "\n") : ""
-//  sensitive = true
+  sensitive = true
 }
 
 output "api_host" {

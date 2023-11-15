@@ -12,17 +12,16 @@ variable "use_tailscale_ip" {
 
 variable "tailscale_apikey" {
   type = string
-  default = "tskey-api-kr11Wi6CNTRL-gwcSqTHLZNaWmdxHt9kkJaMbevtAZ7ZJ"
 }
 
 variable "tailscale_tailnet" {
   type = string
-  default = "tail15637.ts.net"
+  default = "tail03622.ts.net"
 }
 
 variable "tailscale_org" {
   type = string
-  default = "beenum22.github"
+  default = "muneeb.gandapur@gmail.com"
 }
 
 variable "use_ipv6" {

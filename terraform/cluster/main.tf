@@ -30,18 +30,18 @@ data "terraform_remote_state" "infra" {
 terraform {
   required_version = ">=1.2.9"
   required_providers {
-    docker = {
-      source = "kreuzwerker/docker"
-      version = "3.0.2"
-    }
+//    docker = {
+//      source = "kreuzwerker/docker"
+//      version = "3.0.2"
+//    }
     tailscale = {
       source = "tailscale/tailscale"
       version = "0.13.6"
     }
-    external = {
-      source = "hashicorp/external"
-      version = "2.3.1"
-    }
+//    external = {
+//      source = "hashicorp/external"
+//      version = "2.3.1"
+//    }
   }
 }
 
@@ -56,16 +56,43 @@ provider "tailscale" {
   tailnet = var.tailscale_org
 }
 
-provider "docker" {
-  host = "ssh://${data.terraform_remote_state.infra.outputs.instances["lab-k3s-0"]["instance_user"]}@${local.machine_0_ip}:22"
-}
-
-provider "docker" {
-  alias = "lab-k3s-1"
-  host = "ssh://${data.terraform_remote_state.infra.outputs.instances["lab-k3s-1"]["instance_user"]}@${local.machine_1_ip}:22"
-}
-
-provider "docker" {
-  alias = "lab-k3s-2"
-  host = "ssh://${data.terraform_remote_state.infra.outputs.instances["lab-k3s-2"]["instance_user"]}@${local.machine_2_ip}:22"
+locals {
+  instances = {
+    "lab-k3s-0" = {
+      user = data.terraform_remote_state.infra.outputs.instances["lab-k3s-0"]["instance_user"]
+      host = local.machine_0_ip
+      hostname = data.terraform_remote_state.infra.outputs.instances["lab-k3s-0"]["instance_name"]
+      k3s_version = "v1.27.3-rc1+k3s1"
+      k3s_init = true
+      k3s_role = "server"
+      k3s_copy_kubeconfig = true
+      k3s_node_labels = {
+        "dera.ovh/country" = "germany"
+      }
+    }
+    "lab-k3s-1" = {
+      user = data.terraform_remote_state.infra.outputs.instances["lab-k3s-1"]["instance_user"]
+      host = local.machine_1_ip
+      hostname = data.terraform_remote_state.infra.outputs.instances["lab-k3s-1"]["instance_name"]
+      k3s_version = "v1.27.3-rc1+k3s1"
+      k3s_init = false
+      k3s_role = "server"
+      k3s_copy_kubeconfig = false
+      k3s_node_labels = {
+        "dera.ovh/country" = "germany"
+      }
+    }
+    "lab-k3s-2" = {
+      user = data.terraform_remote_state.infra.outputs.instances["lab-k3s-2"]["instance_user"]
+      host = local.machine_2_ip
+      hostname = data.terraform_remote_state.infra.outputs.instances["lab-k3s-2"]["instance_name"]
+      k3s_version = "v1.27.3-rc1+k3s1"
+      k3s_init = false
+      k3s_role = "server"
+      k3s_copy_kubeconfig = false
+      k3s_node_labels = {
+        "dera.ovh/country" = "germany"
+      }
+    }
+  }
 }

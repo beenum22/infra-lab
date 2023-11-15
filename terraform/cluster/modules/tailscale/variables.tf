@@ -1,21 +1,24 @@
-variable "name" {
-  type = string
-  default = "tailscale"
+variable "connection_info" {
+  type = object({
+    user = string
+    host = string
+    private_key = string
+  })
+  default = {
+    user = null
+    host = null
+    private_key = null
+  }
 }
 
-variable "image" {
+variable "tailscale_version" {
   type = string
-  default = "tailscale/tailscale"
+  default = "v1.42.0"
 }
 
-variable "tag" {
+variable "tailscale_mtu" {
   type = string
-  default = "v1.40.0"
-}
-
-variable "volume_name" {
-  type = string
-  default = "tailscale-state"
+  default = "1350"
 }
 
 variable "authkey" {
@@ -26,11 +29,11 @@ variable "hostname" {
   type = string
 }
 
-variable "tailnet" {
+variable "os" {
   type = string
+  default = "oracle"
 }
 
-variable "routes" {
-  type = list
-  default = []
+variable "tailnet" {
+  type = string
 }
