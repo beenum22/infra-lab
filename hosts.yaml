@@ -1,0 +1,3 @@
+oracle-k3s-1:
+  host: ...
+  user: ocp

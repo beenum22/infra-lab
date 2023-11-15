@@ -170,11 +170,12 @@ resource "kubernetes_stateful_set" "this" {
           volume_mount {
             mount_path = "/dev/net/tun"
             name = "tun"
-            read_only = true
+            read_only = false
           }
           security_context {
 //            run_as_group = "1000"
 //            run_as_user = "1000"
+            privileged = true
             capabilities {
               add = [
                 "NET_ADMIN",
@@ -206,6 +207,10 @@ resource "kubernetes_stateful_set" "this" {
           env {
             name = "TS_EXTRA_ARGS"
             value = join(",", var.extra_args)
+          }
+          env {
+            name = "TS_TAILSCALED_EXTRA_ARGS"
+            value = "-tun kube-tailscale0"
           }
 //          env {
 //            name = "TS_DEBUG_MTU"

@@ -3,14 +3,19 @@ variable "name" {
   default = "k3s"
 }
 
-variable "k3s_version" {
+variable "image" {
+  type = string
+  default = "rancher/k3s"
+}
+
+variable "tag" {
   type = string
   default = "latest"
 }
 
-variable "use_sudo" {
-  type = bool
-  default = true
+variable "volume_name" {
+  type = string
+  default = "k3s-volume"
 }
 
 variable "cluster_init" {
@@ -49,9 +54,11 @@ variable "service_cidrs" {
   default = "10.43.0.0/16,2001:cafe:42:1::/112"
 }
 
-variable "node_labels" {
-  type = map(string)
-  default = {}
+variable "node_ips" {
+  type = object({
+    ipv4 = string
+    ipv6 = string
+  })
 }
 
 variable "hostname" {
@@ -76,19 +83,7 @@ variable "use_ipv6" {
   default = false
 }
 
-variable "copy_kubeconfig" {
+variable "test_shared_mounts" {
   type = bool
   default = false
-}
-
-variable "tailscale_authkey" {
-  type = string
-}
-
-variable "tailnet" {
-  type = string
-}
-
-variable "node_ips" {
-  type = map(string)
 }
