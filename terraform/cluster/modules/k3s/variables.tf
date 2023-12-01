@@ -81,10 +81,6 @@ variable "copy_kubeconfig" {
   default = false
 }
 
-variable "tailscale_authkey" {
-  type = string
-}
-
 variable "tailnet" {
   type = string
 }
