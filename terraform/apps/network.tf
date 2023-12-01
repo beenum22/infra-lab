@@ -14,7 +14,7 @@ module "nginx" {
 module "tailscale_router" {
   source = "./modules/tailscale-router"
   namespace = "network"
-  tag = "v1.50.1"
+  tag = "v1.54.0"
   replicas = 2
   authkey = var.tailscale_authkey
   routes = [
@@ -30,10 +30,8 @@ module "tailscale_vpn" {
   source = "./modules/tailscale-vpn"
   namespace = "network"
   replicas = 2
-//  image = "beenum/tailscale"
-  tag = "v1.50.1"
+  tag = "v1.54.0"
   authkey = var.tailscale_authkey
-//  mtu = "1350"
   routes = []
   depends_on = [kubernetes_namespace.network]
 }
