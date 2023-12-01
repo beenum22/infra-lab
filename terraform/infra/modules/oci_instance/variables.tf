@@ -58,28 +58,28 @@ variable "cloud_init_commands" {
 #    "systemctl status docker.service",
 #    "usermod -aG docker opc",
 #    "echo 'Installing Tailscale'",
-    "Install Tailscale",
-    "curl -fsSL https://tailscale.com/install.sh | sh",
-    "echo 'Allowing ports for K3s'",
-    "firewall-cmd --permanent --add-port=22/tcp",
-    "firewall-cmd --permanent --add-port=80/tcp",
-    "firewall-cmd --permanent --add-port=443/tcp",
-    "firewall-cmd --permanent --add-port=2376/tcp",
-    "firewall-cmd --permanent --add-port=2379/tcp",
-    "firewall-cmd --permanent --add-port=2380/tcp",
-    "firewall-cmd --permanent --add-port=6443/tcp",
-    "firewall-cmd --permanent --add-port=8472/udp",
-    "firewall-cmd --permanent --add-port=9099/tcp",
-    "firewall-cmd --permanent --add-port=10250/tcp",
-    "firewall-cmd --permanent --add-port=10254/tcp",
-    "firewall-cmd --permanent --add-port=30000-32767/tcp",
-    "firewall-cmd --permanent --add-port=30000-32767/udp",
-#    "firewall-cmd --permanent --zone=trusted --add-interface=tailscale0",  # TODO: Always add this
-    "firewall-cmd --permanent --zone=trusted --add-source=10.42.0.0/16",
-    "firewall-cmd --permanent --zone=trusted --add-source=2001:cafe:42:0::/56",
-    "firewall-cmd --permanent --zone=trusted --add-source=10.43.0.0/16",
-    "firewall-cmd --permanent --zone=trusted --add-source=2001:cafe:42:1::/112",
-    "firewall-cmd --reload"
+    # "Install Tailscale",
+    # "curl -fsSL https://tailscale.com/install.sh | sh",
+    # "echo 'Allowing ports for K3s'",
+    # "firewall-cmd --permanent --add-port=22/tcp",
+    # "firewall-cmd --permanent --add-port=80/tcp",
+    # "firewall-cmd --permanent --add-port=443/tcp",
+    # "firewall-cmd --permanent --add-port=2376/tcp",
+    # "firewall-cmd --permanent --add-port=2379/tcp",
+    # "firewall-cmd --permanent --add-port=2380/tcp",
+    # "firewall-cmd --permanent --add-port=6443/tcp",
+    # "firewall-cmd --permanent --add-port=8472/udp",
+    # "firewall-cmd --permanent --add-port=9099/tcp",
+    # "firewall-cmd --permanent --add-port=10250/tcp",
+    # "firewall-cmd --permanent --add-port=10254/tcp",
+    # "firewall-cmd --permanent --add-port=30000-32767/tcp",
+    # "firewall-cmd --permanent --add-port=30000-32767/udp",
+    # "firewall-cmd --permanent --zone=trusted --add-interface=tailscale0",
+    # "firewall-cmd --permanent --zone=trusted --add-source=10.42.0.0/16",
+    # "firewall-cmd --permanent --zone=trusted --add-source=2001:cafe:42:0::/56",
+    # "firewall-cmd --permanent --zone=trusted --add-source=10.43.0.0/16",
+    # "firewall-cmd --permanent --zone=trusted --add-source=2001:cafe:42:1::/112",
+    # "firewall-cmd --reload"
   ]
 }
 
@@ -116,26 +116,3 @@ variable "enable_public_access" {
   type = bool
   default = true
 }
-
-//
-//variable "vcn_cidr" {
-//  type = string
-//  default = "10.0.0.0/16"
-//}
-//
-//variable "name" {
-//  type = string
-//  default = "lab"
-//}
-//
-
-//
-//variable "ssh_public_keys" {
-//  type    = string
-//  default = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDXAxRvB9RCU94lxpipzMbYpXlICbLwU4HqEIgU9AvDwIsJ/6uJUGojcg67+fc1isCPlJjLVTD4hicH7hR533uOJbcHwrEQUMpwVN6IkZrRTsUUBwo9xYDxtVGaXFCLCihMWtrgC0esaY8Uy3rF/NEUq/HHFVYSJc7gEjarxkSlOEFiPae7d0HXrSSV1ysAfI9RPa7xok7CB0u1rpe3cOLzHvJlQosmZ/grWKh+Q7s3UXjIbKjU+5I5pI6enjuyxYxegFT77vDIUxRlAR/OTr0jLNAa/X2Fcr2+MoGIi4QvaJMEKtrMOrGnQW2t8DE8Tk8E+p4xvEkjiJe5jDN7bPt51gS60Jv4PEJmwbpJRN1bj0dGW2bPuGJP48lr+xqC6EBryhuGh7YyTPyqP/uEw8JOEbH0WpT8//r1J4oCJ2yRKPJBr5IG7K49fCuP/Aq9oy7sAK4TEULlX/gyuxYaO2XplIncjkw5J29y3Ph5jN3yjyFG0qcftoMw3d/yEKUZzGk= muneebhome@Muneebs-MacBook-Pro.local"
-//}
-//
-//variable "instances_count" {
-//  type = number
-//  default = 2
-//}
