@@ -13,12 +13,13 @@ variable "connection_info" {
 
 variable "tailscale_version" {
   type = string
-  default = "v1.42.0"
+  default = "1.52.0"
 }
 
 variable "tailscale_mtu" {
   type = string
-  default = "1350"
+#  default = "1280"
+   default = "1350"
 }
 
 variable "authkey" {
@@ -36,4 +37,14 @@ variable "os" {
 
 variable "tailnet" {
   type = string
+}
+
+variable "use_sudo" {
+  type = bool
+  default = true
+}
+
+variable "routes" {
+  type = list(string)
+  default = []
 }
