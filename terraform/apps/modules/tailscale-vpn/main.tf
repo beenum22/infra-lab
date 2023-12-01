@@ -8,30 +8,6 @@ resource "kubernetes_secret" "authkey" {
   }
 }
 
-locals {
-  test = flatten([ for id, country in var.vpn_countries : [for i in range(var.replicas): "${country}-${i}"] ])
-//  test = merge([
-//    for k1, v1 in local.x:
-//    {
-//    for  v2 in v1:
-//    "${k1}-${v2.p0}" => v2
-//    }
-//  ]...)
-}
-
-output "test" {
-  value = local.test
-}
-
-resource "kubernetes_secret" "state" {
-  for_each = toset(flatten([ for id, country in var.vpn_countries : [for i in range(var.replicas): "${country}-${i}"] ]))
-  metadata {
-    name = "${var.name}-${each.value}"
-    namespace = var.namespace
-  }
-  type = "Opaque"
-}
-
 resource "kubernetes_service_account" "this" {
   metadata {
     name = var.name
@@ -137,9 +113,6 @@ resource "kubernetes_stateful_set" "this" {
               }
             }
           }
-        }
-        image_pull_secrets {
-          name = "regcred"
         }
         volume {
           name = "tun"

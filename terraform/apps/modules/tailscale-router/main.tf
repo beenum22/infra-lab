@@ -8,20 +8,6 @@ resource "kubernetes_secret" "authkey" {
   }
 }
 
-moved {
-  from = kubernetes_secret.this
-  to = kubernetes_secret.state
-}
-
-resource "kubernetes_secret" "state" {
-  count = var.replicas
-  metadata {
-    name = "${var.name}-${count.index}"
-    namespace = var.namespace
-  }
-  type = "Opaque"
-}
-
 resource "kubernetes_service_account" "this" {
   metadata {
     name = var.name
@@ -46,7 +32,7 @@ resource "kubernetes_role" "this" {
   rule {
     api_groups = [""]
     resources  = ["secrets"]
-    resource_names = flatten(kubernetes_secret.state[*].metadata[*].name)
+    resource_names = flatten([for i in range(var.replicas): "${var.name}-${i}"])
     verbs      = ["get", "update", "patch"]
   }
 }
