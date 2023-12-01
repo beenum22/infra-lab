@@ -75,6 +75,7 @@ locals {
       tailscale_config = {
         version = "1.54.0"
         auth_key = var.tailscale_auth_key
+        exit_node = false
       }
     }
     "lab-k3s-1" = {
@@ -93,6 +94,7 @@ locals {
       tailscale_config = {
         version = "1.54.0"
         auth_key = var.tailscale_auth_key
+        exit_node = true
       }
     }
     "lab-k3s-2" = {
@@ -114,6 +116,7 @@ locals {
       tailscale_config = {
         version = "1.54.0"
         auth_key = var.tailscale_auth_key
+        exit_node = true
       }
     }
   }

@@ -19,6 +19,11 @@ locals {
   upgrade = {
     oracle = "curl -fsSL https://tailscale.com/install.sh | sh"
   }
+  set_config_flags = join(";", concat([
+    "${var.use_sudo ? "sudo " : ""}tailscale set --advertise-exit-node=${var.exit_node}"
+  ], [
+    for flag in var.set_flags : "${var.use_sudo ? "sudo " : ""}tailscale set ${flag}"
+  ]))
   uninstall = {
     oracle = join(";", [
       "${var.use_sudo ? "sudo " : ""}tailscale down",
@@ -62,6 +67,28 @@ resource "null_resource" "install" {
     inline = [
 //      "sudo tailscale down",
       self.triggers.uninstall_script
+    ]
+  }
+}
+
+resource "null_resource" "config" {
+  depends_on = [null_resource.install]
+  triggers = {
+    host = var.connection_info.host
+    user = var.connection_info.user
+    private_key = var.connection_info.private_key
+    config_flags = local.set_config_flags
+  }
+  connection {
+    type     = "ssh"
+    user     = self.triggers.user
+    private_key = self.triggers.private_key
+    host     = self.triggers.host
+  }
+  provisioner "remote-exec" {
+    on_failure = fail
+    inline = [
+      self.triggers.config_flags
     ]
   }
 }

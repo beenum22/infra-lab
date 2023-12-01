@@ -60,4 +60,5 @@ module "mesh" {
   tailscale_version = each.value["tailscale_config"]["version"]
   tailnet = var.tailscale_tailnet
   hostname = each.key
+  exit_node = each.value["tailscale_config"]["exit_node"]
 }

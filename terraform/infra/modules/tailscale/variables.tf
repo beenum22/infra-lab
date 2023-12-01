@@ -48,3 +48,13 @@ variable "routes" {
   type = list(string)
   default = []
 }
+
+variable "exit_node" {
+  type = bool
+  default = false
+}
+
+variable "set_flags" {
+  type = list(string)
+  default = []
+}
