@@ -1,13 +1,6 @@
-//variable "hosts" {
-//  type = list(object({
-//    host_user = string
-//    host_ip = string
-//  }))
-//}
-
 variable "use_tailscale_ip" {
   type = bool
-  default = false
+  default = true
 }
 
 variable "tailscale_apikey" {
@@ -24,7 +17,8 @@ variable "tailscale_org" {
   default = "muneeb.gandapur@gmail.com"
 }
 
-variable "use_ipv6" {
-  type = bool
-  default = true
+# loafoe SSH provider crashes for IPv6
+variable "ip_type" {
+  type = string
+  default = "ipv4"
 }
