@@ -39,6 +39,11 @@ variable "api_host" {
   default = null
 }
 
+variable "kubeconfig" {
+  type = string
+  default = null
+}
+
 variable "cluster_cidrs" {
   type = string
   default = "10.42.0.0/16,2001:cafe:42:0::/56"
@@ -77,6 +82,11 @@ variable "use_ipv6" {
 }
 
 variable "copy_kubeconfig" {
+  type = bool
+  default = false
+}
+
+variable "root_node" {
   type = bool
   default = false
 }

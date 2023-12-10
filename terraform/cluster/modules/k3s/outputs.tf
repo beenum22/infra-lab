@@ -1,8 +1,3 @@
-output "node_token" {
-  value = try(trimspace(ssh_resource.node_token[0].result), null)
-  sensitive = true
-}
-
 output "api_host" {
   value = var.api_host
 }
