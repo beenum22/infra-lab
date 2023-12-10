@@ -22,3 +22,16 @@ resource "kubernetes_namespace" "storage" {
 #    kubernetes_namespace.storage
 #  ]
 #}
+
+module "velero" {
+  source = "./modules/velero"
+  namespace = kubernetes_namespace.storage.metadata[0].name
+  backup_provider = "aws"
+  backup_storage_bucket = "lab-k3s-backup"
+  volume_snapshot_bucket = "lab-k3s-snapshots"
+  access_key_id = var.velero_b2_key_id
+  secret_access_key = var.velero_b2_application_key
+  depends_on = [
+    kubernetes_namespace.storage
+  ]
+}
