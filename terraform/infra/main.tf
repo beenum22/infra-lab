@@ -71,14 +71,17 @@ locals {
         vcpus = 1
         memory = 6
         boot_volume = 50
+        block_volumes = []
       }
       tailscale_config = {
         version = "1.54.0"
         auth_key = var.tailscale_auth_key
         exit_node = false
+        mtu = 1350
+        routes = "10.42.2.0/24,2001:cafe:42:3::/64"
       }
     }
-    "lab-k3s-1" = {
+    "oci-fra-k3s-1" = {
       managed = false
       provider = "oracle"
       user = "opc"
@@ -90,14 +93,16 @@ locals {
         vcpus = 1
         memory = 6
         boot_volume = 50
+        block_volumes = []
       }
       tailscale_config = {
         version = "1.54.0"
         auth_key = var.tailscale_auth_key
         exit_node = true
+        mtu = "1350"
       }
     }
-    "lab-k3s-2" = {
+    "oci-fra-k3s-2" = {
       managed = false
       provider = "oracle"
       user = "opc"
@@ -112,11 +117,49 @@ locals {
         vcpus = 2
         memory = 12
         boot_volume = 50
+        block_volumes = [
+          50
+        ]
       }
       tailscale_config = {
         version = "1.54.0"
         auth_key = var.tailscale_auth_key
         exit_node = true
+        mtu = "1350"
+      }
+    }
+    "byte-fra-k3s-0" = {
+      managed = true
+      provider = "bytehosting"
+      user = "k3s"
+      host = {
+        ipv4 = "45.134.39.35"
+        ipv6 = "2a0e:97c0:3ea:29::1"
+      }
+      hostname = "byte-fra-k3s-0"
+      provider_config = {}
+      tailscale_config = {
+        version = "1.54.0"
+        auth_key = var.tailscale_auth_key
+        exit_node = false
+        mtu = "1280"
+      }
+    }
+    "hzn-neu-k3s-0" = {
+      managed = true
+      provider = "hetzner"
+      user = "k3s"
+      host = {
+        ipv4 = "78.46.252.116"
+        ipv6 = "2a01:4f8:c0c:4015::1"
+      }
+      hostname = "hzn-neu-k3s-0"
+      provider_config = {}
+      tailscale_config = {
+        version = "1.54.0"
+        auth_key = var.tailscale_auth_key
+        exit_node = false
+        mtu = "1280"
       }
     }
   }

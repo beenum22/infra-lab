@@ -18,8 +18,8 @@ output "nodes" {
       user = info.user
       hostname = node
       ips = {
-        ipv4 = info["managed"] == false ? (info["provider"] == "oracle" ? module.oracle_instances[node].primary_ipv4_address : "") : node["host"]
-        ipv6 = info["managed"] == false ? (info["provider"] == "oracle" ? module.oracle_instances[node].primary_ipv6_address : "") : node["host"]
+        ipv4 = info["managed"] == false ? (info["provider"] == "oracle" ? module.oracle_instances[node].primary_ipv4_address : "") : info["host"]["ipv4"]
+        ipv6 = info["managed"] == false ? (info["provider"] == "oracle" ? module.oracle_instances[node].primary_ipv6_address : "") : info["host"]["ipv6"]
       }
       tailscale_ips = {
         ipv4 = module.mesh[node].ipv4_address
