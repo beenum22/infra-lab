@@ -56,7 +56,7 @@ module "instance" {
   instance_flex_ocpus        = length(regexall("Flex", var.shape_name)) > 0 ? var.vcpus : null
   instance_flex_memory_in_gbs = length(regexall("Flex", var.shape_name)) > 0 ? var.memory : null
   boot_volume_size_in_gbs    = var.boot_volume
-  block_storage_sizes_in_gbs = []
+  block_storage_sizes_in_gbs = var.block_volumes
   shape                      = var.shape_name
   instance_state             = "RUNNING" # RUNNING or STOPPED
   boot_volume_backup_policy  = "disabled" # disabled, gold, silver or bronze

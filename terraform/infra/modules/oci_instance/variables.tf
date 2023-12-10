@@ -43,6 +43,11 @@ variable "boot_volume" {
   default = 47
 }
 
+variable "block_volumes" {
+  type = list(number)
+  default = []
+}
+
 variable "cloud_init_commands" {
   type = list(string)
   default = [
