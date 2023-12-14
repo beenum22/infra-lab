@@ -1,17 +1,3 @@
-output "oracle_vcn" {
-  description = "Oracle VCN and Gateways information"
-  value = module.oracle_vcn.vcn
-}
-
-output "oracle_instances" {
-  description = "Oracle compute instances"
-  value       = module.oracle_instances
-}
-
-output "tailscale_ips" {
-  value = module.mesh
-}
-
 output "nodes" {
   value = {
     for node, info in local.instances : node => {

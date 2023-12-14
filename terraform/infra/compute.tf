@@ -16,6 +16,18 @@ resource "tls_private_key" "this" {
   rsa_bits = "2048"
 }
 
+resource "local_file" "ssh_private_key" {
+  filename = pathexpand("~/.ssh/lab_id_rsa")
+  content = tls_private_key.this.private_key_pem
+  file_permission = "0400"
+}
+
+resource "local_file" "ssh_public_key" {
+  filename = pathexpand("~/.ssh/lab_id_rsa.pub")
+  content = tls_private_key.this.public_key_openssh
+  file_permission = "0400"
+}
+
 module "oracle_instances" {
   for_each = { for instance, info in local.instances : instance => info if info.provider == "oracle" }
   source = "./modules/oci_instance"
@@ -33,20 +45,6 @@ module "oracle_instances" {
     }
   ]
   ssh_public_keys = concat([trimspace(tls_private_key.this.public_key_openssh)], var.ssh_public_keys)
-}
-
-module "hardening" {
-  for_each = local.instances
-  source = "./modules/firewall-cmd"
-  connection_info = {
-    user = each.value["user"]
-    host = each.value["managed"] == false && each.value["provider"] == "oracle" ? module.oracle_instances[each.key].primary_ipv6_address : each.value["host"]["ipv6"]
-    private_key = tls_private_key.this.private_key_openssh
-  }
-  services = [
-    "k3s",
-    "tailscale"
-  ]
 }
 
 module "mesh" {
@@ -78,24 +76,13 @@ module "mesh" {
 # Install firewall-cmd # https://linux.how2shout.com/how-to-install-and-use-firewalld-on-almalinux-8/
 # Install jq
 
-# Script:
-#sudo dnf install jq net-tools firewalld -y
-#sudo systemctl unmask firewalld
-#sudo systemctl start firewalld
-#sudo systemctl enable firewalld
-#
-#useradd -m -s /bin/bash k3s
-#echo "Upside-Reliably8-Villain" | passwd k3s --stdin
-#usermod -aG wheel k3s
-#
-#su k3s
-#mkdir -p ~/.ssh
-#touch ~/.ssh/authorized_keys
-#echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDP1Hzjpj9rEZJHtSQWeFOqUnMHZFjw8J71p1CQxRpRg9I2k+9Fs7NbcuqjDVfloYtVAujdsZdDTI761isMiMSvcD/N42Bq73NvRu9za456QymCF/GEQ3Qvjjbq7pmASUNnsKXoyReKqKcgxB3DLmEKDlDK3enSCRWDN7MhKmm3I75ynfOb649Qx7HrG+O/1QkxCMSugZNHMfdYGUV3VV2LR85PWAA5TX3LkAPC6ka/fpWVpW0acknGIGkK1IMUwv3VPOBWw0ipvft9R+JA115lEVeOGZ4PJ2Xonqs4HwaL+uqs7/4FiEyREN88w/FojhMZUBRADuH1w0gmMkYm7kQv\nssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC9iQnzPq0/lLg359hzQiVSnf33PAzCYaFu8gW1OIaftA2+/fUtJoPCoMBNB4TDTA5ZnHfKEmR9/ktFr4AWOQ/4oCQP2uC12zci9Lpep/aYMmXmgAGs+35sZvf1Ob44CuEw/vvwfViYNt8HAc0BTo1+Sj5gKp8QuBVY70ezS0yw+VEvHnxbXDbXxVRId1w7gANwBAhyRviKjFWSULPJsPY+t0HNoFozERnBDaov3wL7TPIy2WIHr6BE/lOwlzoqRMd8qtAIEbrDTNfZwmY+2AYvhjicLQ6H5jCfHW6UFptlV4UN9UijdVZ+thF4vM8i6huHUx87ljsyOtqwLqrwfh9t muneebahmad@beenum.local" > ~/.ssh/authorized_keys
-#
 #PasswordAuthentication,PermitRootLogin,ChallengeResponseAuthentication
 #sudo vi /etc/ssh/sshd_config
 #sudo systemctl reload sshd
 #
 #sudo visudo
 #k3s ALL=(ALL) NOPASSWD: ALL
+
+#PasswordAuthentication,PermitRootLogin,ChallengeResponseAuthentication
+#sudo nano /etc/ssh/sshd_config
+#sudo systemctl reload sshd

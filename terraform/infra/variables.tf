@@ -56,3 +56,29 @@ variable "tailscale_auth_key" {
   type = string
   default = "muneeb.gandapur@gmail.com"
 }
+
+variable "users_setup" {
+  type = map(object(
+    {
+      sudo = bool
+      exists = bool
+      password = optional(string)
+    }
+  ))
+  default = {}
+}
+
+variable "ansible_destroy" {
+  type = bool
+  default = false
+}
+
+variable "ansible_debug" {
+  type = bool
+  default = false
+}
+
+variable "ansible_replay" {
+  type = bool
+  default = true
+}
