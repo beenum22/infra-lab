@@ -138,6 +138,21 @@ locals {
         "dera.ovh/type" = "vm"
       }
     }
+    "netcup-neu-k3s-0" = {
+      user = data.terraform_remote_state.infra.outputs.nodes["netcup-neu-k3s-0"]["user"]
+      host = var.use_tailscale_ip ? data.terraform_remote_state.infra.outputs.nodes["netcup-neu-k3s-0"]["tailscale_ips"][var.ip_type] : data.terraform_remote_state.infra.outputs.nodes["netcup-neu-k3s-0"]["ips"][var.ip_type]
+      hostname = data.terraform_remote_state.infra.outputs.nodes["netcup-neu-k3s-0"]["hostname"]
+      k3s_version = "v1.28.3+k3s2"
+      k3s_init = false
+      k3s_root_node = false
+      k3s_role = "agent"
+      k3s_copy_kubeconfig = false
+      k3s_node_labels = {
+        "dera.ovh/country" = "germany"
+        "dera.ovh/provider" = "netcup"
+        "dera.ovh/type" = "vm"
+      }
+    }
   }
 
   leader_node = [ for instance, info in local.instances: instance if info.k3s_init == true && info.k3s_root_node == true && info.k3s_role == "server" ][0]
