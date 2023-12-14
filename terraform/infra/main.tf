@@ -39,10 +39,20 @@ terraform {
       source = "loafoe/ssh"
       version = "2.6.0"
     }
+    ansible = {
+      source = "ansible/ansible"
+      version = "1.1.0"
+    }
+    local = {
+      source = "hashicorp/local"
+      version = "2.4.0"
+    }
   }
 }
 
 provider "tls" {}
+
+provider "ansible" {}
 
 provider "tailscale" {
   api_key = var.tailscale_apikey
@@ -74,7 +84,7 @@ locals {
         block_volumes = []
       }
       tailscale_config = {
-        version = "1.54.0"
+        version = "1.56.0"
         auth_key = var.tailscale_auth_key
         exit_node = false
         mtu = 1350
@@ -96,7 +106,7 @@ locals {
         block_volumes = []
       }
       tailscale_config = {
-        version = "1.54.0"
+        version = "1.56.0"
         auth_key = var.tailscale_auth_key
         exit_node = true
         mtu = "1350"
@@ -122,7 +132,7 @@ locals {
         ]
       }
       tailscale_config = {
-        version = "1.54.0"
+        version = "1.56.0"
         auth_key = var.tailscale_auth_key
         exit_node = true
         mtu = "1350"
@@ -139,7 +149,7 @@ locals {
       hostname = "byte-fra-k3s-0"
       provider_config = {}
       tailscale_config = {
-        version = "1.54.0"
+        version = "1.56.0"
         auth_key = var.tailscale_auth_key
         exit_node = false
         mtu = "1280"
@@ -156,9 +166,26 @@ locals {
       hostname = "hzn-neu-k3s-0"
       provider_config = {}
       tailscale_config = {
-        version = "1.54.0"
+        version = "1.56.0"
         auth_key = var.tailscale_auth_key
         exit_node = false
+        mtu = "1280"
+      }
+    }
+    "netcup-neu-k3s-0" = {
+      managed = true
+      provider = "netcup"
+      user = "k3s"
+      host = {
+        ipv4 = "46.232.249.165"
+        ipv6 = "2a03:4000:2b:74:6466:f3ff:fe64:150"
+      }
+      hostname = "netcup-neu-k3s-0"
+      provider_config = {}
+      tailscale_config = {
+        version = "1.56.0"
+        auth_key = var.tailscale_auth_key
+        exit_node = true
         mtu = "1280"
       }
     }
