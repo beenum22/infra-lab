@@ -39,7 +39,6 @@ resource "ansible_playbook" "env" {
     default_state = var.default_state
     packages =  join(",", var.packages)
     hostname = var.hostname
-    packages_v = jsonencode(var.packages_v)
 #    tailscale_auth_key = var.tailscale_config.auth_key
 #    tailscale_args = "--accept-dns=true --accept-routes=true --advertise-exit-node=${var.tailscale_config.exit_node}"
 #    tailscale_state = var.tailscale_config.upgrade ? "latest" : var.default_state

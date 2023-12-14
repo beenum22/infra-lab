@@ -44,14 +44,6 @@ variable "packages" {
   default = []
 }
 
-variable "packages_v" {
-  type = list(object({
-    name = string
-    version = string
-  }))
-  default = []
-}
-
 variable "hostname" {
   type = string
 }
