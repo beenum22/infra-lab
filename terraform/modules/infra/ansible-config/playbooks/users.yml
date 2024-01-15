@@ -1,0 +1,35 @@
+- name: Setup Linux Users
+  become: yes
+  hosts: all
+  tasks:
+    - name: Add Users for Debian
+      ansible.builtin.user:
+        name: "{{ user }}"
+        state: "present"
+        groups: "sudo"
+        append: yes
+        password: "{{ user_password }}"
+      when: "ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'"
+
+    - name: Add Users for RHEL
+      ansible.builtin.user:
+        name: "{{ user }}"
+        state: "present"
+        groups: "wheel"
+        append: yes
+        password: "{{ user_password }}"
+      when: "ansible_distribution == 'AlmaLinux' or ansible_distribution == 'OracleLinux' or ansible_distribution == 'Red Hat' or ansible_distribution == 'CentOS' or ansible_distribution == 'Fedora'"
+
+    - name: Add Authorized SSH Keys
+      ansible.posix.authorized_key:
+        user: "{{ user }}"
+        state: "present"
+        key: "{{ item }}"
+      loop: "{{ ssh_keys.split(',') }}"
+
+    - name: Allow the user to run sudo commands without password
+      community.general.sudoers:
+        name: "{{ user }}"
+        state: "present"
+        user: "{{ user }}"
+        commands: ALL
