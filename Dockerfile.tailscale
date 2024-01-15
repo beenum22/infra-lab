@@ -1,8 +1,0 @@
-FROM tailscale/tailscale:unstable
-
-RUN apk update
-RUN apk add nftables
-RUN rm -f /sbin/iptables
-RUN ln -s /sbin/xtables-nft-multi /sbin/iptables
-RUN rm -f /sbin/ip6tables
-RUN ln -s /sbin/xtables-nft-multi /sbin/ip6tables
