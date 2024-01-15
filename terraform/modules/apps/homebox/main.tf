@@ -140,7 +140,7 @@ resource "kubernetes_service" "this" {
   }
   spec {
     selector = {
-      app = var.name
+      "app.kubernetes.io/name" = var.name
     }
     port {
       name = "http"
