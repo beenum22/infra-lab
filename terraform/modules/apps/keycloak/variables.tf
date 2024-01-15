@@ -5,32 +5,27 @@ variable "kubeconfig" {
 
 variable "name" {
   type = string
-  default = "jellyfin"
+  default = "keycloak"
 }
 
 variable "namespace" {
   type = string
-  default = "apps"
+  default = "security"
 }
 
-variable "storage_class" {
+variable "chart_name" {
   type = string
-  default = "local-path"
+  default = "keycloak"
 }
 
-variable "replicas" {
-  type = number
-  default = 1
-}
-
-variable "image" {
+variable "chart_version" {
   type = string
-  default = "linuxserver/jellyfin"
+  default = "18.1.0"
 }
 
-variable "tag" {
+variable "chart_url" {
   type = string
-  default = "latest"
+  default = "https://charts.bitnami.com/bitnami"
 }
 
 variable "ingress_class" {
@@ -38,7 +33,7 @@ variable "ingress_class" {
   default = "nginx"
 }
 
-variable "ingress_host" {
+variable "ingress_hostname" {
   type = string
 }
 
@@ -48,9 +43,10 @@ variable "issuer" {
 
 variable "domains" {
   type = list(string)
+  default = []
 }
 
-variable "publish" {
-  type = bool
-  default = false
+variable "extra_values" {
+  type = map(string)
+  default = {}
 }
