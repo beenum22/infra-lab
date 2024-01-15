@@ -1,6 +1,0 @@
-#!/bin/bash
-
-#cat > modules/longhorn/patch/resources.yaml
-cat <&0 > modules/longhorn/patch/resources.yaml
-kubectl kustomize modules/longhorn/patch
-rm modules/longhorn/patch/resources.yaml
