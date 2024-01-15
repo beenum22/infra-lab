@@ -116,6 +116,24 @@ locals {
         target      = "newtab"
         provider    = "Tailscale"
         id          = "5_2647_tailscale"
+      },
+      {
+        title       = "OVH Cloud"
+        description = "Public Domain Provider"
+        icon        = "hl-ovh"
+        url         = "https://www.ovh.com/manager/#/web/domain/dera.ovh/zone"
+        target      = "newtab"
+        provider    = "OVH"
+        id          = "6_2647_ovh"
+      },
+      {
+        title       = "Github Repo"
+        description = "Github Repo hosting the IaC"
+        icon        = "hl-github"
+        url         = "https://github.com/beenum22/pi-pi"
+        target      = "newtab"
+        provider    = "Github"
+        id          = "7_2647_git"
       }
     ]
   }]

@@ -1,0 +1,7 @@
+Boundaries:
+    - Infra Deployment
+    - Infra Configuration
+    - Mesh Network
+    - K3s Cluster
+    - Foundational Apps
+    - User Apps
