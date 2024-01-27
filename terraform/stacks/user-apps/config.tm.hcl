@@ -17,10 +17,13 @@ generate_hcl "_apps.tf" {
       }
     }
 
-    resource "kubernetes_persistent_volume_claim" "shared_data" {
+    resource "kubernetes_persistent_volume_claim" "nfs_share" {
       metadata {
-        name = "shared-data"
+        name = "nfs-share"
         namespace = kubernetes_namespace.apps.metadata[0].name
+        labels = {
+          "app.kubernetes.io/name" = "nfs-share"
+        }
       }
       spec {
         access_modes = ["ReadWriteMany"]
@@ -33,18 +36,50 @@ generate_hcl "_apps.tf" {
       }
     }
 
-    module "jellyfin" {
-      source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/jellyfin"
+#    module "jellyfin" {
+#      source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/jellyfin"
+#      namespace = kubernetes_namespace.apps.metadata[0].name
+#      ingress_hostname = global.project.ingress_hostname
+#      issuer = global.project.cert_manager_issuer
+#      config_storage = "1Gi"
+#      storage_class = global.project.storage_class
+#      shared_pvc = kubernetes_persistent_volume_claim.nfs_share.metadata.0.name
+#      domains = [
+#        "jellyfin.dera.ovh"
+#      ]
+#      publish = true
+#      depends_on = [kubernetes_namespace.apps]
+#    }
+
+    module "radarr" {
+      source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/radarr"
       namespace = kubernetes_namespace.apps.metadata[0].name
       ingress_hostname = global.project.ingress_hostname
       issuer = global.project.cert_manager_issuer
       config_storage = "1Gi"
       storage_class = global.project.storage_class
-      shared_pvc = kubernetes_persistent_volume_claim.shared_data.metadata.0.name
-      domains = [
-        "jellyfin.dera.ovh"
+      shared_pvcs = [
+        kubernetes_persistent_volume_claim.nfs_share.metadata.0.name
       ]
-      publish = true
+      domains = [
+        "radarr.dera.ovh"
+      ]
+      depends_on = [kubernetes_namespace.apps]
+    }
+
+    module "prowlarr" {
+      source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/prowlarr"
+      namespace = kubernetes_namespace.apps.metadata[0].name
+      ingress_hostname = global.project.ingress_hostname
+      issuer = global.project.cert_manager_issuer
+      config_storage = "1Gi"
+      storage_class = global.project.storage_class
+      shared_pvcs = [
+        kubernetes_persistent_volume_claim.nfs_share.metadata.0.name
+      ]
+      domains = [
+        "prowlarr.dera.ovh"
+      ]
       depends_on = [kubernetes_namespace.apps]
     }
 
