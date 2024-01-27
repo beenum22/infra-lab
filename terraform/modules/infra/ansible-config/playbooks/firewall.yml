@@ -33,6 +33,34 @@
         zone: trusted
         state: enabled
 
+    - name: Enable IPv4 Masquerading on trusted zone
+      ansible.posix.firewalld:
+        permanent: true
+        masquerade: true
+        zone: trusted
+        state: enabled
+
+    - name: Enable IPv6 Masquerading on trusted zone
+      ansible.posix.firewalld:
+        permanent: true
+        rich_rule: rule family=ipv6 masquerade
+        zone: trusted
+        state: enabled
+
+    - name: Enable Masquerading on public zone
+      ansible.posix.firewalld:
+        permanent: true
+        masquerade: true
+        zone: public
+        state: enabled
+
+    - name: Enable IPv6 Masquerading on public zone
+      ansible.posix.firewalld:
+        permanent: true
+        rich_rule: rule family=ipv6 masquerade
+        zone: public
+        state: enabled
+
     - name: Reload firewalld
       ansible.builtin.service:
         name: firewalld
