@@ -2,7 +2,7 @@ terraform {
   required_providers {
     tailscale = {
       source = "tailscale/tailscale"
-      version = "0.13.6"
+      version = ">= 0.13.13"
     }
     ssh = {
       source = "loafoe/ssh"
@@ -84,7 +84,6 @@ resource "ssh_resource" "install" {
   ]
 }
 
-# TODO: Check status would fail for the agent node if we haven't passed kubeconfig because agents don't have kubeconfigs.
 resource "ssh_resource" "check_status" {
   host = var.connection_info.host
   user = var.connection_info.user
