@@ -11,7 +11,7 @@ globals "terraform" {
   }
 }
 
-generate_hcl "_terramate-ansible.tf" {
+generate_hcl "_ansible.tf" {
   content {
     locals {
       nodes = global.infrastructure.instances
@@ -25,6 +25,7 @@ generate_hcl "_terramate-ansible.tf" {
       connection_info = {
         host             = tm_hcl_expression("data.terraform_remote_state.infra_deployment_stack_state.outputs.node_ips[each.key].ipv6")
         user             = each.value.user
+        port             = each.value.port
         private_key_file = pathexpand("~/.ssh/${global.infrastructure.config.ssh_key_file_name}")
       }
       users           = global.infrastructure.config.users
@@ -37,7 +38,7 @@ generate_hcl "_terramate-ansible.tf" {
   }
 }
 
-generate_hcl "_terramate-tailscale.tf" {
+generate_hcl "_tailscale.tf" {
   content {
     locals {
       use_ipv6 = global.infrastructure.config.use_ipv6
@@ -59,65 +60,13 @@ generate_hcl "_terramate-tailscale.tf" {
       tailscale_mtu     = each.value.tailscale_config.mtu
       set_flags         = []
     }
-
-    moved {
-      from = module.tailscale_oci_fra_k3s_0
-      to = module.tailscale["oci-fra-k3s-0"]
-    }
-
-    moved {
-      from = module.tailscale_oci_fra_k3s_1
-      to = module.tailscale["oci-fra-k3s-1"]
-    }
-
-    moved {
-      from = module.tailscale_oci_fra_k3s_2
-      to = module.tailscale["oci-fra-k3s-2"]
-    }
-
-    moved {
-      from = module.tailscale_byte_fra_k3s_0
-      to = module.tailscale["byte-fra-k3s-0"]
-    }
-
-    moved {
-      from = module.tailscale_hzn_neu_k3s_0
-      to = module.tailscale["hzn-neu-k3s-0"]
-    }
-
-    moved {
-      from = module.tailscale_netcup_neu_k3s_0
-      to = module.tailscale["netcup-neu-k3s-0"]
-    }
-
-#    tm_dynamic "module" {
-#      for_each = global.infrastructure.instances
-#      iterator = item
-#      labels   = ["tailscale_${tm_replace(item.key, "-", "_")}"]
-#      content {
-#        source = "${terramate.root.path.fs.absolute}/terraform/modules/infra/tailscale"
-#        connection_info = {
-#          host             = tm_hcl_expression("data.terraform_remote_state.infra_deployment_stack_state.outputs.node_ips[\"${item.key}\"].ipv6")
-#          user             = item.value.user
-#          private_key = pathexpand("~/.ssh/${global.infrastructure.config.ssh_key_file_name}")
-#          private_key = tm_hcl_expression("data.terraform_remote_state.infra_deployment_stack_state.outputs.ssh_private_key")
-#        }
-#        authkey           = item.value.tailscale_config.auth_key
-#        tailscale_version = item.value.tailscale_config.version
-#        tailnet           = global.infrastructure.tailscale.tailnet
-#        hostname          = item.key
-#        exit_node         = item.value.tailscale_config.exit_node
-#        tailscale_mtu     = item.value.tailscale_config.mtu
-#        set_flags         = []
-#      }
-#    }
   }
 }
 
-generate_hcl "_terramate-outputs.tf" {
+generate_hcl "_outputs.tf" {
   content {
     output "k3s_passwords" {
-      value = { for node, info in local.nodes : node => module.ansible_config[node].passwords["k3s"].bcrypt_hash}
+      value = { for node, info in module.ansible_config : node => info.passwords["k3s"]}
       sensitive = true
     }
 
@@ -129,17 +78,5 @@ generate_hcl "_terramate-outputs.tf" {
         }
       }
     }
-
-#    tm_dynamic "output" {
-#      for_each = global.infrastructure.instances
-#      iterator = item
-#      labels   = ["${tm_replace(item.key, "-", "_")}_tailscale_ips"]
-#      attributes = {
-#        value = {
-#          ipv4 = tm_hcl_expression("module.tailscale_${tm_replace(item.key, "-", "_")}.ipv4_address")
-#          ipv6 = tm_hcl_expression("module.tailscale_${tm_replace(item.key, "-", "_")}.ipv6_address")
-#        }
-#      }
-#    }
   }
 }
