@@ -1,4 +1,3 @@
 output "passwords" {
-  value = random_password.users
-  sensitive = true
+  value = { for k, v in random_password.users : k => v.result }
 }

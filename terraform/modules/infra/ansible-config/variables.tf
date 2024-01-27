@@ -10,18 +10,12 @@ variable "connection_info" {
   type = object({
     user = string
     host = string
+    port = number
     private_key_file = string
   })
 }
 
 variable "users" {
-#  type = list(
-#    object({
-#      name = string
-#      sudo = bool
-#      exists = bool
-#  }))
-#  default = []
   type = map(object({
     sudo = bool
     password = optional(string)
@@ -54,7 +48,3 @@ variable "zfs_config" {
     devices = map(any)
   })
 }
-
-#variable "tailscale_config" {
-#  type = map(string)
-#}

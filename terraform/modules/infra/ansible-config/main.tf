@@ -6,29 +6,6 @@ terraform {
   }
 }
 
-locals {
-  users = {
-    muneeb = {
-      sudo = true
-      exists = true
-      password = null
-    }
-    k3s = {
-      sudo = true
-      exists = true
-      password = null
-    }
-  }
-  ssh_keys = [
-    trimspace("ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC9iQnzPq0/lLg359hzQiVSnf33PAzCYaFu8gW1OIaftA2+/fUtJoPCoMBNB4TDTA5ZnHfKEmR9/ktFr4AWOQ/4oCQP2uC12zci9Lpep/aYMmXmgAGs+35sZvf1Ob44CuEw/vvwfViYNt8HAc0BTo1+Sj5gKp8QuBVY70ezS0yw+VEvHnxbXDbXxVRId1w7gANwBAhyRviKjFWSULPJsPY+t0HNoFozERnBDaov3wL7TPIy2WIHr6BE/lOwlzoqRMd8qtAIEbrDTNfZwmY+2AYvhjicLQ6H5jCfHW6UFptlV4UN9UijdVZ+thF4vM8i6huHUx87ljsyOtqwLqrwfh9t muneebahmad@beenum.local")
-  ]
-  packages = [
-    "jq",
-    "net-tools",
-    "firewalld",
-    "curl"
-  ]
-}
 resource "random_password" "users" {
   for_each = var.users
   length           = 16
@@ -56,9 +33,9 @@ resource "ansible_playbook" "users" {
   extra_vars = jsonencode({
     ansible_user = var.connection_info.user
     ansible_ssh_private_key_file = var.connection_info.private_key_file
+    ansible_port = var.connection_info.port
     user_state = "present"
     user = each.key
-    user_groups = each.value.sudo ? "sudo" : ""  # TODO: Unused. Need to refractor usage
     user_password = each.value.password
     ssh_keys = join(", ", local.merged_ssh_keys)
   })
@@ -73,15 +50,16 @@ resource "ansible_playbook" "env" {
   extra_vars = jsonencode({
     ansible_user = var.connection_info.user
     ansible_ssh_private_key_file = var.connection_info.private_key_file
+    ansible_port = var.connection_info.port
     packages =  join(",", var.packages)
     hostname = var.hostname
-#    tailscale_auth_key = var.tailscale_config.auth_key
-#    tailscale_args = "--accept-dns=true --accept-routes=true --advertise-exit-node=${var.tailscale_config.exit_node}"
-#    tailscale_state = var.tailscale_config.upgrade ? "latest" : var.default_state
   })
 }
 
 locals {
+  ssh = {
+    ports = ["${var.connection_info.port}/tcp"]
+  }
   k3s = {
     ports = [
       "80/tcp",
@@ -130,11 +108,13 @@ resource "ansible_playbook" "firewall" {
   extra_vars = jsonencode({
     ansible_user = var.connection_info.user
     ansible_ssh_private_key_file = var.connection_info.private_key_file
+    ansible_port = var.connection_info.port
     k3s_ports = join(",", local.k3s.ports)
     k3s_sources = join(",", local.k3s.sources)
     tailscale_ports = join(",", local.tailscale.ports)
     tailscale_interface = local.tailscale.interface
   })
+  depends_on = [ansible_playbook.env]
 }
 
 resource "ansible_playbook" "zfs" {
@@ -147,9 +127,10 @@ resource "ansible_playbook" "zfs" {
   extra_vars = jsonencode({
     ansible_user = var.connection_info.user
     ansible_ssh_private_key_file = var.connection_info.private_key_file
+    ansible_port = var.connection_info.port
     zfs_loopback_pool = length(var.zfs_config.loopback) > 0 ? true : false
-#    zfs_loopback_pool_size = var.zfs_config.loopback.size
     zfs_loopback_config = var.zfs_config.loopback
     zfs_devices_config = var.zfs_config.devices
   })
+  depends_on = [ansible_playbook.env]
 }
