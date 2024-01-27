@@ -117,12 +117,6 @@ generate_hcl "_k3s.tf" {
       use_tailscale_ipv6 = global.infrastructure.config.use_tailscale_ipv6
     }
 
-    resource "random_string" "k3s_token" {
-      length           = 16
-      special          = true
-      override_special = "/@£$"
-    }
-
     resource "random_password" "k3s_secret" {
       length           = 16
       special          = true
@@ -135,11 +129,9 @@ generate_hcl "_k3s.tf" {
       hostname = each.key
       cluster_init = each.value.k3s_config.init
       cluster_role = each.value.k3s_config.role
-#      copy_kubeconfig = each.value.k3s_config.copy_kubeconfig
       api_host = each.key
       token = nonsensitive(random_password.k3s_secret.result)
       tls_config = local.generated_tls_config
-      # kubeconfig = tm_try(each.value.k3s_config.init, file("~/.kube/config"))
       kubeconfig = null
       node_labels = each.value.k3s_config.node_labels
       tailnet = global.infrastructure.tailscale.tailnet
@@ -160,8 +152,7 @@ generate_hcl "_k3s.tf" {
       cluster_role = each.value.k3s_config.role
       api_host = global.infrastructure.k3s.api_host
       token = nonsensitive(random_password.k3s_secret.result)
-      #        kubeconfig = tm_try(each.value.k3s_config.init, file("~/.kube/config"))
-      kubeconfig = file("~/.kube/config")
+      kubeconfig = local.kubeconfig
       node_labels = each.value.k3s_config.node_labels
       tailnet = global.infrastructure.tailscale.tailnet
       graceful_destroy = true
