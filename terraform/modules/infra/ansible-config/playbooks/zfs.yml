@@ -2,11 +2,8 @@
   become: yes
   hosts: all
   vars:
-    default_zfs_loopback_dir: "/mnt"
-    default_zfs_loopback_file: "rootdisk0.img"
     zfs_loopback_pool: "false"
     zfs_loopback_pool_name: "openebs-localpv"
-    zfs_loopback_pool_size: "20G"
   tasks:
     - name: Set ZFS Debian backports repo
       ansible.builtin.apt_repository:
@@ -61,11 +58,6 @@
           - nfs-utils
         update_cache: yes
         state: present
-      when: "ansible_architecture == 'x86_64' and (ansible_distribution == 'AlmaLinux' or ansible_distribution == 'OracleLinux' or ansible_distribution == 'Red Hat' or ansible_distribution == 'CentOS' or ansible_distribution == 'Fedora')"
-
-    - name: Enable CRB
-      ansible.builtin.command: |
-        dnf config-manager --disable zfs
       when: "ansible_architecture == 'x86_64' and (ansible_distribution == 'AlmaLinux' or ansible_distribution == 'OracleLinux' or ansible_distribution == 'Red Hat' or ansible_distribution == 'CentOS' or ansible_distribution == 'Fedora')"
 
     - name: Load ZFS Kernel module
@@ -125,31 +117,3 @@
         fi
       when: "zfs_loopback_pool == true"
       loop: "{{ zfs_loopback_config | combine(zfs_devices_config) | dict2items }}"
-
-#    - name: Upgrade ZFS pool backed by loopback device
-#      ansible.builtin.shell: |
-#        zpool set autoexpand=on {{ zfs_loopback_pool_name }}
-#        zpool online -e {{ zfs_loopback_pool_name }} {{ item.item.key }}
-#      when: "zfs_loopback_pool == true and losetup_status.results | selectattr('rc', 'equalto', 10) | list | length > 0"
-#      #      loop: "{{ zfs_loopback_config | dict2items }}"
-#      loop: "{{ losetup_status.results }}"
-
-#    - name: Set up ZFS pool backed by loopback device
-#      community.general.zfs:
-#        name: "{{ zfs_pool_name }}"
-#        state: present
-
-# TODO: Add ZFS installation
-# Add repo: sudo dnf install https://zfsonlinux.org/epel/zfs-release-2-3$(rpm --eval "%{dist}").noarch.rpm
-# Install packages:
-# sudo dnf install epel-release
-# sudo dnf install kernel-devel zfs
-# sudo modprobe zfs
-#
-# sudo umount /dev/sdb
-# sudo mkfs.ext4 -F /dev/sdb
-# sudo wipefs --all --force /dev/sdb
-#
-# sudo zpool create zfspv-pool /dev/sdb
-
-# TODO: Update/Upgrade Machines
