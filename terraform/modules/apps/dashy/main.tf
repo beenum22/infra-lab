@@ -54,6 +54,30 @@ locals {
       url = "https://homebox.dera.ovh"
       status_check: true
     }
+    radarr = {
+      section = "Apps"
+      title = "Radarr"
+      description = "Movie Collection Manager"
+      icon = "hl-radarr"
+      url = "https://radarr.dera.ovh"
+      status_check: true
+    }
+    prowlarr = {
+      section = "Apps"
+      title = "Prowlarr"
+      description = "Media Sources Index Manager"
+      icon = "hl-prowlarr"
+      url = "https://prowlarr.dera.ovh"
+      status_check: true
+    }
+    prowlarr = {
+      section = "Apps"
+      title = "Jackett"
+      description = "Media Sources Index Manager"
+      icon = "hl-prowlarr"
+      url = "https://prowlarr.dera.ovh"
+      status_check: true
+    }
   }
   sections = distinct([
     for app, info in local.apps : info.section
@@ -109,13 +133,22 @@ locals {
         id          = "4_2647_netcup"
       },
       {
+        title       = "Regxa"
+        description = "VPS Provider"
+        icon        = "https://regxa.com/__logo.svg"
+        target      = "newtab"
+        url         = "https://my.regxa.com/clientarea.php"
+        provider    = "Regxa"
+        id          = "5_2647_regxa"
+      },
+      {
         title       = "Tailscale"
         description = "Mesh VPN Provider"
         icon        = "hl-tailscale"
         url         = "https://login.tailscale.com/admin"
         target      = "newtab"
         provider    = "Tailscale"
-        id          = "5_2647_tailscale"
+        id          = "6_2647_tailscale"
       },
       {
         title       = "OVH Cloud"
@@ -124,7 +157,7 @@ locals {
         url         = "https://www.ovh.com/manager/#/web/domain/dera.ovh/zone"
         target      = "newtab"
         provider    = "OVH"
-        id          = "6_2647_ovh"
+        id          = "7_2647_ovh"
       },
       {
         title       = "Github Repo"
@@ -133,7 +166,7 @@ locals {
         url         = "https://github.com/beenum22/pi-pi"
         target      = "newtab"
         provider    = "Github"
-        id          = "7_2647_git"
+        id          = "8_2647_git"
       }
     ]
   }]
