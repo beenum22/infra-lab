@@ -2,13 +2,9 @@ variable "connection_info" {
   type = object({
     user = string
     host = string
+    port = number
     private_key = string
   })
-  default = {
-    user = null
-    host = null
-    private_key = null
-  }
 }
 
 variable "tailscale_version" {
