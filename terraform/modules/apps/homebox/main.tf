@@ -139,6 +139,12 @@ resource "kubernetes_service" "this" {
     }
   }
   spec {
+    type = "ClusterIP"
+    ip_families = [
+      "IPv6",
+      "IPv4",
+    ]
+    ip_family_policy = "PreferDualStack"
     selector = {
       "app.kubernetes.io/name" = var.name
     }
