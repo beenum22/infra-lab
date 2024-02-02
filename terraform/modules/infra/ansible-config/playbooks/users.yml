@@ -7,8 +7,9 @@
         name: "{{ user }}"
         state: "present"
         groups: "sudo"
-        append: yes
         password: "{{ user_password }}"
+        shell: "/bin/bash"
+        append: yes
       when: "ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'"
 
     - name: Add Users for RHEL
@@ -16,8 +17,9 @@
         name: "{{ user }}"
         state: "present"
         groups: "wheel"
-        append: yes
+        shell: "/bin/bash"
         password: "{{ user_password }}"
+        append: yes
       when: "ansible_distribution == 'AlmaLinux' or ansible_distribution == 'OracleLinux' or ansible_distribution == 'Red Hat' or ansible_distribution == 'CentOS' or ansible_distribution == 'Fedora'"
 
     - name: Add Authorized SSH Keys
