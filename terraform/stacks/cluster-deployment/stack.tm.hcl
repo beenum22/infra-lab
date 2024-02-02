@@ -1,5 +1,5 @@
 stack {
-  name        = "setup-cluster"
+  name        = "cluster-deployment"
   description = "Terramate stack for deployment of Kubernetes Cluster"
   id          = "f174978e-09bd-4d69-95ac-93d279eba710"
   after = [
@@ -11,5 +11,6 @@ stack {
     "k3s",
     "cluster",
     "setup-cluster",
+    "cluster-deployment",
   ]
 }
