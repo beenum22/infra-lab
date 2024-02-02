@@ -50,6 +50,7 @@ generate_hcl "_tailscale.tf" {
       connection_info = {
         host             = local.use_ipv6 == true ? tm_hcl_expression("data.terraform_remote_state.infra_deployment_stack_state.outputs.node_ips[each.key].ipv6") : tm_hcl_expression("data.terraform_remote_state.infra_deployment_stack_state.outputs.node_ips[each.key].ipv4")
         user             = each.value.user
+        port             = each.value.port
         private_key = tm_hcl_expression("data.terraform_remote_state.infra_deployment_stack_state.outputs.ssh_private_key")
       }
       authkey           = each.value.tailscale_config.auth_key
