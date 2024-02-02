@@ -149,7 +149,7 @@ generate_hcl "_apps.tf" {
             "snapshotVolumes" = true
             "storageLocation" = "default"
             "volumeSnapshotLocations" = ["default"]
-            "ttl" = "60m"
+            "ttl" = "168h"
           }
         }
       }
