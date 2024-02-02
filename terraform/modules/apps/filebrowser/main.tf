@@ -4,6 +4,7 @@ locals {
     "kubernetes.io/ingress.class" = var.ingress_class
     "external-dns.alpha.kubernetes.io/internal-hostname" = join(",", var.domains)
     "external-dns.alpha.kubernetes.io/target" = var.ingress_hostname
+    "nginx.ingress.kubernetes.io/proxy-body-size" = "0"
   }
   db_path = "/config/database.db"
   data_path = "/srv/data"
@@ -14,7 +15,6 @@ locals {
     log = "stdout"
     database = "/config/database.db"
     root = "/srv/data"
-    password = bcrypt(var.admin_password)
   }
 }
 
@@ -66,6 +66,19 @@ resource "kubernetes_config_map" "this" {
   }
   data = {
     ".filebrowser.json" = jsonencode(local.config)
+  }
+}
+
+resource "kubernetes_secret" "this" {
+  metadata {
+    name = "${var.name}-admin-password"
+    namespace = var.namespace
+    labels = {
+      "app.kubernetes.io/name" = var.name
+    }
+  }
+  data = {
+    admin_password = bcrypt(var.admin_password)
   }
 }
 
@@ -140,6 +153,15 @@ resource "kubernetes_deployment" "this" {
             container_port = 80
             name = "http"
             protocol = "TCP"
+          }
+          env {
+            name = "FB_PASSWORD"
+            value_from {
+              secret_key_ref {
+                key = "admin_password"
+                name = kubernetes_secret.this.metadata.0.name
+              }
+            }
           }
           env {
             name = "TZ"
