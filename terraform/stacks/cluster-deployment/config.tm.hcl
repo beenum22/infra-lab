@@ -139,6 +139,7 @@ generate_hcl "_k3s.tf" {
       connection_info = {
         user = "k3s"
         host = local.use_tailscale_ipv6 == true ? tm_hcl_expression("data.terraform_remote_state.infra_configuration_stack_state.outputs.tailscale_ips[each.key].ipv6") : tm_hcl_expression("data.terraform_remote_state.infra_configuration_stack_state.outputs.tailscale_ips[each.key].ipv4")
+        port = each.value.port
         private_key = data.terraform_remote_state.infra_deployment_stack_state.outputs.ssh_private_key
       }
     }
@@ -159,6 +160,7 @@ generate_hcl "_k3s.tf" {
       connection_info = {
         user = "k3s"
         host = local.use_tailscale_ipv6 == true ? tm_hcl_expression("data.terraform_remote_state.infra_configuration_stack_state.outputs.tailscale_ips[each.key].ipv6") : tm_hcl_expression("data.terraform_remote_state.infra_configuration_stack_state.outputs.tailscale_ips[each.key].ipv4")
+        port = each.value.port
         private_key = data.terraform_remote_state.infra_deployment_stack_state.outputs.ssh_private_key
       }
     }
