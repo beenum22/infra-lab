@@ -94,6 +94,24 @@
       when: "zfs_loopback_pool == true"
       loop: "{{ zfs_loopback_config | dict2items }}"
 
+#    - name: Create persistent loopback devices
+#      ansible.builtin.lineinfile:
+#        path: /etc/rc.local
+#        line: "losetup /dev/{{ item.key }} {{ item.value.path }}"
+#      when: "zfs_loopback_pool == true"
+#      loop: "{{ zfs_loopback_config | dict2items }}"
+
+    - name: Add ExecStartPre to the systemd service unit file
+      ansible.builtin.blockinfile:
+        path: "/etc/systemd/system/zfs-import.target.wants/zfs-import-cache.service"
+        insertafter: "^ExecStart="
+        marker: "# {mark} ANSIBLE MANAGED BLOCK of losetup commands"
+        block: |
+          {% for key, value in zfs_loopback_config.items() %}
+          ExecStartPre=losetup /dev/{{ key }} {{ value.path }}
+          {% endfor %}
+      when: "zfs_loopback_pool == true"
+
 #    - name: Set up ZFS devices
 #      community.general.filesystem:
 #        fstype: ext4
