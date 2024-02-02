@@ -53,6 +53,7 @@ resource "ssh_resource" "tls" {
   when = "create"
   host = var.connection_info.host
   user = var.connection_info.user
+  port = var.connection_info.port
   private_key = var.connection_info.private_key
   timeout = "1m"
   retry_delay = "5s"
@@ -70,6 +71,7 @@ resource "ssh_resource" "tls" {
 resource "ssh_resource" "install" {
   when = "create"
   host = var.connection_info.host
+  port = var.connection_info.port
   user = var.connection_info.user
   private_key = var.connection_info.private_key
   timeout = "15m"
@@ -86,6 +88,7 @@ resource "ssh_resource" "install" {
 
 resource "ssh_resource" "check_status" {
   host = var.connection_info.host
+  port = var.connection_info.port
   user = var.connection_info.user
   when = "create"
   private_key = var.connection_info.private_key
@@ -104,6 +107,7 @@ resource "ssh_resource" "check_status" {
 
 resource "ssh_resource" "node_cidrs" {
   host = var.connection_info.host
+  port = var.connection_info.port
   user = var.connection_info.user
   when = "create"
   private_key = var.connection_info.private_key
@@ -120,13 +124,14 @@ resource "ssh_resource" "node_cidrs" {
 resource "ssh_resource" "add_node_labels" {
   for_each = var.node_labels
   host = var.connection_info.host
+  port = var.connection_info.port
   user = var.connection_info.user
   when = "create"
   private_key = var.connection_info.private_key
   timeout = "1m"
   retry_delay = "5s"
   commands = [
-    "kubectl ${local.kubectl_args}label nodes ${var.hostname} ${each.key}=${each.value}"
+    "kubectl ${local.kubectl_args}label nodes ${var.hostname} ${each.key}=${each.value} --overwrite"
   ]
   depends_on = [
     ssh_resource.install
@@ -135,6 +140,7 @@ resource "ssh_resource" "add_node_labels" {
 
 resource "ssh_resource" "advertise_routes" {
   host = var.connection_info.host
+  port = var.connection_info.port
   user = var.connection_info.user
   when = "create"
   private_key = var.connection_info.private_key
@@ -152,6 +158,7 @@ resource "ssh_resource" "advertise_routes" {
 resource "ssh_resource" "remove_node_labels" {
   for_each = var.graceful_destroy ? var.node_labels : {}
   host = var.connection_info.host
+  port = var.connection_info.port
   user = var.connection_info.user
   when = "destroy"
   private_key = var.connection_info.private_key
@@ -168,6 +175,7 @@ resource "ssh_resource" "remove_node_labels" {
 
 resource "ssh_resource" "remove_routes" {
   host = var.connection_info.host
+  port = var.connection_info.port
   user = var.connection_info.user
   when = "destroy"
   private_key = var.connection_info.private_key
@@ -185,6 +193,7 @@ resource "ssh_resource" "remove_routes" {
 resource "ssh_resource" "drain_node" {
   count = var.graceful_destroy ? 1 : 0
   host = var.connection_info.host
+  port = var.connection_info.port
   user = var.connection_info.user
   when = "destroy"
   private_key = var.connection_info.private_key
@@ -201,6 +210,7 @@ resource "ssh_resource" "drain_node" {
 resource "ssh_resource" "uninstall" {
   when = "destroy"
   host = var.connection_info.host
+  port = var.connection_info.port
   user = var.connection_info.user
   private_key = var.connection_info.private_key
   timeout = "15m"
