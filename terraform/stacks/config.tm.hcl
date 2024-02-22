@@ -22,6 +22,24 @@ globals "infrastructure" "tailscale" {
   tailnet  = "tail03622.ts.net"
   org = "muneeb.gandapur@gmail.com"
   version = "1.58.2"
+  acl = {
+    admins = [
+      "muneeb.gandapur@gmail.com",
+    ]
+    k3s_web_apps_consumers = [
+#      "muneeb.gandapur@gmail.com",
+      "msagheer92@gmail.com",
+      "mahrukhanwari1@gmail.com"
+    ]
+    k3s_api_consumers = [
+#      "muneeb.gandapur@gmail.com",
+      "msagheer92@gmail.com"
+    ]
+    exit_node_consumers = [
+#      "msagheer92@gmail.com"
+      "mahrukhanwari1@gmail.com"
+    ]
+  }
 }
 
 globals "infrastructure" "oci" {
@@ -374,11 +392,11 @@ globals "infrastructure" "instances" {
       mtu       = "1280"
     }
     zfs_config = {
-      enable = false
+      enable = true
       loopback = {
-        loop0 = {
-          path = "/mnt/zfs-loop0.img"
-          size = "4G"
+        loop100 = {
+          path = "/mnt/zfs-loop100.img"
+          size = "5G"
         }
       }
       devices = {}
@@ -394,7 +412,7 @@ globals "infrastructure" "instances" {
         "dera.ovh/provider" = "ovh"
         "dera.ovh/type" = "vm"
         "dera.ovh/owner" = "jakku"
-        "openebs.io/localpv-zfs" = false
+        "openebs.io/localpv-zfs" = true
         "openebs.io/nodeid" = "ovh-ldn-k3s-0"
       }
     }
@@ -417,11 +435,11 @@ globals "infrastructure" "instances" {
       mtu       = "1280"
     }
     zfs_config = {
-      enable = false
+      enable = true
       loopback = {
-        loop0 = {
-          path = "/mnt/zfs-loop0.img"
-          size = "4G"
+        loop100 = {
+          path = "/mnt/zfs-loop100.img"
+          size = "5G"
         }
       }
       devices = {}
@@ -437,7 +455,7 @@ globals "infrastructure" "instances" {
         "dera.ovh/provider" = "ovh"
         "dera.ovh/type" = "vm"
         "dera.ovh/owner" = "jakku"
-        "openebs.io/localpv-zfs" = false
+        "openebs.io/localpv-zfs" = true
         "openebs.io/nodeid" = "ovh-fra-k3s-1"
       }
     }
@@ -475,16 +493,33 @@ globals "infrastructure" "config" {
 globals "infrastructure" "k3s" {
   version = "v1.28.5+k3s1"
   api_host = "netcup-neu-k3s-0"
+  cluster_cidrs = [
+    "10.42.0.0/16",
+    "2001:cafe:42:0::/56"
+  ]
+  service_cidrs = [
+    "10.43.0.0/16",
+    "2001:cafe:42:1::/112"
+  ]
 }
 
 globals "cluster" {
   users = {
-    sagheer = {
-      namespace = "sagheer"
-      limits = {
-        cpu = "2"
-        memory = "4Gi"
-      }
+    munna = {
+      namespace = "munna"
+      storage_class = [
+        "openebs-zfs",
+        "openebs-hostpath",
+        "openebs-kernel-nfs"
+      ]
+    }
+    jakku = {
+      namespace = "jakku"
+      storage_class = [
+        "openebs-zfs",
+        "openebs-hostpath",
+#        "openebs-kernel-nfs"
+      ]
     }
   }
 }
