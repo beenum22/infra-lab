@@ -54,17 +54,17 @@ generate_hcl "_network.tf" {
       depends_on = [kubernetes_namespace.network]
     }
 
-    module "tailscale_vpn" {
-      source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/tailscale-vpn"
-      namespace = kubernetes_namespace.network.metadata.0.name
-      replicas = 1
-      tag = "v1.56.1"
-      authkey = tailscale_tailnet_key.auth_key.key
-      mtu = "1280"  # Consider 1350 in case of MTU issues with IPv6
-      userspace_mode = true
-      routes = []
-      depends_on = [kubernetes_namespace.network]
-    }
+#    module "tailscale_vpn" {
+#      source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/tailscale-vpn"
+#      namespace = kubernetes_namespace.network.metadata.0.name
+#      replicas = 1
+#      tag = "v1.56.1"
+#      authkey = tailscale_tailnet_key.auth_key.key
+#      mtu = "1280"  # Consider 1350 in case of MTU issues with IPv6
+#      userspace_mode = true
+#      routes = []
+#      depends_on = [kubernetes_namespace.network]
+#    }
 
 #    module "tailscale_operator" {
 #      source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/tailscale-operator"
@@ -137,44 +137,6 @@ generate_hcl "_security.tf" {
   }
 }
 
-generate_hcl "_dns.tf" {
-  content {
-    resource "kubernetes_namespace" "dns" {
-      metadata {
-        name = "dns"
-      }
-    }
-
-    module "pihole" {
-      source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/pihole"
-      namespace = kubernetes_namespace.dns.metadata.0.name
-      expose = true
-      domains = [
-        "pihole.dera.ovh"
-      ]
-      password = global.secrets.pihole_password
-      ingress_class = global.project.ingress_class
-      ingress_hostname = global.project.ingress_hostname
-      issuer = module.cert_manager.issuer
-      storage_class = global.project.storage_class
-      depends_on = [
-        kubernetes_namespace.dns
-      ]
-    }
-
-    module "external_dns" {
-      source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/external-dns"
-      namespace = kubernetes_namespace.dns.metadata.0.name
-      pihole_server = "http://pihole-web.dns.svc.cluster.local"
-      pihole_password = global.secrets.pihole_password
-      depends_on = [
-        kubernetes_namespace.dns,
-        module.pihole
-      ]
-    }
-  }
-}
-
 generate_hcl "_backup.tf" {
   content {
     resource "kubernetes_namespace" "backup" {
@@ -209,37 +171,16 @@ generate_hcl "_backup.tf" {
   }
 }
 
-generate_hcl "_monitoring.tf" {
-  content {
-    resource "kubernetes_namespace" "monitoring" {
-      metadata {
-        name = "monitoring"
-      }
-    }
-
-    module "netdata" {
-      source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/netdata"
-      namespace = kubernetes_namespace.monitoring.metadata[0].name
-      issuer = module.cert_manager.issuer
-      domains = [
-        "netdata.dera.ovh"
-      ]
-      ingress_password = null
-      storage_class = global.project.storage_class
-      ingress_hostname = global.project.ingress_hostname
-      ingress_protection = false
-      depends_on = [
-        kubernetes_namespace.monitoring
-      ]
-    }
-  }
-}
-
 generate_hcl "_cluster_info.tf" {
   content {
     data "kubernetes_nodes" "this" {}
 
     locals {
+      convert_to_ki_factor = {
+        "Ki" = 1,
+        "Mi" = 1024,
+        "Gi" = 1024 * 1024
+      }
       nodes = [for node in data.kubernetes_nodes.this.nodes : node.metadata.0.name]
       owners = distinct([for node in data.kubernetes_nodes.this.nodes : node.metadata.0.labels["dera.ovh/owner"] if can(node.metadata.0.labels["dera.ovh/owner"])])
       owner_namespaces = {
@@ -252,7 +193,10 @@ generate_hcl "_cluster_info.tf" {
             for node in data.kubernetes_nodes.this.nodes : tonumber(node.status.0.capacity.cpu) if node.metadata.0.labels["dera.ovh/owner"] == owner
           ])
           memory = "${sum([
-            for node in data.kubernetes_nodes.this.nodes : tonumber(regex("^([0-9]+)Ki$", node.status.0.capacity.memory)[0]) if node.metadata.0.labels["dera.ovh/owner"] == owner
+            for node in data.kubernetes_nodes.this.nodes : tonumber(regex("\\d+", node.status.0.capacity.memory)) * local.convert_to_ki_factor[regex("[A-Za-z]+", node.status.0.capacity.memory)] if node.metadata.0.labels["dera.ovh/owner"] == owner
+          ])}Ki"
+          storage = "${sum([
+            for node in data.kubernetes_nodes.this.nodes : tonumber(regex("\\d+", node.status.0.capacity.ephemeral-storage)) * local.convert_to_ki_factor[regex("[A-Za-z]+", node.status.0.capacity.ephemeral-storage)] if node.metadata.0.labels["dera.ovh/owner"] == owner
           ])}Ki"
         }
       }
@@ -272,6 +216,14 @@ generate_hcl "_k3s_users.tf" {
       for_each = local.owner_namespaces
       metadata {
         name = each.value.namespace
+        labels = {
+          "pod-security.kubernetes.io/enforce" = "baseline"
+          "pod-security.kubernetes.io/enforce-version" = "latest"
+          "pod-security.kubernetes.io/warn" = "restricted"
+          "pod-security.kubernetes.io/warn-version" = "latest"
+          "pod-security.kubernetes.io/audit" = "restricted"
+          "pod-security.kubernetes.io/audit-version" = "latest"
+        }
       }
     }
 
@@ -283,10 +235,10 @@ generate_hcl "_k3s_users.tf" {
       }
     }
 
-    resource "kubernetes_cluster_role" "node_viewer" {
+    resource "kubernetes_cluster_role" "cluster_viewer" {
       for_each = local.owner_namespaces
       metadata {
-        name = "${each.key}-node-viewer"
+        name = "${each.key}-cluster-viewer"
       }
       rule {
         api_groups = [""]
@@ -299,12 +251,18 @@ generate_hcl "_k3s_users.tf" {
         verbs      = ["get", "watch", "list"]
         resource_names = each.value.nodes
       }
+      rule {
+        api_groups = ["storage.k8s.io"]
+        resources  = ["storageclasses"]
+        verbs      = ["list"]
+#        resource_names = global.cluster.users[each.key].storage_classes
+      }
     }
 
-    resource "kubernetes_cluster_role_binding" "node_viewer" {
+    resource "kubernetes_cluster_role_binding" "cluster_viewer" {
       for_each = local.owner_namespaces
       metadata {
-        name      = "${each.key}-nodes-viewer"
+        name      = "${each.key}-cluster-viewer"
       }
       subject {
         kind      = "ServiceAccount"
@@ -313,7 +271,7 @@ generate_hcl "_k3s_users.tf" {
       }
       role_ref {
         kind     = "ClusterRole"
-        name     = kubernetes_cluster_role.node_viewer[each.key].metadata.0.name
+        name     = kubernetes_cluster_role.cluster_viewer[each.key].metadata.0.name
         api_group = "rbac.authorization.k8s.io"
       }
     }
@@ -358,6 +316,7 @@ generate_hcl "_k3s_users.tf" {
         hard = {
           "limits.cpu" = each.value.cpus
           "limits.memory" = each.value.memory
+          "requests.storage" = each.value.storage
         }
       }
     }
@@ -367,7 +326,7 @@ generate_hcl "_k3s_users.tf" {
         for user, info in local.owner_namespaces: user => yamlencode({
           apiVersion  = "v1"
           kind        = "Config"
-          clusters    = yamldecode(data.terraform_remote_state.setup_cluster_stack_state.outputs.kubeconfig)["clusters"]
+          clusters    = yamldecode(data.terraform_remote_state.cluster_deployment_stack_state.outputs.kubeconfig)["clusters"]
           current-context = user
           contexts    = [{
             name = user
