@@ -10,16 +10,23 @@
         repo: "deb http://deb.debian.org/debian bookworm-backports main contrib"
         state: present
         update_cache: yes
-      when: "ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'"
+      when: "ansible_distribution == 'Debian'"
 
     - name: Set ZFS Debian backports repo source
       ansible.builtin.apt_repository:
         repo: "deb-src http://deb.debian.org/debian bookworm-backports main contrib"
         state: present
         update_cache: yes
-      when: "ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'"
+      when: "ansible_distribution == 'Debian'"
 
-    - name: Install ZFS APT packages
+    - name: Set ZFS Ubuntu repo
+      ansible.builtin.apt_repository:
+        repo: "deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }} main universe"
+        state: present
+        update_cache: yes
+      when: "ansible_distribution == 'Ubuntu'"
+
+    - name: Install Debian ZFS APT packages
       ansible.builtin.apt:
         name:
           - dpkg-dev
@@ -30,7 +37,16 @@
           - nfs-common
         update_cache: yes
         state: present
-      when: "ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'"
+      when: "ansible_distribution == 'Debian'"
+
+    - name: Install Ubuntu ZFS APT packages
+      ansible.builtin.apt:
+        name:
+          - zfsutils-linux
+          - nfs-common
+        update_cache: yes
+        state: present
+      when: "ansible_distribution == 'Ubuntu'"
 
     - name: Install ZFS EPEL pre-req packages
       ansible.builtin.dnf:
