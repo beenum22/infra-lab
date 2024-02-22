@@ -13,13 +13,29 @@ locals {
       icon        = "hl-pihole"
       url         = "https://pihole.dera.ovh/admin"
       status_check = true
-    },
+    }
     netdata = {
       section     = "Cluster"
       title       = "Netdata"
       description = "Monitoring Dashboard"
       icon        = "hl-netdata"
       url         = "https://netdata.dera.ovh"
+      status_check = true
+    }
+    grafana = {
+      section     = "Cluster"
+      title       = "Grafana"
+      description = "Monitoring Dashboard"
+      icon        = "hl-grafana"
+      url         = "https://grafana.dera.ovh"
+      status_check = true
+    }
+    prometheus = {
+      section     = "Cluster"
+      title       = "Prometheus"
+      description = "Time Series Database"
+      icon        = "hl-prometheus"
+      url         = "https://prometheus.dera.ovh"
       status_check = true
     }
     jellyfin = {
@@ -65,14 +81,6 @@ locals {
     prowlarr = {
       section = "Apps"
       title = "Prowlarr"
-      description = "Media Sources Index Manager"
-      icon = "hl-prowlarr"
-      url = "https://prowlarr.dera.ovh"
-      status_check: true
-    }
-    prowlarr = {
-      section = "Apps"
-      title = "Jackett"
       description = "Media Sources Index Manager"
       icon = "hl-prowlarr"
       url = "https://prowlarr.dera.ovh"
@@ -199,6 +207,25 @@ locals {
         {
           type = "blacklist-check"
           options = {
+            apiKey = "<expunged>"
+          }
+        },
+      ]
+    },
+    {
+      name        = "Cert-manager Releases"
+      displayData = {
+        sortBy        = "default"
+        rows          = 1
+        cols          = 2
+        collapsed     = true
+        hideForGuests = false
+      }
+      widgets = [
+        {
+          type = "rss-feed"
+          options = {
+            rssURL = "https://github.com/cert-manager/cert-manager/releases.atom"
             apiKey = "<expunged>"
           }
         },
@@ -347,6 +374,11 @@ resource "kubernetes_service" "this" {
     namespace = var.namespace
   }
   spec {
+    ip_families = [
+      "IPv6",
+      "IPv4"
+    ]
+    ip_family_policy = "PreferDualStack"
     selector = {
       app = var.name
       version = var.tag

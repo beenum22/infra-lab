@@ -25,7 +25,7 @@ variable "image" {
 
 variable "tag" {
   type = string
-  default = "latest"
+  default = "2.1.1"
 }
 
 variable "ingress_class" {
