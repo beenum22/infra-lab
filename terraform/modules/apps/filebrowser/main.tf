@@ -234,8 +234,8 @@ resource "kubernetes_service" "this" {
       "app.kubernetes.io/name" = var.name
     }
     ip_families = [
+      "IPv6",
       "IPv4",
-      "IPv6"
     ]
     ip_family_policy = "PreferDualStack"
     port {
