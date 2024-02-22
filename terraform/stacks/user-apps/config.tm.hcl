@@ -51,37 +51,37 @@ generate_hcl "_apps.tf" {
 #      depends_on = [kubernetes_namespace.apps]
 #    }
 
-    module "radarr" {
-      source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/radarr"
-      namespace = kubernetes_namespace.apps.metadata[0].name
-      ingress_hostname = global.project.ingress_hostname
-      issuer = global.project.cert_manager_issuer
-      config_storage = "1Gi"
-      storage_class = global.project.storage_class
-      shared_pvcs = [
-        kubernetes_persistent_volume_claim.nfs_share.metadata.0.name
-      ]
-      domains = [
-        "radarr.dera.ovh"
-      ]
-      depends_on = [kubernetes_namespace.apps]
-    }
+#    module "radarr" {
+#      source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/radarr"
+#      namespace = kubernetes_namespace.apps.metadata[0].name
+#      ingress_hostname = global.project.ingress_hostname
+#      issuer = global.project.cert_manager_issuer
+#      config_storage = "1Gi"
+#      storage_class = global.project.storage_class
+#      shared_pvcs = [
+#        kubernetes_persistent_volume_claim.nfs_share.metadata.0.name
+#      ]
+#      domains = [
+#        "radarr.dera.ovh"
+#      ]
+#      depends_on = [kubernetes_namespace.apps]
+#    }
 
-    module "prowlarr" {
-      source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/prowlarr"
-      namespace = kubernetes_namespace.apps.metadata[0].name
-      ingress_hostname = global.project.ingress_hostname
-      issuer = global.project.cert_manager_issuer
-      config_storage = "1Gi"
-      storage_class = global.project.storage_class
-      shared_pvcs = [
-        kubernetes_persistent_volume_claim.nfs_share.metadata.0.name
-      ]
-      domains = [
-        "prowlarr.dera.ovh"
-      ]
-      depends_on = [kubernetes_namespace.apps]
-    }
+#    module "prowlarr" {
+#      source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/prowlarr"
+#      namespace = kubernetes_namespace.apps.metadata[0].name
+#      ingress_hostname = global.project.ingress_hostname
+#      issuer = global.project.cert_manager_issuer
+#      config_storage = "1Gi"
+#      storage_class = global.project.storage_class
+#      shared_pvcs = [
+#        kubernetes_persistent_volume_claim.nfs_share.metadata.0.name
+#      ]
+#      domains = [
+#        "prowlarr.dera.ovh"
+#      ]
+#      depends_on = [kubernetes_namespace.apps]
+#    }
 
     module "dashy" {
       source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/dashy"
