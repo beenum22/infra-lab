@@ -331,49 +331,6 @@ globals "infrastructure" "instances" {
       }
     }
   }
-  regxa-rbx-k3s-0 = {
-    managed  = true
-    provider = "regxa"
-    user     = "muneeb"
-    port     = 2321
-    host = {
-      ipv4 = null
-      ipv6 = "2001:41d0:203:bc4e::ec9c:464c"
-    }
-    hostname        = "regxa-rbx-k3s-0"
-    provider_config = {}
-    tailscale_config = {
-      version   = global.infrastructure.tailscale.version
-      auth_key  = global.infrastructure.tailscale.auth_key
-      exit_node = true
-      mtu       = "1280"
-    }
-    zfs_config = {
-      enable = false
-      loopback = {
-        loop0 = {
-          path = "/mnt/zfs-loop0.img"
-          size = "4G"
-        }
-      }
-      devices = {}
-    }
-    k3s_config = {
-      version = global.infrastructure.k3s.version
-      init = false
-      root_node = false
-      role = "agent"
-      copy_kubeconfig = false
-      node_labels = {
-        "dera.ovh/country" = "france"
-        "dera.ovh/provider" = "regxa"
-        "dera.ovh/type" = "vm"
-        "dera.ovh/owner" = "munna"
-        "openebs.io/localpv-zfs" = false
-        "openebs.io/nodeid" = "regxa-rbx-k3s-0"
-      }
-    }
-  }
   ovh-ldn-k3s-0 = {
     managed  = true
     provider = "ovh"
