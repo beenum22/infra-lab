@@ -29,18 +29,19 @@ locals {
     blocking = {
       blackLists = {
         ads = [
+          "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/pro.plus.txt",
+        ]
+        strict = [
           "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/ultimate.txt",
         ]
-        special = []
       }
       whiteLists = {}
       clientGroupsBlock = {
         default = [
           "ads",
-          "special"
         ]
 #        "laptop*" = [
-#          "ads"
+#          "strict"
 #        ]
       }
       blockType = "zeroIp"
