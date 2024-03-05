@@ -10,7 +10,8 @@ generate_hcl "_backend.tf" {
         endpoints = {
           s3 = global.terraform.backend.s3.url
         }
-        shared_credentials_files    = ["~/.oci/credentials"]
+        access_key = global.terraform.backend.s3.access_key
+        secret_key = global.terraform.backend.s3.secret_key
         skip_region_validation      = true
         skip_credentials_validation = true
         skip_requesting_account_id  = true
