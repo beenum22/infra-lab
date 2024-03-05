@@ -89,7 +89,9 @@ globals "terraform" "default_providers" {
 }
 
 globals "terraform" "backend" "s3" {
-  region = "eu-frankfurt-1"
-  bucket = "homelab-terraform-state"
-  url    = "https://fr4chwnl3vil.compat.objectstorage.eu-frankfurt-1.oraclecloud.com"
+  region = "eu-central-003"
+  bucket = "dera-lab-terraform-states"
+  url    = "https://s3.eu-central-003.backblazeb2.com"
+  access_key = global.secrets.b2.key_id
+  secret_key = global.secrets.b2.application_key
 }
