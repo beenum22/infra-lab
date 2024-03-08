@@ -135,7 +135,7 @@ globals "infrastructure" "instances" {
       version = global.infrastructure.k3s.version
       init = false
       root_node = false
-      role = "agent"
+      role = "server"
       copy_kubeconfig = false
       node_labels = {
         "dera.ovh/country" = "germany"
@@ -193,49 +193,6 @@ globals "infrastructure" "instances" {
         "dera.ovh/owner" = "munna"
         "openebs.io/localpv-zfs" = false
         "openebs.io/nodeid" = "oci-fra-k3s-2"
-      }
-    }
-  }
-  byte-fra-k3s-0 = {
-    managed  = true
-    provider = "bytehosting"
-    user     = "muneeb"
-    port     = 22
-    host = {
-      ipv4 = "45.134.39.35"
-      ipv6 = "2a0e:97c0:3ea:29::1"
-    }
-    hostname        = "byte-fra-k3s-0"
-    provider_config = {}
-    tailscale_config = {
-      version   = global.infrastructure.tailscale.version
-      auth_key  = global.infrastructure.tailscale.auth_key
-      exit_node = true
-      mtu       = "1280"
-    }
-    zfs_config = {
-      enable = true
-      loopback = {
-        loop0 = {
-          path = "/mnt/zfs-loop0.img"
-          size = "20G"
-        }
-      }
-      devices = {}
-    }
-    k3s_config = {
-      version = global.infrastructure.k3s.version
-      init = false
-      root_node = false
-      role = "server"
-      copy_kubeconfig = true
-      node_labels = {
-        "dera.ovh/country" = "germany"
-        "dera.ovh/provider" = "bytehosting"
-        "dera.ovh/type" = "vm"
-        "dera.ovh/owner" = "munna"
-        "openebs.io/localpv-zfs" = true
-        "openebs.io/nodeid" = "byte-fra-k3s-0"
       }
     }
   }
