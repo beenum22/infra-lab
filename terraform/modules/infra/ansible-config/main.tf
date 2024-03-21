@@ -128,7 +128,7 @@ resource "ansible_playbook" "zfs" {
     ansible_user = var.connection_info.user
     ansible_ssh_private_key_file = var.connection_info.private_key_file
     ansible_port = var.connection_info.port
-    zfs_loopback_pool = length(var.zfs_config.loopback) > 0 ? true : false
+    zfs_loopback_pool = length(var.zfs_config.loopback) > 0 || length(var.zfs_config.devices) > 0 ? true : false
     zfs_loopback_config = var.zfs_config.loopback
     zfs_devices_config = var.zfs_config.devices
   })
