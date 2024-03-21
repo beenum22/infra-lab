@@ -53,7 +53,7 @@ generate_hcl "_tailscale.tf" {
         port             = each.value.port
         private_key = tm_hcl_expression("data.terraform_remote_state.infra_deployment_stack_state.outputs.ssh_private_key")
       }
-      authkey           = each.value.tailscale_config.auth_key
+#      authkey           = nonsensitive(tailscale_tailnet_key.node_key.key)
       tailscale_version = each.value.tailscale_config.version
       tailnet           = global.infrastructure.tailscale.tailnet
       hostname          = each.key
@@ -62,6 +62,7 @@ generate_hcl "_tailscale.tf" {
       set_flags         = []
     }
 
+    # TODO: This might not be working. Verify the changes here.
     resource "tailscale_acl" "this" {
       acl = jsonencode(
         {
@@ -78,10 +79,12 @@ generate_hcl "_tailscale.tf" {
               "10.43.0.0/16" = [
                 "group:admin",
                 "tag:k3s",
+                "tag:k8s",
               ]
               "2001:cafe:42:1::/112" = [
                 "group:admin",
                 "tag:k3s",
+                "tag:k8s",
               ]
             }
             exitNode = [
@@ -104,6 +107,14 @@ generate_hcl "_tailscale.tf" {
               "group:admin",
               "tag:k8s-operator"
             ]
+            "tag:k8s-ingress": [
+              "group:admin",
+              "tag:k8s-operator"
+            ],
+            "tag:k8s-router": [
+              "group:admin",
+              "tag:k8s-operator"
+            ],
             "tag:admin" = [
               "group:admin"
             ]
@@ -129,36 +140,42 @@ generate_hcl "_tailscale.tf" {
             // Comment this section out if you want to define specific restrictions.
             // {"action": "accept", "src": ["*"], "dst": ["*:*"]},
             // Allow resources in K3s subnets to communicate with each other
+#            {
+#              action = "accept"
+#              src = [
+#                "k3s-cluster-ipv4",
+#                "k3s-cluster-ipv6",
+#                "k3s-service-ipv4",
+#                "k3s-service-ipv6",
+#              ]
+#              dst = [
+#                "k3s-cluster-ipv4:*",
+#                "k3s-cluster-ipv6:*",
+#                "k3s-service-ipv4:*",
+#                "k3s-service-ipv6:*",
+#              ]
+#            },
+            // Allow all k3s tagged devices to communicate with each other and cluster subnets
             {
               action = "accept"
               src = [
+                "tag:k3s",
+                "tag:k8s",
                 "k3s-cluster-ipv4",
                 "k3s-cluster-ipv6",
                 "k3s-service-ipv4",
                 "k3s-service-ipv6",
               ]
               dst = [
-                "k3s-cluster-ipv4:*",
-                "k3s-cluster-ipv6:*",
-                "k3s-service-ipv4:*",
-                "k3s-service-ipv6:*",
-              ]
-            },
-            // Allow all k3s tagged devices to communicate with each other and cluster subnets
-            {
-              action = "accept"
-              src = [
-                "tag:k3s",
-              ]
-              dst = [
                 "tag:k3s:*",
+                "tag:k8s:*",
                 "k3s-cluster-ipv4:*",
                 "k3s-cluster-ipv6:*",
                 "k3s-service-ipv4:*",
                 "k3s-service-ipv6:*",
               ]
             },
-            // Allow admind devices to access everything
+            // Allow admin devices to access everything
             {
               action = "accept"
               src = [
@@ -168,6 +185,8 @@ generate_hcl "_tailscale.tf" {
                 "autogroup:internet:*",
                 "tag:k3s:*",
                 "tag:k8s:*",
+                "tag:k8s-ingress:*",
+                "tag:k8s-router:*",
                 "tag:k8s-operator:*",
                 "k3s-cluster-ipv4:*",
                 "k3s-cluster-ipv6:*",
@@ -185,6 +204,7 @@ generate_hcl "_tailscale.tf" {
                 "dns-ipv4:53",
                 "dns-ipv6:53",
                 "tag:k8s:443",
+                "tag:k8s-ingress:443",
               ]
             },
             {
