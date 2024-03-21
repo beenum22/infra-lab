@@ -13,54 +13,20 @@ variable "namespace" {
   default = "network"
 }
 
-#variable "image" {
-#  type = string
-#  default = null
-#}
-#
-#variable "tag" {
-#  type = string
-#  default = null
-#}
-#
-#variable "dualstack" {
-#  type = bool
-#  default = true
-#}
-#
-#variable "expose" {
-#  type = bool
-#  default = false
-#}
-#
-#variable "ingress_class" {
-#  type = string
-#  default = "nginx"
-#}
+variable "chart_name" {
+  type = string
+  default = "tailscale-operator"
+}
 
-#variable "issuer" {
-#  type = string
-#}
-#
-#variable "domains" {
-#  type = list(string)
-#  default = []
-#}
+variable "chart_version" {
+  type = string
+  default = "1.61.11"
+}
 
-#variable "password" {
-#  type = string
-#  default = "admin"
-#  sensitive = true
-#}
-
-#variable "publish" {
-#  type = bool
-#  default = false
-#}
-
-#variable "ingress_hostname" {
-#  type = string
-#}
+variable "chart_url" {
+  type = string
+  default = "https://pkgs.tailscale.com/helmcharts"
+}
 
 variable "client_id" {
   type = string
