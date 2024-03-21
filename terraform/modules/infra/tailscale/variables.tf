@@ -20,6 +20,7 @@ variable "tailscale_mtu" {
 
 variable "authkey" {
   type = string
+  default = null
 }
 
 variable "hostname" {
