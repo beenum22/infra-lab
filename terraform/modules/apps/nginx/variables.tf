@@ -20,22 +20,12 @@ variable "chart_name" {
 
 variable "chart_version" {
   type = string
-  default = "4.6.1"
+  default = "4.10.0"
 }
 
 variable "chart_url" {
   type = string
   default = "https://kubernetes.github.io/ingress-nginx"
-}
-
-variable "image" {
-  type = string
-  default = "ingress-nginx/controller"
-}
-
-variable "tag" {
-  type = string
-  default = "v1.7.1"
 }
 
 variable "domain" {
@@ -45,4 +35,9 @@ variable "domain" {
 variable "expose_on_tailnet" {
   type = bool
   default = false
+}
+
+variable "tailnet_hostname" {
+  type = string
+  default = "wormhole"
 }
