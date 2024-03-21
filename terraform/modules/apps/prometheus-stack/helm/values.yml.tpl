@@ -143,7 +143,7 @@ thanosRuler:
 
 # Exporters configuration
 nodeExporter:
-  enabled: false
+  enabled: true
 kubeApiServer:
   enabled: false
 kubelet:
@@ -194,8 +194,8 @@ defaultRules:
     kubeSchedulerAlerting: false
     kubeSchedulerRecording: false
     kubeStateMetrics: false
-    network: false
-    node: false
+    network: true
+    node: true
     nodeExporterAlerting: false
     nodeExporterRecording: false
     prometheus: false
