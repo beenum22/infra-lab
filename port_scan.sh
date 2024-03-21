@@ -15,6 +15,7 @@ for ARG in "$@"; do
     if [[ "$ARG" == *@* ]]; then
         USER=$(echo "$ARG" | cut -d'@' -f1)
         HOST=$(echo "$ARG" | cut -d'@' -f2)
+        PORT=$(echo "$ARG" | cut -d'@' -f3)
     else
         HOST="$ARG"
     fi
@@ -31,11 +32,11 @@ for ARG in "$@"; do
     echo "Processing host: $HOST, User: $USER"
 
     if [ $ADDRESS_TYPE == "IPv4" ]; then
-      TCP_PORTs=$(ssh $USER@$HOST "netstat -tuln" | awk '/^tcp / {print $4}' | awk -F: '{print $NF}')
-      UDP_PORTs=$(ssh $USER@$HOST "netstat -tuln" | awk '/^udp / {print $4}' | awk -F: '{print $NF}')
+      TCP_PORTs=$(ssh -p $PORT $USER@$HOST "netstat -tuln" | awk '/^tcp / {print $4}' | awk -F: '{print $NF}')
+      UDP_PORTs=$(ssh -p $PORT $USER@$HOST "netstat -tuln" | awk '/^udp / {print $4}' | awk -F: '{print $NF}')
     elif [ $ADDRESS_TYPE == "IPv6" ]; then
-      TCP_PORTs=$(ssh $USER@$HOST "netstat -tuln" | awk '/^tcp6/ {print $4}' | awk -F: '{print $NF}')
-      UDP_PORTs=$(ssh $USER@$HOST "netstat -tuln" | awk '/^udp6/ {print $4}' | awk -F: '{print $NF}')
+      TCP_PORTs=$(ssh -p $PORT $USER@$HOST "netstat -tuln" | awk '/^tcp6/ {print $4}' | awk -F: '{print $NF}')
+      UDP_PORTs=$(ssh -p $PORT $USER@$HOST "netstat -tuln" | awk '/^udp6/ {print $4}' | awk -F: '{print $NF}')
     fi
 
     echo "Scanning the TCP ports..."
