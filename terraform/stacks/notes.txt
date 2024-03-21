@@ -5,3 +5,9 @@ Boundaries:
     - K3s Cluster
     - Foundational Apps
     - User Apps
+
+Pre-requisites:
+    - muneeb user with sudo that doesn't need password
+    - SSH access using muneeb over public key
+    - Python3 installation with required PIP modules (firewall, ...)
+    - Add NAT64.net nameservers to the IPv6 only hosts
