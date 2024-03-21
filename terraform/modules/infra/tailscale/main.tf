@@ -14,7 +14,8 @@ locals {
       "if [ -f /etc/debian_version ]; then ${var.use_sudo ? "sudo " : ""}apt-get update && ${var.use_sudo ? "sudo " : ""} apt-get install -y --allow-downgrades tailscale=${var.tailscale_version}; elif [ -f /etc/redhat-release ]; then ${var.use_sudo ? "sudo " : ""}dnf install -y tailscale-${var.tailscale_version}; else echo \"Unsupported operating system\" && exit 1; fi",
       "if [ ! $(cat /etc/default/tailscaled  | grep MTU) ]; then echo 'TS_DEBUG_MTU=${var.tailscale_mtu}' | ${var.use_sudo ? "sudo " : ""}tee -a /etc/default/tailscaled; fi",
       "${var.use_sudo ? "sudo " : ""}systemctl restart tailscaled",
-      "if ${var.use_sudo ? "sudo " : ""}test -f '/var/lib/tailscale/tailscaled.state'; then ${var.use_sudo ? "sudo " : ""}tailscale up; else ${var.use_sudo ? "sudo " : ""}tailscale up --auth-key=${var.authkey}; fi"
+      "if ! ${var.use_sudo ? "sudo " : ""}grep -q '{}' /var/lib/tailscale/tailscaled.state; then ${var.use_sudo ? "sudo " : ""}tailscale up; else ${var.use_sudo ? "sudo " : ""}tailscale up --auth-key=${nonsensitive(tailscale_tailnet_key.node_key.key)}; fi"
+#      "if ${var.use_sudo ? "sudo " : ""}test -f '/var/lib/tailscale/tailscaled.state'; then ${var.use_sudo ? "sudo " : ""}tailscale up; else ${var.use_sudo ? "sudo " : ""}tailscale up --auth-key=${nonsensitive(tailscale_tailnet_key.node_key.key)}; fi"
     ])
   }
   upgrade = {
@@ -36,6 +37,15 @@ locals {
   }
 }
 
+resource "tailscale_tailnet_key" "node_key" {
+  reusable      = true
+  ephemeral     = false
+  preauthorized = true
+  expiry        = 3600
+  description   = "${var.hostname} node key generated using Terraform"
+  tags          = ["tag:k3s"]
+}
+
 resource "null_resource" "install" {
   triggers = {
     host = var.connection_info.host
@@ -45,7 +55,7 @@ resource "null_resource" "install" {
     install_script = local.install.oracle
     uninstall_script = local.uninstall.oracle
     mtu = var.tailscale_mtu
-    authkey = var.authkey
+    authkey = nonsensitive(tailscale_tailnet_key.node_key.key)
   }
   connection {
     type     = "ssh"
