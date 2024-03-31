@@ -77,30 +77,6 @@ generate_hcl "_certificates.tf" {
   }
 }
 
-generate_hcl "_ovh.tf" {
-  content {
-    data "ovh_domain_zone" "this" {
-      name = global.project.zone
-    }
-
-    resource "ovh_domain_zone_record" "k3s_api_ipv4" {
-      zone      = global.project.zone
-      subdomain = "k3sapi.admin"
-      fieldtype = "A"
-      ttl       = 60
-      target    = tm_hcl_expression("data.terraform_remote_state.infra_configuration_stack_state.outputs.tailscale_ips[\"${global.infrastructure.k3s.api_host}\"].ipv4")
-    }
-
-    resource "ovh_domain_zone_record" "k3s_api_ipv6" {
-      zone      = global.project.zone
-      subdomain = "k3sapi.admin"
-      fieldtype = "AAAA"
-      ttl       = 60
-      target    = tm_hcl_expression("data.terraform_remote_state.infra_configuration_stack_state.outputs.tailscale_ips[\"${global.infrastructure.k3s.api_host}\"].ipv6")
-    }
-  }
-}
-
 generate_hcl "_k3s.tf" {
   lets {
     init_node = {
@@ -138,7 +114,7 @@ generate_hcl "_k3s.tf" {
       graceful_destroy = false
       connection_info = {
         user = "k3s"
-        host = local.use_tailscale_ipv6 == true ? tm_hcl_expression("data.terraform_remote_state.infra_configuration_stack_state.outputs.tailscale_ips[each.key].ipv6") : tm_hcl_expression("data.terraform_remote_state.infra_configuration_stack_state.outputs.tailscale_ips[each.key].ipv4")
+        host = each.key
         port = each.value.port
         private_key = data.terraform_remote_state.infra_deployment_stack_state.outputs.ssh_private_key
       }
@@ -159,7 +135,7 @@ generate_hcl "_k3s.tf" {
       graceful_destroy = true
       connection_info = {
         user = "k3s"
-        host = local.use_tailscale_ipv6 == true ? tm_hcl_expression("data.terraform_remote_state.infra_configuration_stack_state.outputs.tailscale_ips[each.key].ipv6") : tm_hcl_expression("data.terraform_remote_state.infra_configuration_stack_state.outputs.tailscale_ips[each.key].ipv4")
+        host = each.key
         port = each.value.port
         private_key = data.terraform_remote_state.infra_deployment_stack_state.outputs.ssh_private_key
       }
