@@ -43,6 +43,8 @@ generate_hcl "_dns.tf" {
       ingress_class = global.project.ingress_class
       ingress_hostname = global.project.ingress_hostname
       issuer = module.cert_manager.issuer
+      expose_on_tailnet = true
+      tailnet_hostname = "blocky"
       conditional_mappings = {
         "cluster.local" = "10.43.0.10"
       }
@@ -58,14 +60,24 @@ generate_hcl "_dns.tf" {
         "homebox.dera.ovh" = join(",", data.tailscale_device.nginx.0.addresses)
         "prometheus.dera.ovh" = join(",", data.tailscale_device.nginx.0.addresses)
         "grafana.dera.ovh" = join(",", data.tailscale_device.nginx.0.addresses)
+        "dashdot.dera.ovh" = join(",", data.tailscale_device.nginx.0.addresses)
       }
       depends_on = [
         kubernetes_namespace.dns
       ]
     }
 
+    data "tailscale_device" "blocky" {
+      name = module.blocky.tailscale_hostname
+      wait_for = "60s"
+    }
+
+    resource "tailscale_dns_nameservers" "this" {
+      nameservers = data.tailscale_device.blocky.addresses
+    }
+
     output "dns_servers" {
-      value = module.blocky.endpoints
+      value = data.tailscale_device.blocky.addresses
     }
   }
 }
