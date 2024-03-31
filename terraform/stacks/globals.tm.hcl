@@ -10,11 +10,9 @@ globals "terraform" "default_providers" {
     source  = "oracle/oci"
     version = "4.111.0"
     config = {
-      tenancy_ocid     = global.infrastructure.oci.tenancy_ocid
-      user_ocid        = global.infrastructure.oci.user_ocid
-      private_key_path = global.infrastructure.oci.private_key_path
-      fingerprint      = global.infrastructure.oci.fingerprint
-      region           = global.infrastructure.oci.region
+      auth = "SecurityToken"
+      config_file_profile = "DEFAULT"
+      region = global.infrastructure.oci.region
     }
   }
   template = {
@@ -84,6 +82,13 @@ globals "terraform" "default_providers" {
     config = {
       application_key = global.secrets.b2.application_key
       application_key_id = global.secrets.b2.key_id
+    }
+  }
+  hcloud = {
+    source = "hetznercloud/hcloud"
+    version = "1.45.0"
+    config = {
+      token = global.secrets.hetzner.api_token
     }
   }
 }
