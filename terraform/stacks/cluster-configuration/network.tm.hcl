@@ -11,9 +11,6 @@ generate_hcl "_network.tf" {
       namespace = kubernetes_namespace.network.metadata.0.name
       client_id = global.secrets.tailscale.client_id
       client_secret = global.secrets.tailscale.client_secret
-      extra_values = {
-        "proxyConfig.image.tag" = "unstable-v1.61.87"  # Fix for https://github.com/tailscale/tailscale/issues/8454
-      }
       depends_on = [kubernetes_namespace.network]
     }
 
