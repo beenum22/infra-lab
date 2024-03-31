@@ -196,9 +196,13 @@ resource "kubernetes_service" "this" {
     labels = {
       "app.kubernetes.io/name" = var.name
     }
+    annotations = {
+      "tailscale.com/hostname" = var.expose_on_tailnet ? var.tailnet_hostname : null
+    }
   }
   spec {
-    type = "ClusterIP"
+    type = var.expose_on_tailnet ? "LoadBalancer" : "ClusterIP"
+    load_balancer_class = var.expose_on_tailnet ? "tailscale" : null
     ip_families = [
       "IPv6",
       "IPv4",
