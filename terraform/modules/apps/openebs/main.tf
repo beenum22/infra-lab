@@ -73,6 +73,11 @@ resource "helm_release" "this" {
     value = true
   }
   set {
+    name  = "zfs-localpv.zfsNode.nodeSelector.openebs\\.io/localpv-zfs"
+    value = "true"
+    type  = "string"
+  }
+  set {
     name  = "nfs-provisioner.enabled"
     value = true
   }
