@@ -6,46 +6,46 @@ locals {
     "external-dns.alpha.kubernetes.io/target" = var.ingress_hostname
   }
   apps = {
-    pihole = {
-      section     = "Cluster"
-      title       = "Pihole"
-      description = "DNS Server & Adblocker"
-      icon        = "hl-pihole"
-      url         = "https://pihole.dera.ovh/admin"
-      status_check = true
-    }
-    netdata = {
-      section     = "Cluster"
-      title       = "Netdata"
-      description = "Monitoring Dashboard"
-      icon        = "hl-netdata"
-      url         = "https://netdata.dera.ovh"
-      status_check = true
-    }
-    grafana = {
-      section     = "Cluster"
-      title       = "Grafana"
-      description = "Monitoring Dashboard"
-      icon        = "hl-grafana"
-      url         = "https://grafana.dera.ovh"
-      status_check = true
-    }
-    prometheus = {
-      section     = "Cluster"
-      title       = "Prometheus"
-      description = "Time Series Database"
-      icon        = "hl-prometheus"
-      url         = "https://prometheus.dera.ovh"
-      status_check = true
-    }
-    jellyfin = {
-      section = "Apps"
-      title = "Jellyfin"
-      description = "Media Server"
-      icon = "hl-jellyfin"
-      url = "https://jellyfin.dera.ovh"
-      status_check: true
-    }
+#     pihole = {
+#       section     = "Cluster"
+#       title       = "Pihole"
+#       description = "DNS Server & Adblocker"
+#       icon        = "hl-pihole"
+#       url         = "https://pihole.dera.ovh/admin"
+#       status_check = true
+#     }
+#     netdata = {
+#       section     = "Cluster"
+#       title       = "Netdata"
+#       description = "Monitoring Dashboard"
+#       icon        = "hl-netdata"
+#       url         = "https://netdata.dera.ovh"
+#       status_check = true
+#     }
+#     grafana = {
+#       section     = "Cluster"
+#       title       = "Grafana"
+#       description = "Monitoring Dashboard"
+#       icon        = "hl-grafana"
+#       url         = "https://grafana.dera.ovh"
+#       status_check = true
+#     }
+#     prometheus = {
+#       section     = "Cluster"
+#       title       = "Prometheus"
+#       description = "Time Series Database"
+#       icon        = "hl-prometheus"
+#       url         = "https://prometheus.dera.ovh"
+#       status_check = true
+#     }
+#     jellyfin = {
+#       section = "Apps"
+#       title = "Jellyfin"
+#       description = "Media Server"
+#       icon = "hl-jellyfin"
+#       url = "https://jellyfin.dera.ovh"
+#       status_check: true
+#     }
     filebrowser = {
       section = "Apps"
       title = "Filebrowser"
@@ -54,14 +54,14 @@ locals {
       url = "https://filebrowser.dera.ovh"
       status_check: true
     }
-    jitsi = {
-      section = "Apps"
-      title = "Jitsi Meet"
-      description = "Video Calling Service"
-      icon = "hl-jitsi"
-      url = "https://jitsi.dera.ovh"
-      status_check: true
-    }
+#     jitsi = {
+#       section = "Apps"
+#       title = "Jitsi Meet"
+#       description = "Video Calling Service"
+#       icon = "hl-jitsi"
+#       url = "https://jitsi.dera.ovh"
+#       status_check: true
+#     }
     homebox = {
       section = "Apps"
       title = "Homebox"
@@ -70,21 +70,61 @@ locals {
       url = "https://homebox.dera.ovh"
       status_check: true
     }
-    radarr = {
-      section = "Apps"
-      title = "Radarr"
-      description = "Movie Collection Manager"
-      icon = "hl-radarr"
-      url = "https://radarr.dera.ovh"
-      status_check: true
+#     radarr = {
+#       section = "Apps"
+#       title = "Radarr"
+#       description = "Movie Collection Manager"
+#       icon = "hl-radarr"
+#       url = "https://radarr.dera.ovh"
+#       status_check: true
+#     }
+#     prowlarr = {
+#       section = "Apps"
+#       title = "Prowlarr"
+#       description = "Media Sources Index Manager"
+#       icon = "hl-prowlarr"
+#       url = "https://prowlarr.dera.ovh"
+#       status_check: true
+#     }
+    dashdot-oci-fra-0 = {
+      section     = "Cluster"
+      title       = "Dash. oci-fra-0"
+      description = "Simple Node Monitoring Dashboard"
+      icon        = "hl-dashdot"
+      url         = "https://oci-fra-0.dashdot.dera.ovh"
+      status_check = true
     }
-    prowlarr = {
-      section = "Apps"
-      title = "Prowlarr"
-      description = "Media Sources Index Manager"
-      icon = "hl-prowlarr"
-      url = "https://prowlarr.dera.ovh"
-      status_check: true
+    dashdot-oci-fra-1 = {
+      section     = "Cluster"
+      title       = "Dash. oci-fra-1"
+      description = "Simple Node Monitoring Dashboard"
+      icon        = "hl-dashdot"
+      url         = "https://oci-fra-1.dashdot.dera.ovh"
+      status_check = true
+    }
+    dashdot-oci-fra-2 = {
+      section     = "Cluster"
+      title       = "Dash. oci-fra-2"
+      description = "Simple Node Monitoring Dashboard"
+      icon        = "hl-dashdot"
+      url         = "https://oci-fra-2.dashdot.dera.ovh"
+      status_check = true
+    }
+    dashdot-hzn-hel-0 = {
+      section     = "Cluster"
+      title       = "Dash. hzn-hel-0"
+      description = "Simple Node Monitoring Dashboard"
+      icon        = "hl-dashdot"
+      url         = "https://hzn-hel-0.dashdot.dera.ovh"
+      status_check = true
+    }
+    dashdot-netcup-neu-0 = {
+      section     = "Cluster"
+      title       = "Dash. netcup-neu-0"
+      description = "Simple Node Monitoring Dashboard"
+      icon        = "hl-dashdot"
+      url         = "https://netcup-neu-0.dashdot.dera.ovh"
+      status_check = true
     }
   }
   sections = distinct([
