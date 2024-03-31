@@ -20,15 +20,10 @@ variable "chart_name" {
 
 variable "chart_version" {
   type = string
-  default = "3.9.0"
+  default = "3.10.0"
 }
 
 variable "chart_url" {
   type = string
   default = "https://openebs.github.io/charts"
-}
-
-variable "device_localpv" {
-  type = bool
-  default = true
 }
