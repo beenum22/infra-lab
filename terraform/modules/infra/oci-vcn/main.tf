@@ -2,7 +2,6 @@ terraform {
   required_providers {
     oci = {
       source = "oracle/oci"
-      version = "4.111.0"
     }
   }
 }
@@ -52,7 +51,7 @@ resource "oci_core_route_table" "public" {
   }
   route_rules {
     destination = "0.0.0.0/0"
-    network_entity_id = oci_core_nat_gateway.nat_gw.id
+    network_entity_id = var.enable_ipv4_nat_egress ? oci_core_nat_gateway.nat_gw.id : oci_core_internet_gateway.igw.id
     description = "Terraformed - Auto-generated at Internet Gateway creation: Internet Gateway as default gateway"
   }
 }
@@ -88,24 +87,24 @@ resource "oci_core_security_list" "bastion" {
     protocol    = "all"
   }
   dynamic "ingress_security_rules" {
-    for_each = var.enable_ssh ? { ssh = true } : {}
+    for_each = var.enable_ssh ? toset(var.ssh_ports) : toset([])
     content {
       protocol = 6
       source   = "0.0.0.0/0"
       tcp_options {
-        min = 22
-        max = 22
+        min = ingress_security_rules.value
+        max = ingress_security_rules.value
       }
     }
   }
   dynamic "ingress_security_rules" {
-    for_each = var.enable_ssh ? { ssh = true } : {}
+    for_each = var.enable_ssh ? toset(var.ssh_ports) : toset([])
     content {
       protocol = 6
       source   = "::/0"
       tcp_options {
-        min = 22
-        max = 22
+        min = ingress_security_rules.value
+        max = ingress_security_rules.value
       }
     }
   }
