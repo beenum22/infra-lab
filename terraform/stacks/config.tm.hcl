@@ -262,17 +262,10 @@ globals "infrastructure" "instances" {
     }
     zfs_config = {
       enable = true
-      loopback = {
-        loop0 = {
-          path = "/mnt/zfs-loop0.img"
-          size = "20G"
-        }
-        loop1 = {
-          path = "/mnt/zfs-loop1.img"
-          size = "5G"
-        }
+      loopback = {}
+      devices = {
+        vda4 = {}
       }
-      devices = {}
     }
     k3s_config = {
       version = global.infrastructure.k3s.version
