@@ -34,22 +34,22 @@ generate_hcl "_monitoring.tf" {
       ]
     }
 
-    module "prometheus_stack" {
-      source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/prometheus-stack"
-      namespace = kubernetes_namespace.monitoring.metadata[0].name
-      issuer = module.cert_manager.issuer
-      grafana_domains = [
-        "grafana.dera.ovh"
-      ]
-      prometheus_domains = [
-        "prometheus.dera.ovh"
-      ]
-      grafana_password = global.secrets.grafana_password
-      storage_class = global.project.storage_class
-      ingress_hostname = global.project.ingress_hostname
-      depends_on = [
-        kubernetes_namespace.monitoring
-      ]
-    }
+#     module "prometheus_stack" {
+#       source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/prometheus-stack"
+#       namespace = kubernetes_namespace.monitoring.metadata[0].name
+#       issuer = module.cert_manager.issuer
+#       grafana_domains = [
+#         "grafana.dera.ovh"
+#       ]
+#       prometheus_domains = [
+#         "prometheus.dera.ovh"
+#       ]
+#       grafana_password = global.secrets.grafana_password
+#       storage_class = global.project.storage_class
+#       ingress_hostname = global.project.ingress_hostname
+#       depends_on = [
+#         kubernetes_namespace.monitoring
+#       ]
+#     }
   }
 }
