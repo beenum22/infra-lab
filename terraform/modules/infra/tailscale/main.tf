@@ -31,7 +31,7 @@ locals {
   uninstall = {
     oracle = join(";", [
       "${var.use_sudo ? "sudo " : ""}tailscale down",
-      "if [ -f /etc/debian_version ]; then ${var.use_sudo ? "sudo " : ""} apt-get remove -y tailscale=${var.tailscale_version}; elif [ -f /etc/redhat-release ]; then ${var.use_sudo ? "sudo " : ""}dnf remove -y tailscale-${var.tailscale_version}; else echo \"Unsupported operating system\" && exit 1; fi",
+      "if [ -f /etc/debian_version ]; then ${var.use_sudo ? "sudo " : ""} apt-get remove -y tailscale; elif [ -f /etc/redhat-release ]; then ${var.use_sudo ? "sudo " : ""}dnf remove -y tailscale; else echo \"Unsupported operating system\" && exit 1; fi",
       "${var.use_sudo ? "sudo " : ""} rm -rf /var/lib/tailscale"
     ])
   }
@@ -53,7 +53,6 @@ resource "null_resource" "install" {
     port = var.connection_info.port
     private_key = var.connection_info.private_key
     install_script = local.install.oracle
-    uninstall_script = local.uninstall.oracle
     mtu = var.tailscale_mtu
     authkey = nonsensitive(tailscale_tailnet_key.node_key.key)
   }
@@ -69,6 +68,23 @@ resource "null_resource" "install" {
     inline = [
       self.triggers.install_script
     ]
+  }
+}
+
+resource "null_resource" "uninstall" {
+  triggers = {
+    host = var.connection_info.host
+    user = var.connection_info.user
+    port = var.connection_info.port
+    private_key = var.connection_info.private_key
+    uninstall_script = local.uninstall.oracle
+  }
+  connection {
+    type     = "ssh"
+    user     = self.triggers.user
+    private_key = self.triggers.private_key
+    host     = self.triggers.host
+    port     = self.triggers.port
   }
   provisioner "remote-exec" {
     when = destroy
