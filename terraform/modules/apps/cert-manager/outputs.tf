@@ -1,7 +1,7 @@
 output "name" {
-  value = helm_release.chart.name
+  value = helm_release.this.name
 }
 
 output "issuer" {
-  value = "letsencrypt-ovh"
+  value = "${var.name}-cloudflare"
 }

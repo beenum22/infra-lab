@@ -25,63 +25,15 @@ variable "chart_url" {
 
 variable "chart_version" {
   type = string
-  default = "1.12.1"
-}
-
-variable "webhook_chart_name" {
-  type = string
-  default = "cert-manager-webhook-ovh"
-}
-
-variable "webhook_chart_url" {
-  type = string
-  default = "https://aureq.github.io/cert-manager-webhook-ovh/"
-}
-
-variable "webhook_chart_version" {
-  type = string
-  default = "0.4.2"
-}
-
-variable "webhook_image" {
-  type = string
-  default = "ghcr.io/aureq/cert-manager-webhook-ovh"
-}
-
-variable "webhook_tag" {
-  type = string
-  default = "v0.4.2"
-}
-
-variable "image" {
-  type = string
-  default = "quay.io/jetstack/cert-manager-controller"
-}
-
-variable "tag" {
-  type = string
-  default = "v1.12.1"
+  default = "1.14.4"
 }
 
 variable "domain_email" {
   type = string
 }
 
-variable "group_name" {
+variable "cloudflare_api_token" {
   type = string
-}
-
-variable "ovh_consumer_key" {
-  type = string
-}
-
-variable "ovh_app_key" {
-  type = string
-}
-
-variable "ovh_app_secret" {
-  type = string
-  sensitive = true
 }
 
 variable "ingress_class" {
