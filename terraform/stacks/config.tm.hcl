@@ -2,11 +2,11 @@ globals "project" {
   name = "dera-lab"
   zone = "dera.ovh"
   domain = "dera.ovh"
-  domain_email = "muneebahmad22@live.com"
+  domain_email = "muneeb.gandapur@gmail.com"
   ingress_class = "nginx"
   ingress_hostname = "wormhole.dera.ovh"
   storage_class = "openebs-zfs"
-  cert_manager_issuer = "letsencrypt-ovh"
+  cert_manager_issuer = "cert-manager-cloudflare"
 }
 
 globals "infrastructure" "ovh" {
@@ -21,7 +21,7 @@ globals "infrastructure" "tailscale" {
   apikey   = global.secrets.tailscale.apikey
   tailnet  = "tail03622.ts.net"
   org = "muneeb.gandapur@gmail.com"
-  version = "1.58.2"
+  version = "1.62.1"
   acl = {
     admins = [
       "muneeb.gandapur@gmail.com",
@@ -52,11 +52,11 @@ globals "infrastructure" "oci" {
 }
 
 globals "infrastructure" "instances" {
-  oci-fra-k3s-0 = {
+  oci-fra-0 = {
     managed  = false
     provider = "oracle"
     user     = "opc"
-    port     = 22
+    port     = 2203
     host     = {}
     hostname = null
     provider_config = {
@@ -96,15 +96,15 @@ globals "infrastructure" "instances" {
         "dera.ovh/type" = "vm"
         "dera.ovh/owner" = "munna"
         "openebs.io/localpv-zfs" = false
-        "openebs.io/nodeid" = "oci-fra-k3s-0"
+        "openebs.io/nodeid" = "oci-fra-0"
       }
     }
   }
-  oci-fra-k3s-1 = {
+  oci-fra-1 = {
     managed  = false
     provider = "oracle"
     user     = "opc"
-    port     = 22
+    port     = 2203
     host     = {}
     hostname = null
     provider_config = {
@@ -143,15 +143,15 @@ globals "infrastructure" "instances" {
         "dera.ovh/owner" = "munna"
         "dera.ovh/type" = "vm"
         "openebs.io/localpv-zfs" = false
-        "openebs.io/nodeid" = "oci-fra-k3s-1"
+        "openebs.io/nodeid" = "oci-fra-1"
       }
     }
   }
-  oci-fra-k3s-2 = {
+  oci-fra-2 = {
     managed  = false
     provider = "oracle"
     user     = "opc"
-    port     = 22
+    port     = 2203
     host     = {}
     hostname = null
     provider_config = {
@@ -192,21 +192,23 @@ globals "infrastructure" "instances" {
         "dera.ovh/type" = "vm"
         "dera.ovh/owner" = "munna"
         "openebs.io/localpv-zfs" = false
-        "openebs.io/nodeid" = "oci-fra-k3s-2"
+        "openebs.io/nodeid" = "oci-fra-2"
       }
     }
   }
-  hzn-neu-k3s-0 = {
-    managed  = true
+  hzn-hel-0 = {
+    managed  = false
     provider = "hetzner"
     user     = "muneeb"
-    port     = 22
-    host = {
-      ipv4 = "78.46.252.116"
-      ipv6 = "2a01:4f8:c0c:4015::1"
+    port     = 2203
+    host = {}
+    hostname        = "hzn-hel-0"
+    provider_config = {
+      image       = "alma-9"
+      server_type = "cx11"
+      datacenter  = "hel1-dc2"
+      block_volumes = ["20"]
     }
-    hostname        = "hzn-neu-k3s-0"
-    provider_config = {}
     tailscale_config = {
       version   = global.infrastructure.tailscale.version
       auth_key  = global.infrastructure.tailscale.auth_key
@@ -237,20 +239,20 @@ globals "infrastructure" "instances" {
         "dera.ovh/type" = "vm"
         "dera.ovh/owner" = "munna"
         "openebs.io/localpv-zfs" = true
-        "openebs.io/nodeid" = "hzn-neu-k3s-0"
+        "openebs.io/nodeid" = "hzn-hel-0"
       }
     }
   }
-  netcup-neu-k3s-0 = {
+  netcup-neu-0 = {
     managed  = true
     provider = "netcup"
     user     = "muneeb"
-    port     = 22
+    port     = 2203
     host = {
       ipv4 = "46.232.249.165"
       ipv6 = "2a03:4000:2b:74:6466:f3ff:fe64:150"
     }
-    hostname        = "netcup-neu-k3s-0"
+    hostname        = "netcup-neu-0"
     provider_config = {}
     tailscale_config = {
       version   = global.infrastructure.tailscale.version
@@ -274,7 +276,7 @@ globals "infrastructure" "instances" {
     }
     k3s_config = {
       version = global.infrastructure.k3s.version
-      init = false
+      init = true
       root_node = false
       role = "server"
       copy_kubeconfig = false
@@ -284,140 +286,140 @@ globals "infrastructure" "instances" {
         "dera.ovh/type" = "vm"
         "dera.ovh/owner" = "munna"
         "openebs.io/localpv-zfs" = true
-        "openebs.io/nodeid" = "netcup-neu-k3s-0"
+        "openebs.io/nodeid" = "netcup-neu-0"
       }
     }
   }
-  ovh-ldn-k3s-0 = {
-    managed  = true
-    provider = "ovh"
-    user     = "ubuntu"
-    port     = 22
-    host = {
-      ipv4 = "57.128.170.166"
-      ipv6 = "2001:41d0:801:2000::b48"
-    }
-    hostname        = "ovh-ldn-k3s-0"
-    provider_config = {}
-    tailscale_config = {
-      version   = global.infrastructure.tailscale.version
-      auth_key  = global.infrastructure.tailscale.auth_key
-      exit_node = true
-      mtu       = "1280"
-    }
-    zfs_config = {
-      enable = true
-      loopback = {
-        loop100 = {
-          path = "/mnt/zfs-loop100.img"
-          size = "5G"
-        }
-      }
-      devices = {}
-    }
-    k3s_config = {
-      version = global.infrastructure.k3s.version
-      init = false
-      root_node = false
-      role = "agent"
-      copy_kubeconfig = false
-      node_labels = {
-        "dera.ovh/country" = "england"
-        "dera.ovh/provider" = "ovh"
-        "dera.ovh/type" = "vm"
-        "dera.ovh/owner" = "jakku"
-        "openebs.io/localpv-zfs" = true
-        "openebs.io/nodeid" = "ovh-ldn-k3s-0"
-      }
-    }
-  }
-  ovh-fra-k3s-1 = {
-    managed  = true
-    provider = "ovh"
-    user     = "ubuntu"
-    port     = 22
-    host = {
-      ipv4 = "54.37.205.201"
-      ipv6 = "2001:41d0:701:1100::19f1"
-    }
-    hostname        = "ovh-fra-k3s-1"
-    provider_config = {}
-    tailscale_config = {
-      version   = global.infrastructure.tailscale.version
-      auth_key  = global.infrastructure.tailscale.auth_key
-      exit_node = true
-      mtu       = "1280"
-    }
-    zfs_config = {
-      enable = true
-      loopback = {
-        loop100 = {
-          path = "/mnt/zfs-loop100.img"
-          size = "5G"
-        }
-      }
-      devices = {}
-    }
-    k3s_config = {
-      version = global.infrastructure.k3s.version
-      init = false
-      root_node = false
-      role = "agent"
-      copy_kubeconfig = false
-      node_labels = {
-        "dera.ovh/country" = "germany"
-        "dera.ovh/provider" = "ovh"
-        "dera.ovh/type" = "vm"
-        "dera.ovh/owner" = "jakku"
-        "openebs.io/localpv-zfs" = true
-        "openebs.io/nodeid" = "ovh-fra-k3s-1"
-      }
-    }
-  }
-  rpi4-ham-k3s-0 = {
-    managed  = false
-    provider = "self-hosted"
-    user     = "pi"
-    port     = 22
-    host = {
-      ipv4 = "192.168.2.211"
-      ipv6 = "2003:e4:171c:ac4f:b686:e01c:b9f6:2458"
-    }
-    hostname        = "rpi4-ham-k3s-0"
-    provider_config = {}
-    tailscale_config = {
-      version   = "1.60.1"
-      auth_key  = global.infrastructure.tailscale.auth_key
-      exit_node = false
-      mtu       = "1280"
-    }
-    zfs_config = {
-      enable = true
-      loopback = {}
-      devices = {
-        sda3 = {}
-      }
-    }
-    k3s_config = {
-      version = global.infrastructure.k3s.version
-      init = false
-      root_node = false
-      role = "agent"
-      copy_kubeconfig = false
-      node_labels = {
-        "dera.ovh/country" = "germany"
-        "dera.ovh/provider" = "self-hosted"
-        "dera.ovh/type" = "sbc"
-        "dera.ovh/owner" = "munna"
-        "openebs.io/localpv-zfs" = false
-        "openebs.io/nodeid" = "rpi4-ham-k3s-0"
-      }
-    }
-  }
+#   ovh-ldn-k3s-0 = {
+#     managed  = true
+#     provider = "ovh"
+#     user     = "ubuntu"
+#     port     = 22
+#     host = {
+#       ipv4 = "57.128.170.166"
+#       ipv6 = "2001:41d0:801:2000::b48"
+#     }
+#     hostname        = "ovh-ldn-k3s-0"
+#     provider_config = {}
+#     tailscale_config = {
+#       version   = global.infrastructure.tailscale.version
+#       auth_key  = global.infrastructure.tailscale.auth_key
+#       exit_node = true
+#       mtu       = "1280"
+#     }
+#     zfs_config = {
+#       enable = true
+#       loopback = {
+#         loop100 = {
+#           path = "/mnt/zfs-loop100.img"
+#           size = "5G"
+#         }
+#       }
+#       devices = {}
+#     }
+#     k3s_config = {
+#       version = global.infrastructure.k3s.version
+#       init = false
+#       root_node = false
+#       role = "agent"
+#       copy_kubeconfig = false
+#       node_labels = {
+#         "dera.ovh/country" = "england"
+#         "dera.ovh/provider" = "ovh"
+#         "dera.ovh/type" = "vm"
+#         "dera.ovh/owner" = "jakku"
+#         "openebs.io/localpv-zfs" = true
+#         "openebs.io/nodeid" = "ovh-ldn-k3s-0"
+#       }
+#     }
+#   }
+#   ovh-fra-k3s-1 = {
+#     managed  = true
+#     provider = "ovh"
+#     user     = "ubuntu"
+#     port     = 22
+#     host = {
+#       ipv4 = "54.37.205.201"
+#       ipv6 = "2001:41d0:701:1100::19f1"
+#     }
+#     hostname        = "ovh-fra-k3s-1"
+#     provider_config = {}
+#     tailscale_config = {
+#       version   = global.infrastructure.tailscale.version
+#       auth_key  = global.infrastructure.tailscale.auth_key
+#       exit_node = true
+#       mtu       = "1280"
+#     }
+#     zfs_config = {
+#       enable = true
+#       loopback = {
+#         loop100 = {
+#           path = "/mnt/zfs-loop100.img"
+#           size = "5G"
+#         }
+#       }
+#       devices = {}
+#     }
+#     k3s_config = {
+#       version = global.infrastructure.k3s.version
+#       init = false
+#       root_node = false
+#       role = "agent"
+#       copy_kubeconfig = false
+#       node_labels = {
+#         "dera.ovh/country" = "germany"
+#         "dera.ovh/provider" = "ovh"
+#         "dera.ovh/type" = "vm"
+#         "dera.ovh/owner" = "jakku"
+#         "openebs.io/localpv-zfs" = true
+#         "openebs.io/nodeid" = "ovh-fra-k3s-1"
+#       }
+#     }
+#   }
+#   rpi4-ham-k3s-0 = {
+#     managed  = false
+#     provider = "self-hosted"
+#     user     = "pi"
+#     port     = 22
+#     host = {
+#       ipv4 = "192.168.2.211"
+#       ipv6 = "2003:e4:171c:ac4f:b686:e01c:b9f6:2458"
+#     }
+#     hostname        = "rpi4-ham-k3s-0"
+#     provider_config = {}
+#     tailscale_config = {
+#       version   = "1.60.1"
+#       auth_key  = global.infrastructure.tailscale.auth_key
+#       exit_node = false
+#       mtu       = "1280"
+#     }
+#     zfs_config = {
+#       enable = true
+#       loopback = {}
+#       devices = {
+#         sda3 = {}
+#       }
+#     }
+#     k3s_config = {
+#       version = global.infrastructure.k3s.version
+#       init = false
+#       root_node = false
+#       role = "agent"
+#       copy_kubeconfig = false
+#       node_labels = {
+#         "dera.ovh/country" = "germany"
+#         "dera.ovh/provider" = "self-hosted"
+#         "dera.ovh/type" = "sbc"
+#         "dera.ovh/owner" = "munna"
+#         "openebs.io/localpv-zfs" = false
+#         "openebs.io/nodeid" = "rpi4-ham-k3s-0"
+#       }
+#     }
+#   }
 }
 
 globals "infrastructure" "config" {
-  use_ipv6          = true
+  use_ipv6          = false
   use_tailscale_ipv6  = false
   ssh_key_file_name = "${tm_replace(global.project.name, "-", "_")}_id_rsa"
   ssh_keys = [
@@ -446,7 +448,7 @@ globals "infrastructure" "config" {
 
 globals "infrastructure" "k3s" {
   version = "v1.28.5+k3s1"
-  api_host = "netcup-neu-k3s-0"
+  api_host = "netcup-neu-0"
   cluster_cidrs = [
     "10.42.0.0/16",
     "2001:cafe:42:0::/56"
