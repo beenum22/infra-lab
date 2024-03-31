@@ -17,3 +17,13 @@ variable "enable_ssh" {
   type = bool
   default = true
 }
+
+variable "ssh_ports" {
+  type = list(number)
+  default = [22]
+}
+
+variable "enable_ipv4_nat_egress" {
+  type = bool
+  default = false
+}
