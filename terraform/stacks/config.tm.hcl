@@ -17,8 +17,6 @@ globals "infrastructure" "ovh" {
 }
 
 globals "infrastructure" "tailscale" {
-  auth_key = global.secrets.tailscale.auth_key
-  apikey   = global.secrets.tailscale.apikey
   tailnet  = "tail03622.ts.net"
   org = "muneeb.gandapur@gmail.com"
   version = "1.62.1"
@@ -69,7 +67,6 @@ globals "infrastructure" "instances" {
     }
     tailscale_config = {
       version   = global.infrastructure.tailscale.version
-      auth_key  = global.infrastructure.tailscale.auth_key
       exit_node = false
       mtu       = "1280"
       routes    = "10.42.2.0/24,2001:cafe:42:3::/64"
@@ -117,7 +114,6 @@ globals "infrastructure" "instances" {
     }
     tailscale_config = {
       version   = global.infrastructure.tailscale.version
-      auth_key  = global.infrastructure.tailscale.auth_key
       exit_node = true
       mtu       = "1280"
     }
@@ -166,7 +162,6 @@ globals "infrastructure" "instances" {
     }
     tailscale_config = {
       version   = global.infrastructure.tailscale.version
-      auth_key  = global.infrastructure.tailscale.auth_key
       exit_node = false
       mtu       = "1280"
     }
@@ -211,7 +206,6 @@ globals "infrastructure" "instances" {
     }
     tailscale_config = {
       version   = global.infrastructure.tailscale.version
-      auth_key  = global.infrastructure.tailscale.auth_key
       exit_node = true
       mtu       = "1280"
     }
@@ -256,7 +250,6 @@ globals "infrastructure" "instances" {
     provider_config = {}
     tailscale_config = {
       version   = global.infrastructure.tailscale.version
-      auth_key  = global.infrastructure.tailscale.auth_key
       exit_node = true
       mtu       = "1280"
     }
