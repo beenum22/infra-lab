@@ -19,7 +19,9 @@ data "template_file" "cloud_config" {
   template = <<YAML
 #cloud-config
 runcmd:
-  %{ for cmd in var.cloud_init_commands ~}
+  - echo 'This instance was provisioned by Terraform.' >> /etc/motd
+  - sleep 10
+  %{ for cmd in var.cloud_init_commands }
   - ${cmd}
   %{ endfor ~}
 YAML

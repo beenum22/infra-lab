@@ -51,8 +51,6 @@ variable "block_volumes" {
 variable "cloud_init_commands" {
   type = list(string)
   default = [
-    "echo 'This instance was provisioned by Terraform.' >> /etc/motd",
-    "sleep 10",
 #    "echo 'Installing and configuring Docker'",
 #    "dnf install -y dnf-utils zip unzip",
 #    "dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo",
