@@ -77,3 +77,13 @@ variable "blacklists" {
   type = map(string)
   default = {}
 }
+
+variable "expose_on_tailnet" {
+  type = bool
+  default = false
+}
+
+variable "tailnet_hostname" {
+  type = string
+  default = "dns-server"
+}
