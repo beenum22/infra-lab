@@ -4,7 +4,8 @@ globals "terraform" {
     "kubernetes",
     "b2",
     "tailscale",
-    "local"
+    "local",
+    "cloudflare"
   ]
 
   remote_states = {
