@@ -445,6 +445,11 @@ globals "infrastructure" "k3s" {
   ]
 }
 
+globals "infrastructure" "cloudflare" {
+  zone_id = "17e986ac03eea904a1ced4c28a48240a"
+  account_id = "03614fa9b630f5b0984e241fe4aa1fc9"
+}
+
 globals "cluster" {
   users = {
     munna = {
