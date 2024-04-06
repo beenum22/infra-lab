@@ -126,6 +126,18 @@ generate_hcl "_apps.tf" {
       depends_on = [kubernetes_namespace.apps]
     }
 
+    module "http_echo" {
+      source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/http-echo"
+      namespace = kubernetes_namespace.apps.metadata[0].name
+      issuer = global.project.cert_manager_issuer
+      domains = [
+        "echo.dera.ovh"
+      ]
+      ingress_class = "nginx"
+      ingress_hostname = global.project.ingress_hostname
+      depends_on = [kubernetes_namespace.apps]
+    }
+
     resource "kubernetes_manifest" "backups" {
       for_each = toset(global.apps.backups)
       manifest = {
