@@ -1,4 +1,8 @@
 generate_hcl "_dns.tf" {
+  lets {
+    cloudflare_hostnames = global.apps.hostnames
+  }
+
   content {
     resource "kubernetes_namespace" "dns" {
       metadata {
@@ -50,21 +54,20 @@ generate_hcl "_dns.tf" {
       }
       custom_dns_rewrites = {}
       custom_dns_mappings = {
-#        "dashy.dera.ovh" = join(",", module.nginx.ips)
-#        "filebrowser.dera.ovh" = join(",", module.nginx.ips)
-#        "homebox.dera.ovh" = join(",", module.nginx.ips)
-#        "prometheus.dera.ovh" = join(",", module.nginx.ips)
-#        "grafana.dera.ovh" = join(",", module.nginx.ips)
-        "dashy.dera.ovh" = join(",", data.tailscale_device.nginx.0.addresses)
-        "filebrowser.dera.ovh" = join(",", data.tailscale_device.nginx.0.addresses)
-        "homebox.dera.ovh" = join(",", data.tailscale_device.nginx.0.addresses)
-        "prometheus.dera.ovh" = join(",", data.tailscale_device.nginx.0.addresses)
-        "grafana.dera.ovh" = join(",", data.tailscale_device.nginx.0.addresses)
-        "dashdot.dera.ovh" = join(",", data.tailscale_device.nginx.0.addresses)
+        "wormhole.tail03622.ts.net" = join(",", data.tailscale_device.nginx.0.addresses)
       }
       depends_on = [
         kubernetes_namespace.dns
       ]
+    }
+
+    resource "cloudflare_record" "cnames" {
+      for_each = let.cloudflare_hostnames
+      zone_id = global.infrastructure.cloudflare.zone_id
+      name    = each.key
+      value   = each.value == "cloudflare" ? module.cloudflared.tunnel_hostname : module.nginx.lb_hostname
+      type    = "CNAME"
+      proxied = each.value == "cloudflare" ? true : false
     }
 
     data "tailscale_device" "blocky" {
