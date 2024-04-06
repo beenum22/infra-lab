@@ -476,4 +476,17 @@ globals "apps" {
     "homebox",
     "nfs-share"
   ]
+
+  hostnames = {
+    "echo.dera.ovh" = "cloudflare"  # tailscale or cloudflare
+    "filebrowser.dera.ovh" = "tailscale"
+    "dashy.dera.ovh" = "tailscale"
+    "homebox.dera.ovh" = "tailscale"
+    "oci-fra-0.dashdot.dera.ovh" = "tailscale"
+    "oci-fra-1.dashdot.dera.ovh" = "tailscale"
+    "oci-fra-2.dashdot.dera.ovh" = "tailscale"
+    "hzn-hel-0.dashdot.dera.ovh" = "tailscale"
+    "netcup-neu-0.dashdot.dera.ovh" = "tailscale"
+    "rpi-dik-0.dashdot.dera.ovh" = "tailscale"
+  }
 }
