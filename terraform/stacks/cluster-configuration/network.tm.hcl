@@ -29,11 +29,6 @@ generate_hcl "_network.tf" {
       wait_for = "60s"
     }
 
-    moved {
-      from = kubernetes_manifest.test-configmap
-      to = kubernetes_manifest.tailscale_subnet_router
-    }
-
     resource "kubernetes_manifest" "tailscale_subnet_router" {
       manifest = {
         "apiVersion" = "tailscale.com/v1alpha1"
@@ -51,6 +46,18 @@ generate_hcl "_network.tf" {
           }
         }
       }
+    }
+
+    locals {
+      cloudflare_hostnames = global.apps.hostnames
+    }
+
+    module "cloudflared" {
+      source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/cloudflared"
+      namespace = kubernetes_namespace.network.metadata.0.name
+      ingress_hostname = "ingress-nginx-controller"
+      served_hostnames = [for hostname, value in local.cloudflare_hostnames : hostname if value == "cloudflare"]
+      account_id = global.infrastructure.cloudflare.account_id
     }
 
 #    resource "tailscale_tailnet_key" "auth_key" {
