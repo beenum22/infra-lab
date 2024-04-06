@@ -91,6 +91,13 @@ globals "terraform" "default_providers" {
       token = global.secrets.hetzner.api_token
     }
   }
+  cloudflare = {
+    source = "cloudflare/cloudflare"
+    version = "4.29.0"
+    config = {
+      api_token = global.secrets.cloudflare.api_token
+    }
+  }
 }
 
 globals "terraform" "backend" "s3" {
