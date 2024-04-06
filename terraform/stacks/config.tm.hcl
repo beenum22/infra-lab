@@ -362,46 +362,45 @@ globals "infrastructure" "instances" {
 #       }
 #     }
 #   }
-#   rpi4-ham-k3s-0 = {
-#     managed  = false
-#     provider = "self-hosted"
-#     user     = "pi"
-#     port     = 22
-#     host = {
-#       ipv4 = "192.168.2.211"
-#       ipv6 = "2003:e4:171c:ac4f:b686:e01c:b9f6:2458"
-#     }
-#     hostname        = "rpi4-ham-k3s-0"
-#     provider_config = {}
-#     tailscale_config = {
-#       version   = "1.60.1"
-#       auth_key  = global.infrastructure.tailscale.auth_key
-#       exit_node = false
-#       mtu       = "1280"
-#     }
-#     zfs_config = {
-#       enable = true
-#       loopback = {}
-#       devices = {
-#         sda3 = {}
-#       }
-#     }
-#     k3s_config = {
-#       version = global.infrastructure.k3s.version
-#       init = false
-#       root_node = false
-#       role = "agent"
-#       copy_kubeconfig = false
-#       node_labels = {
-#         "dera.ovh/country" = "germany"
-#         "dera.ovh/provider" = "self-hosted"
-#         "dera.ovh/type" = "sbc"
-#         "dera.ovh/owner" = "munna"
-#         "openebs.io/localpv-zfs" = false
-#         "openebs.io/nodeid" = "rpi4-ham-k3s-0"
-#       }
-#     }
-#   }
+  rpi-dik-0 = {
+    managed  = false
+    provider = "self-hosted"
+    user     = "pi"
+    port     = 2203
+    host = {
+      ipv4 = "192.168.100.51"
+      ipv6 = ""
+    }
+    hostname        = "rpi-dik-0"
+    provider_config = {}
+    tailscale_config = {
+      version   = global.infrastructure.tailscale.version
+      exit_node = true
+      mtu       = "1280"
+    }
+    zfs_config = {
+      enable = true
+      loopback = {}
+      devices = {
+        sda3 = {}
+      }
+    }
+    k3s_config = {
+      version = global.infrastructure.k3s.version
+      init = false
+      root_node = false
+      role = "agent"
+      copy_kubeconfig = false
+      node_labels = {
+        "dera.ovh/country" = "germany"
+        "dera.ovh/provider" = "self-hosted"
+        "dera.ovh/type" = "sbc"
+        "dera.ovh/owner" = "munna"
+        "openebs.io/localpv-zfs" = true
+        "openebs.io/nodeid" = "rpi-dik-0"
+      }
+    }
+  }
 }
 
 globals "infrastructure" "config" {
