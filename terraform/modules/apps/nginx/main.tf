@@ -20,9 +20,17 @@ resource "helm_release" "chart" {
     value = var.expose_on_tailnet ? "LoadBalancer" : "ClusterIP"
     type = "string"
   }
+  dynamic "set" {
+    for_each = var.expose_on_tailnet ? ["tailscale"] : []
+    content {
+      name = "controller.service.loadBalancerClass"
+      value = "tailscale"
+      type = "string"
+    }
+  }
   set {
     name = "controller.service.loadBalancerClass"
-    value = var.expose_on_tailnet ? "tailscale" : null
+    value = var.expose_on_tailnet ? "tailscale" : "null"
     type = "string"
   }
   set {
@@ -46,6 +54,18 @@ resource "helm_release" "chart" {
       name = "controller.service.annotations.${set.key}"
       value = set.value
     }
+  }
+  set {
+    name  = "controller.ingressClassResource.name"
+    value = replace(var.name, "ingress-", "")
+  }
+  set {
+    name  = "controller.ingressClass"
+    value = replace(var.name, "ingress-", "")
+  }
+  set {
+    name  = "controller.ingressClassResource.controllerValue"
+    value = "k8s.io/${var.name}"
   }
 }
 
