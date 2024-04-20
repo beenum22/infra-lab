@@ -48,8 +48,10 @@ variable "domains" {
 variable "default_upstream_servers" {
   type = list(string)
   default = [
+    "1.1.1.1",
     "tcp-tls:fdns1.dismail.de:853",
-    "https://dns.digitale-gesellschaft.ch/dns-query"
+    # Disabling as it is not responding with answers
+    #"https://dns.digitale-gesellschaft.ch/dns-query"
   ]
 }
 
