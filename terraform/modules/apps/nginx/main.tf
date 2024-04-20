@@ -16,21 +16,12 @@ resource "helm_release" "chart" {
     value = "DaemonSet"
   }
   set {
-    name = "controller.service.type"
-    value = var.expose_on_tailnet ? "LoadBalancer" : "ClusterIP"
-    type = "string"
-  }
-  dynamic "set" {
-    for_each = var.expose_on_tailnet ? ["tailscale"] : []
-    content {
-      name = "controller.service.loadBalancerClass"
-      value = "tailscale"
-      type = "string"
-    }
+    name = "controller.service.enabled"
+    value = var.expose_on_tailnet ? false : true
   }
   set {
-    name = "controller.service.loadBalancerClass"
-    value = var.expose_on_tailnet ? "tailscale" : "null"
+    name = "controller.service.type"
+    value = "ClusterIP"
     type = "string"
   }
   set {
@@ -69,7 +60,90 @@ resource "helm_release" "chart" {
   }
 }
 
-data "kubernetes_service" "ingress" {
+resource "kubernetes_service" "ipv4" {
+  count = var.expose_on_tailnet ? 1 : 0
+  metadata {
+    name = "${var.name}-controller-v4"
+    namespace = var.namespace
+    labels = {
+      "app.kubernetes.io/name" = var.name
+      "app.kubernetes.io/component" = "controller"
+      "app.kubernetes.io/part-of" = var.name
+      "app.kubernetes.io/instance" = var.name
+    }
+    annotations = {
+      "external-dns.alpha.kubernetes.io/internal-hostname" = var.domain
+      "tailscale.com/hostname" = "${var.tailnet_hostname}-v4"
+    }
+  }
+  spec {
+    type = "LoadBalancer"
+    load_balancer_class = "tailscale"
+    ip_families = ["IPv4"]
+    ip_family_policy = "SingleStack"
+    selector = {
+      "app.kubernetes.io/name" = var.name
+      "app.kubernetes.io/component" = "controller"
+      "app.kubernetes.io/instance" = var.name
+    }
+    port {
+      name = "http"
+      port = 80
+      target_port = "http"
+      protocol = "TCP"
+    }
+    port {
+      name = "https"
+      port = 443
+      target_port = "https"
+      protocol = "TCP"
+    }
+  }
+}
+
+resource "kubernetes_service" "ipv6" {
+  count = var.expose_on_tailnet ? 1 : 0
+  metadata {
+    name = "${var.name}-controller"
+    namespace = var.namespace
+    labels = {
+      "app.kubernetes.io/name" = var.name
+      "app.kubernetes.io/component" = "controller"
+      "app.kubernetes.io/part-of" = var.name
+      "app.kubernetes.io/instance" = var.name
+    }
+    annotations = {
+      "external-dns.alpha.kubernetes.io/internal-hostname" = var.domain
+      "tailscale.com/hostname" = var.tailnet_hostname
+    }
+  }
+  spec {
+    type = "LoadBalancer"
+    load_balancer_class = "tailscale"
+    ip_families = ["IPv6"]
+    ip_family_policy = "SingleStack"
+    selector = {
+      "app.kubernetes.io/name" = var.name
+      "app.kubernetes.io/component" = "controller"
+      "app.kubernetes.io/instance" = var.name
+    }
+    port {
+      name = "http"
+      port = 80
+      target_port = "http"
+      protocol = "TCP"
+    }
+    port {
+      name = "https"
+      port = 443
+      target_port = "https"
+      protocol = "TCP"
+    }
+  }
+}
+
+data "kubernetes_service" "this" {
+  count = var.expose_on_tailnet ? 0 : 1
   metadata {
     name = "${var.name}-controller"
     namespace = var.namespace
