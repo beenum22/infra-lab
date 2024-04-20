@@ -1,6 +1,7 @@
 generate_hcl "_dns.tf" {
   lets {
-    cloudflare_hostnames = global.apps.hostnames
+    public_hostnames = global.apps.public_hostnames
+    private_hostnames = global.apps.private_hostnames
   }
 
   content {
@@ -54,33 +55,46 @@ generate_hcl "_dns.tf" {
       }
       custom_dns_rewrites = {}
       custom_dns_mappings = {
-        "wormhole.tail03622.ts.net" = join(",", data.tailscale_device.nginx.0.addresses)
+#         "wormhole.tail03622.ts.net" = join(",", data.tailscale_device.nginx.0.addresses)
       }
       depends_on = [
         kubernetes_namespace.dns
       ]
     }
 
-    resource "cloudflare_record" "cnames" {
-      for_each = let.cloudflare_hostnames
+    resource "cloudflare_record" "private_a" {
+      for_each = toset(let.private_hostnames)
       zone_id = global.infrastructure.cloudflare.zone_id
       name    = each.key
-      value   = each.value == "cloudflare" ? module.cloudflared.tunnel_hostname : module.nginx.lb_hostname
-      type    = "CNAME"
-      proxied = each.value == "cloudflare" ? true : false
+      value   = module.nginx.ipv4_endpoint
+      type    = "A"
+      proxied = false
     }
 
-    data "tailscale_device" "blocky" {
-      name = module.blocky.tailscale_hostname
-      wait_for = "60s"
+    resource "cloudflare_record" "private_aaaa" {
+      for_each = toset(let.private_hostnames)
+      zone_id = global.infrastructure.cloudflare.zone_id
+      name    = each.key
+      value   = module.nginx.ipv6_endpoint
+      type    = "AAAA"
+      proxied = false
+    }
+
+    resource "cloudflare_record" "public_cname_records" {
+      for_each = toset(let.public_hostnames)
+      zone_id = global.infrastructure.cloudflare.zone_id
+      name    = each.key
+      value   = module.cloudflared.tunnel_hostname
+      type    = "CNAME"
+      proxied = true
     }
 
     resource "tailscale_dns_nameservers" "this" {
-      nameservers = data.tailscale_device.blocky.addresses
+      nameservers = module.blocky.endpoints
     }
 
     output "dns_servers" {
-      value = data.tailscale_device.blocky.addresses
+      value = module.blocky.endpoints
     }
   }
 }
