@@ -477,16 +477,18 @@ globals "apps" {
     "nfs-share"
   ]
 
-  hostnames = {
-    "echo.dera.ovh" = "cloudflare"  # tailscale or cloudflare
-    "filebrowser.dera.ovh" = "tailscale"
-    "dashy.dera.ovh" = "tailscale"
-    "homebox.dera.ovh" = "tailscale"
-    "oci-fra-0.dashdot.dera.ovh" = "tailscale"
-    "oci-fra-1.dashdot.dera.ovh" = "tailscale"
-    "oci-fra-2.dashdot.dera.ovh" = "tailscale"
-    "hzn-hel-0.dashdot.dera.ovh" = "tailscale"
-    "netcup-neu-0.dashdot.dera.ovh" = "tailscale"
-    "rpi-dik-0.dashdot.dera.ovh" = "tailscale"
-  }
+  public_hostnames = [
+    "echo.dera.ovh"
+  ]
+  private_hostnames = [
+    "filebrowser.dera.ovh",
+    "dashy.dera.ovh",
+    "homebox.dera.ovh",
+    "oci-fra-0.dashdot.dera.ovh",
+    "oci-fra-1.dashdot.dera.ovh",
+    "oci-fra-2.dashdot.dera.ovh",
+    "hzn-hel-0.dashdot.dera.ovh",
+    "netcup-neu-0.dashdot.dera.ovh",
+    "rpi-dik-0.dashdot.dera.ovh",
+  ]
 }

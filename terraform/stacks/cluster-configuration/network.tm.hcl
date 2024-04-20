@@ -23,12 +23,6 @@ generate_hcl "_network.tf" {
       depends_on = [kubernetes_namespace.network]
     }
 
-    data "tailscale_device" "nginx" {
-      count = module.nginx.lb_hostname != null ? 1 : 0
-      name     = module.nginx.lb_hostname
-      wait_for = "60s"
-    }
-
     resource "kubernetes_manifest" "tailscale_subnet_router" {
       manifest = {
         "apiVersion" = "tailscale.com/v1alpha1"
@@ -48,52 +42,12 @@ generate_hcl "_network.tf" {
       }
     }
 
-    locals {
-      cloudflare_hostnames = global.apps.hostnames
-    }
-
     module "cloudflared" {
       source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/cloudflared"
       namespace = kubernetes_namespace.network.metadata.0.name
       ingress_hostname = "ingress-nginx-controller"
-      served_hostnames = [for hostname, value in local.cloudflare_hostnames : hostname if value == "cloudflare"]
+      served_hostnames = global.apps.public_hostnames
       account_id = global.infrastructure.cloudflare.account_id
     }
-
-#    resource "tailscale_tailnet_key" "auth_key" {
-#      reusable      = true
-#      ephemeral     = true
-#      preauthorized = true
-#      expiry        = 3600
-#      description   = "K3s Tailscale Apps"
-#    }
-#
-#    module "tailscale_router" {
-#      source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/tailscale-router"
-#      namespace = kubernetes_namespace.network.metadata.0.name
-#      tag = "v1.56.1"
-#      replicas = 1
-#      authkey = tailscale_tailnet_key.auth_key.key
-#      routes = [
-#        "10.43.0.0/16",
-#        "2001:cafe:42:1::/112"
-#      ]
-#      mtu = "1280"
-#      userspace_mode = true
-#      extra_args = []
-#      depends_on = [kubernetes_namespace.network]
-#    }
-
-    #    module "tailscale_vpn" {
-    #      source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/tailscale-vpn"
-    #      namespace = kubernetes_namespace.network.metadata.0.name
-    #      replicas = 1
-    #      tag = "v1.56.1"
-    #      authkey = tailscale_tailnet_key.auth_key.key
-    #      mtu = "1280"  # Consider 1350 in case of MTU issues with IPv6
-    #      userspace_mode = true
-    #      routes = []
-    #      depends_on = [kubernetes_namespace.network]
-    #    }
   }
 }
