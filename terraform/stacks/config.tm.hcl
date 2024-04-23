@@ -226,12 +226,13 @@ globals "infrastructure" "instances" {
       role = "agent"
       copy_kubeconfig = false
       node_labels = {
-        "dera.ovh/country" = "germany"
+        "dera.ovh/country" = "finland"
         "dera.ovh/provider" = "hetnzer"
         "dera.ovh/type" = "vm"
         "dera.ovh/owner" = "munna"
         "openebs.io/localpv-zfs" = true
         "openebs.io/nodeid" = "hzn-hel-0"
+        "openebs.io/nfs-server" = true
       }
     }
   }
