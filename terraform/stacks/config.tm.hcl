@@ -166,14 +166,11 @@ globals "infrastructure" "instances" {
       mtu       = "1280"
     }
     zfs_config = {
-      enable = false
-      loopback = {
-        loop0 = {
-          path = "/mnt/zfs-loop0.img"
-          size = "20G"
-        }
+      enable = true
+      loopback = {}
+      devices = {
+        sdb = {}
       }
-      devices = {}
     }
     k3s_config = {
       version = global.infrastructure.k3s.version
@@ -186,8 +183,9 @@ globals "infrastructure" "instances" {
         "dera.ovh/provider" = "oci"
         "dera.ovh/type" = "vm"
         "dera.ovh/owner" = "munna"
-        "openebs.io/localpv-zfs" = false
+        "openebs.io/localpv-zfs" = true
         "openebs.io/nodeid" = "oci-fra-2"
+        "openebs.io/nfs-server" = true
       }
     }
   }
