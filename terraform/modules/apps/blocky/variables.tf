@@ -15,7 +15,7 @@ variable "namespace" {
 
 variable "replicas" {
   type = number
-  default = 2
+  default = 3
 }
 
 variable "image" {
