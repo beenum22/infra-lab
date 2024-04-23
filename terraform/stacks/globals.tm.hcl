@@ -38,15 +38,11 @@ globals "terraform" "default_providers" {
     version = "2.6.0"
     config  = {}
   }
-#    ansible = {
-#      source = "ansible/ansible"
-#      version = "1.1.0"
-#    }
-  ansible = {
-    source  = "NefixEstrada/ansible"
-    version = "2.0.4"
-    config  = {}
-  }
+   ansible = {
+     source = "ansible/ansible"
+     version = "1.2.0"
+     config = {}
+   }
   local = {
     source  = "hashicorp/local"
     version = "2.4.0"
