@@ -76,6 +76,102 @@
         state: present
       when: "ansible_architecture == 'x86_64' and (ansible_distribution == 'AlmaLinux' or ansible_distribution == 'OracleLinux' or ansible_distribution == 'Red Hat' or ansible_distribution == 'CentOS' or ansible_distribution == 'Fedora')"
 
+    - name: Check if zfs command exists before building
+      command: "which zfs"
+      register: zfs_command
+      ignore_errors: true
+      when: "ansible_architecture == 'aarch64' and ansible_distribution == 'OracleLinux'"
+
+    - name: Install source build packages
+      ansible.builtin.dnf:
+        name:
+          - epel-release
+          - gcc
+          - make
+          - autoconf
+          - automake
+          - libtool
+          - rpm-build
+          - kernel-rpm-macros
+          - libtirpc-devel
+          - libblkid-devel
+          - libuuid-devel
+          - libudev-devel
+          - openssl-devel
+          - zlib-devel
+          - libaio-devel
+          - libattr-devel
+          - elfutils-libelf-devel
+          - python3
+          - python3-devel
+          - python3-setuptools
+          - python3-cffi
+          - libffi-devel
+        update_cache: true
+        state: present
+        disable_gpg_check: true
+        skip_broken: true
+        enablerepo:
+          - epel
+          - powertools
+          - ol9_codeready_builder
+      when: "zfs_command.rc != 0 and ansible_architecture == 'aarch64' and ansible_distribution == 'OracleLinux'"
+
+    - name: Checkout ZFS source repo
+      ansible.builtin.git:
+        repo: https://github.com/zfsonlinux/zfs.git
+        dest: /tmp/zfs
+      when: "zfs_command.rc != 0 and ansible_architecture == 'aarch64' and ansible_distribution == 'OracleLinux'"
+
+    - name: Generate ZFS package source configurations
+      ansible.builtin.command: ./autogen.sh
+      run_once: true
+      args:
+        chdir: /tmp/zfs
+      when: "zfs_command.rc != 0 and ansible_architecture == 'aarch64' and ansible_distribution == 'OracleLinux'"
+
+    - name: Configure ZFS package source
+      ansible.builtin.shell: ./configure
+      run_once: true
+      args:
+        chdir: /tmp/zfs
+      when: "zfs_command.rc != 0 and ansible_architecture == 'aarch64' and ansible_distribution == 'OracleLinux'"
+
+    - name: Make ZFS package
+      ansible.builtin.command: make -j1 rpm-utils rpm-kmod
+      run_once: true
+      args:
+        chdir: /tmp/zfs
+      when: "zfs_command.rc != 0 and ansible_architecture == 'aarch64' and ansible_distribution == 'OracleLinux'"
+
+    - name: Install ZFS built packages
+      ansible.builtin.shell: yum localinstall *.$(uname -p).rpm -y
+      args:
+        chdir: /tmp/zfs
+      when: "zfs_command.rc != 0 and ansible_architecture == 'aarch64' and ansible_distribution == 'OracleLinux'"
+
+    - name: Uninstall source build packages
+      ansible.builtin.dnf:
+        name:
+          - autoconf
+          - libtool
+          - rpm-build
+          - kernel-rpm-macros
+          - libtirpc-devel
+          - libblkid-devel
+          - libuuid-devel
+          - libudev-devel
+          - openssl-devel
+          - libaio-devel
+          - libattr-devel
+          - python3-devel
+          - libffi-devel
+          - python3-packaging
+        update_cache: true
+        state: absent
+        disable_gpg_check: true
+      when: "ansible_architecture == 'aarch64' and ansible_distribution == 'OracleLinux'"
+
     - name: Load ZFS Kernel module
       community.general.modprobe:
         name: zfs
