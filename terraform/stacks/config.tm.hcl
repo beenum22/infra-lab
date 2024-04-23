@@ -398,6 +398,7 @@ globals "apps" {
     "filebrowser.dera.ovh",
     "dashy.dera.ovh",
     "homebox.dera.ovh",
+    "jellyfin.dera.ovh",
     "oci-fra-0.dashdot.dera.ovh",
     "oci-fra-1.dashdot.dera.ovh",
     "oci-fra-2.dashdot.dera.ovh",
