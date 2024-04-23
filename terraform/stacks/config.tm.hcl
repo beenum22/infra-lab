@@ -275,92 +275,6 @@ globals "infrastructure" "instances" {
       }
     }
   }
-#   ovh-ldn-k3s-0 = {
-#     managed  = true
-#     provider = "ovh"
-#     user     = "ubuntu"
-#     port     = 22
-#     host = {
-#       ipv4 = "57.128.170.166"
-#       ipv6 = "2001:41d0:801:2000::b48"
-#     }
-#     hostname        = "ovh-ldn-k3s-0"
-#     provider_config = {}
-#     tailscale_config = {
-#       version   = global.infrastructure.tailscale.version
-#       auth_key  = global.infrastructure.tailscale.auth_key
-#       exit_node = true
-#       mtu       = "1280"
-#     }
-#     zfs_config = {
-#       enable = true
-#       loopback = {
-#         loop100 = {
-#           path = "/mnt/zfs-loop100.img"
-#           size = "5G"
-#         }
-#       }
-#       devices = {}
-#     }
-#     k3s_config = {
-#       version = global.infrastructure.k3s.version
-#       init = false
-#       root_node = false
-#       role = "agent"
-#       copy_kubeconfig = false
-#       node_labels = {
-#         "dera.ovh/country" = "england"
-#         "dera.ovh/provider" = "ovh"
-#         "dera.ovh/type" = "vm"
-#         "dera.ovh/owner" = "jakku"
-#         "openebs.io/localpv-zfs" = true
-#         "openebs.io/nodeid" = "ovh-ldn-k3s-0"
-#       }
-#     }
-#   }
-#   ovh-fra-k3s-1 = {
-#     managed  = true
-#     provider = "ovh"
-#     user     = "ubuntu"
-#     port     = 22
-#     host = {
-#       ipv4 = "54.37.205.201"
-#       ipv6 = "2001:41d0:701:1100::19f1"
-#     }
-#     hostname        = "ovh-fra-k3s-1"
-#     provider_config = {}
-#     tailscale_config = {
-#       version   = global.infrastructure.tailscale.version
-#       auth_key  = global.infrastructure.tailscale.auth_key
-#       exit_node = true
-#       mtu       = "1280"
-#     }
-#     zfs_config = {
-#       enable = true
-#       loopback = {
-#         loop100 = {
-#           path = "/mnt/zfs-loop100.img"
-#           size = "5G"
-#         }
-#       }
-#       devices = {}
-#     }
-#     k3s_config = {
-#       version = global.infrastructure.k3s.version
-#       init = false
-#       root_node = false
-#       role = "agent"
-#       copy_kubeconfig = false
-#       node_labels = {
-#         "dera.ovh/country" = "germany"
-#         "dera.ovh/provider" = "ovh"
-#         "dera.ovh/type" = "vm"
-#         "dera.ovh/owner" = "jakku"
-#         "openebs.io/localpv-zfs" = true
-#         "openebs.io/nodeid" = "ovh-fra-k3s-1"
-#       }
-#     }
-#   }
   rpi-dik-0 = {
     managed  = false
     provider = "self-hosted"
@@ -391,12 +305,13 @@ globals "infrastructure" "instances" {
       role = "agent"
       copy_kubeconfig = false
       node_labels = {
-        "dera.ovh/country" = "germany"
+        "dera.ovh/country" = "pakistan"
         "dera.ovh/provider" = "self-hosted"
         "dera.ovh/type" = "sbc"
         "dera.ovh/owner" = "munna"
         "openebs.io/localpv-zfs" = true
         "openebs.io/nodeid" = "rpi-dik-0"
+        "openebs.io/nfs-server" = true
       }
     }
   }
