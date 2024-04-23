@@ -122,7 +122,7 @@ resource "ansible_playbook" "zfs" {
   playbook   = "${path.module}/playbooks/zfs.yml"
   name       = ansible_host.target.name
   replayable = var.replay
-  timeout    = 100
+  timeout    = 1000
   ignore_playbook_failure = var.debug
   extra_vars = jsonencode({
     ansible_user = var.connection_info.user
