@@ -9,5 +9,15 @@ Boundaries:
 Pre-requisites:
     - muneeb user with sudo that doesn't need password
     - SSH access using muneeb over public key
+    - Change default SSH port
+        - Change SELinux config if needed
+            semanage port -a -t ssh_port_t -p tcp 2203
+            firewall-cmd --permanent --add-port=2203/tcp
+            firewall-cmd --reload
     - Python3 installation with required PIP modules (firewall, ...)
     - Add NAT64.net nameservers to the IPv6 only hosts
+    - Make sure cgroups are enabled in RPi
+        Add "cgroup_memory=1 cgroup_enable=memory" to /boot/firmware/cmdline.txt
+
+echo "Port <your chosen port number>" >> /etc/ssh/sshd_config
+systemctl restart sshd
