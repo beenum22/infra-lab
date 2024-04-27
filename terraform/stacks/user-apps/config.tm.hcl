@@ -17,12 +17,12 @@ generate_hcl "_apps.tf" {
       }
     }
 
-    resource "kubernetes_persistent_volume_claim" "nfs_share" {
+    resource "kubernetes_persistent_volume_claim" "nfs_misc" {
       metadata {
-        name = "nfs-share"
+        name = "nfs-misc"
         namespace = kubernetes_namespace.apps.metadata[0].name
         labels = {
-          "app.kubernetes.io/name" = "nfs-share"
+          "app.kubernetes.io/name" = "nfs-misc"
         }
       }
       spec {
@@ -36,20 +36,51 @@ generate_hcl "_apps.tf" {
       }
     }
 
-#    module "jellyfin" {
-#      source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/jellyfin"
-#      namespace = kubernetes_namespace.apps.metadata[0].name
-#      ingress_hostname = global.project.ingress_hostname
-#      issuer = global.project.cert_manager_issuer
-#      config_storage = "1Gi"
-#      storage_class = global.project.storage_class
-#      shared_pvc = kubernetes_persistent_volume_claim.nfs_share.metadata.0.name
-#      domains = [
-#        "jellyfin.dera.ovh"
-#      ]
-#      publish = true
-#      depends_on = [kubernetes_namespace.apps]
-#    }
+    resource "kubernetes_persistent_volume_claim" "nfs_media" {
+      metadata {
+        name = "nfs-media"
+        namespace = kubernetes_namespace.apps.metadata[0].name
+        labels = {
+          "app.kubernetes.io/name" = "nfs-media"
+        }
+      }
+      spec {
+        access_modes = ["ReadWriteMany"]
+        resources {
+          requests = {
+            storage = "50Gi"
+          }
+        }
+        storage_class_name = "openebs-kernel-nfs"
+      }
+    }
+
+   module "jellyfin" {
+     source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/jellyfin"
+     namespace = kubernetes_namespace.apps.metadata[0].name
+     ingress_hostname = global.project.ingress_hostname
+     issuer = global.project.cert_manager_issuer
+     node_selectors = {
+       "dera.ovh/country" = "germany"
+     }
+     config_storage = "1Gi"
+     data_storage = "30Gi"
+     storage_class = global.project.storage_class
+     shared_pvcs = [
+       {
+         name = kubernetes_persistent_volume_claim.nfs_media.metadata.0.name
+         path = kubernetes_persistent_volume_claim.nfs_media.metadata.0.name
+       },
+#        {
+#          name = kubernetes_persistent_volume_claim.nfs_misc.metadata.0.name
+#          path = "filebrowser"
+#        }
+     ]
+     domains = [
+       "jellyfin.dera.ovh"
+     ]
+     depends_on = [kubernetes_namespace.apps]
+   }
 
 #    module "radarr" {
 #      source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/radarr"
@@ -108,7 +139,8 @@ generate_hcl "_apps.tf" {
       config_storage = "1Gi"
       config_storage_class = global.project.storage_class
       shared_pvcs = [
-#        kubernetes_persistent_volume_claim.shared_data.metadata.0.name
+       kubernetes_persistent_volume_claim.nfs_media.metadata.0.name,
+       kubernetes_persistent_volume_claim.nfs_misc.metadata.0.name
       ]
       depends_on = [kubernetes_namespace.apps]
     }
