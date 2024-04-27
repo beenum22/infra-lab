@@ -4,11 +4,6 @@ locals {
     "kubernetes.io/ingress.class" = var.ingress_class
     "external-dns.alpha.kubernetes.io/internal-hostname" = join(",", var.domains)
     "external-dns.alpha.kubernetes.io/target" = var.ingress_hostname
-    "hajimari.io/enable" = var.publish
-    "hajimari.io/icon" = "openmoji:jellyfin"
-    "hajimari.io/appName" = "jellyfin"
-    "hajimari.io/url" = "https://${var.domains[0]}"
-    "hajimari.io/info" = "Media Server"
   }
 }
 
@@ -28,21 +23,21 @@ resource "kubernetes_persistent_volume_claim" "config" {
   }
 }
 
-#resource "kubernetes_persistent_volume_claim" "data" {
-#  metadata {
-#    name = "${var.name}-data"
-#    namespace = var.namespace
-#  }
-#  spec {
-#    access_modes = ["ReadWriteMany"]
-#    resources {
-#      requests = {
-#        storage = var.data_storage
-#      }
-#    }
-#    storage_class_name = var.storage_class
-#  }
-#}
+resource "kubernetes_persistent_volume_claim" "media" {
+ metadata {
+   name = "${var.name}-media"
+   namespace = var.namespace
+ }
+ spec {
+   access_modes = ["ReadWriteOnce"]
+   resources {
+     requests = {
+       storage = var.data_storage
+     }
+   }
+   storage_class_name = var.storage_class
+ }
+}
 
 resource "kubernetes_deployment" "this" {
   metadata {
@@ -77,6 +72,7 @@ resource "kubernetes_deployment" "this" {
         }
       }
       spec {
+        node_selector = var.node_selectors
         container {
           name = "jellyfin"
           image = "${var.image}:${var.tag}"
@@ -124,8 +120,8 @@ resource "kubernetes_deployment" "this" {
             name = "config"
           }
           volume_mount {
-            mount_path = "/data"
-            name = "data"
+            mount_path = "/media"
+            name = "media"
           }
         }
         volume {
@@ -135,9 +131,18 @@ resource "kubernetes_deployment" "this" {
           }
         }
         volume {
-          name = "data"
+          name = "media"
           persistent_volume_claim {
-            claim_name = var.shared_pvc
+            claim_name = "${var.name}-media"
+          }
+        }
+        dynamic "volume" {
+          for_each = toset(var.shared_pvcs)
+          content {
+            name = volume.value.name
+            persistent_volume_claim {
+              claim_name = volume.value.name
+            }
           }
         }
       }
@@ -229,22 +234,3 @@ resource "kubernetes_ingress_v1" "this" {
     }
   }
 }
-
-//resource "kubernetes_manifest" "cert" {
-//  manifest = {
-//    "apiVersion" = "cert-manager.io/v1"
-//    "kind" = "Certificate"
-//    "metadata" = {
-//      "name" = "${var.name}-cert"
-//      "namespace" = var.namespace
-//    }
-//    "spec" = {
-//      "dnsNames" = var.domains
-//      "issuerRef" = {
-//        "name" = var.issuer
-//        "kind" = "ClusterIssuer"
-//      }
-//      "secretName" = "${var.name}-tls"
-//    }
-//  }
-//}

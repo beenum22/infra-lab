@@ -23,13 +23,9 @@ variable "config_storage" {
   default = "1Gi"
 }
 
-#variable "data_storage" {
-#  type = string
-#  default = "10Gi"
-#}
-
-variable "shared_pvc" {
-  type = string
+variable "data_storage" {
+ type = string
+ default = "10Gi"
 }
 
 variable "replicas" {
@@ -64,7 +60,14 @@ variable "domains" {
   type = list(string)
 }
 
-variable "publish" {
-  type = bool
-  default = false
+variable "shared_pvcs" {
+  type = list(object({
+    name = string
+    path = string
+  }))
+}
+
+variable "node_selectors" {
+  type = map(string)
+  default = null
 }
