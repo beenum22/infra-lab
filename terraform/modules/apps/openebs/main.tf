@@ -85,6 +85,10 @@ resource "helm_release" "this" {
     name  = "nfs-provisioner.nfsStorageClass.backendStorageClass"
     value = "${var.name}-zfs"
   }
+#   set {
+#     name  = "nfs-provisioner.nfsProvisioner.nfsServerNodeAffinity"
+#     value = "openebs.io/localpv-zfs\\,openebs.io/nfs-server"
+#   }
   set {
     name  = "snapshotOperator.enabled"
     value = true
@@ -111,10 +115,11 @@ resource "kubernetes_storage_class" "zfs_loopback" {
     recordsize = "128k"
   }
   storage_provisioner = "zfs.csi.openebs.io"
-  allowed_topologies {
-    match_label_expressions {
-      key = "kubernetes.io/hostname"
-      values = [for node in data.kubernetes_nodes.this.nodes : node.metadata.0.name]
-    }
-  }
+  volume_binding_mode = "WaitForFirstConsumer"
+#   allowed_topologies {
+#     match_label_expressions {
+#       key = "kubernetes.io/hostname"
+#       values = [for node in data.kubernetes_nodes.this.nodes : node.metadata.0.name]
+#     }
+#   }
 }
