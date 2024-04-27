@@ -20,7 +20,7 @@ variable "chart_name" {
 
 variable "chart_version" {
   type = string
-  default = "1.61.11"
+  default = "1.62.1"
 }
 
 variable "chart_url" {
