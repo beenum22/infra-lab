@@ -20,7 +20,7 @@ variable "chart_name" {
 
 variable "chart_version" {
   type = string
-  default = "56.6.2"
+  default = "57.2.0"
 }
 
 variable "chart_url" {
@@ -35,7 +35,7 @@ variable "grafana_password" {
 
 variable "retention_period" {
   type = string
-  default = "10d"
+  default = "7d"
 }
 
 variable "storage_class" {
