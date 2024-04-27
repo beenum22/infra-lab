@@ -40,7 +40,7 @@ variable "image" {
 
 variable "tag" {
   type = string
-  default = "v2.27.0"
+  default = "v2.28.0"
 }
 
 variable "ingress_class" {
