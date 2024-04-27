@@ -1,0 +1,41 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: netperf-server
+  namespace: testing
+  labels:
+    app.kubernetes.io/name: netperf-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: netperf-server
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: netperf-server
+    spec:
+      containers:
+        - name: netperf-server
+          image: beenum/netserver:latest
+          imagePullPolicy: IfNotPresent
+          args: ["-D"]
+          ports:
+            - containerPort: 12865
+              name: server
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: netperf-server
+  namespace: testing
+  labels:
+    app.kubernetes.io/name: netperf-server
+spec:
+  selector:
+    app.kubernetes.io/name: netperf-server
+  clusterIP: None
+  ports:
+    - port: 12865
+      targetPort: 12865
