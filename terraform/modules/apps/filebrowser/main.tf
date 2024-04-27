@@ -37,25 +37,6 @@ resource "kubernetes_persistent_volume_claim" "config" {
   }
 }
 
-resource "kubernetes_persistent_volume_claim" "data" {
-  metadata {
-    name = "${var.name}-data"
-    namespace = var.namespace
-    labels = {
-      "app.kubernetes.io/name" = var.name
-    }
-  }
-  spec {
-    access_modes = ["ReadWriteOnce"]
-    resources {
-      requests = {
-        storage = var.data_storage
-      }
-    }
-    storage_class_name = var.data_storage_class
-  }
-}
-
 resource "kubernetes_config_map" "this" {
   metadata {
     name = "${var.name}-config-${sha1(jsonencode(local.config))}"
@@ -172,10 +153,6 @@ resource "kubernetes_deployment" "this" {
             name = "config"
           }
           volume_mount {
-            mount_path = "/srv/data/local"
-            name       = "data"
-          }
-          volume_mount {
             mount_path = "/.filebrowser.json"
             name       = "filebrowser-config"
             sub_path = ".filebrowser.json"
@@ -192,12 +169,6 @@ resource "kubernetes_deployment" "this" {
           name = "config"
           persistent_volume_claim {
             claim_name = kubernetes_persistent_volume_claim.config.metadata.0.name
-          }
-        }
-        volume {
-          name = "data"
-          persistent_volume_claim {
-            claim_name = kubernetes_persistent_volume_claim.data.metadata.0.name
           }
         }
         volume {
