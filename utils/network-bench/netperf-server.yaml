@@ -16,10 +16,13 @@ spec:
       labels:
         app.kubernetes.io/name: netperf-server
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: NODE
       containers:
         - name: netperf-server
-          image: beenum/netserver:latest
-          imagePullPolicy: IfNotPresent
+          image: beenum/netperf:latest
+          imagePullPolicy: Always
+          command: ["./netserver"]
           args: ["-D"]
           ports:
             - containerPort: 12865
