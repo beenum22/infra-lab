@@ -176,7 +176,7 @@ globals "infrastructure" "instances" {
       version = global.infrastructure.k3s.version
       init = false
       root_node = false
-      role = "agent"
+      role = "server"
       copy_kubeconfig = false
       node_labels = {
         "dera.ovh/country" = "germany"
@@ -189,92 +189,94 @@ globals "infrastructure" "instances" {
       }
     }
   }
-  hzn-hel-0 = {
-    managed  = false
-    provider = "hetzner"
-    user     = "muneeb"
-    port     = 2203
-    host = {}
-    hostname        = "hzn-hel-0"
-    provider_config = {
-      image       = "alma-9"
-      server_type = "cx11"
-      datacenter  = "hel1-dc2"
-      block_volumes = ["20"]
-    }
-    tailscale_config = {
-      version   = global.infrastructure.tailscale.version
-      exit_node = true
-      mtu       = "1280"
-    }
-    zfs_config = {
-      enable = true
-      loopback = {
-        loop1 = {
-          path = "/mnt/zfs-loop1.img"
-          size = "5G"
-        }
-      }
-      devices = {
-        sdb = {}
-      }
-    }
-    k3s_config = {
-      version = global.infrastructure.k3s.version
-      init = false
-      root_node = false
-      role = "agent"
-      copy_kubeconfig = false
-      node_labels = {
-        "dera.ovh/country" = "finland"
-        "dera.ovh/provider" = "hetnzer"
-        "dera.ovh/type" = "vm"
-        "dera.ovh/owner" = "munna"
-        "openebs.io/localpv-zfs" = true
-        "openebs.io/nodeid" = "hzn-hel-0"
-        "openebs.io/nfs-server" = true
-      }
-    }
-  }
-  netcup-neu-0 = {
-    managed  = true
-    provider = "netcup"
-    user     = "muneeb"
-    port     = 2203
-    host = {
-      ipv4 = "46.232.249.165"
-      ipv6 = "2a03:4000:2b:74:6466:f3ff:fe64:150"
-    }
-    hostname        = "netcup-neu-0"
-    provider_config = {}
-    tailscale_config = {
-      version   = global.infrastructure.tailscale.version
-      exit_node = true
-      mtu       = "1280"
-    }
-    zfs_config = {
-      enable = true
-      loopback = {}
-      devices = {
-        vda4 = {}
-      }
-    }
-    k3s_config = {
-      version = global.infrastructure.k3s.version
-      init = true
-      root_node = false
-      role = "server"
-      copy_kubeconfig = false
-      node_labels = {
-        "dera.ovh/country" = "germany"
-        "dera.ovh/provider" = "netcup"
-        "dera.ovh/type" = "vm"
-        "dera.ovh/owner" = "munna"
-        "openebs.io/localpv-zfs" = true
-        "openebs.io/nodeid" = "netcup-neu-0"
-      }
-    }
-  }
+#   Disabling Hetzner machines to save costs. Re-add later if needed.
+#   hzn-hel-0 = {
+#     managed  = false
+#     provider = "hetzner"
+#     user     = "muneeb"
+#     port     = 2203
+#     host = {}
+#     hostname        = "hzn-hel-0"
+#     provider_config = {
+#       image       = "alma-9"
+#       server_type = "cx11"
+#       datacenter  = "hel1-dc2"
+#       block_volumes = ["20"]
+#     }
+#     tailscale_config = {
+#       version   = global.infrastructure.tailscale.version
+#       exit_node = true
+#       mtu       = "1280"
+#     }
+#     zfs_config = {
+#       enable = true
+#       loopback = {
+#         loop1 = {
+#           path = "/mnt/zfs-loop1.img"
+#           size = "5G"
+#         }
+#       }
+#       devices = {
+#         sdb = {}
+#       }
+#     }
+#     k3s_config = {
+#       version = global.infrastructure.k3s.version
+#       init = false
+#       root_node = false
+#       role = "agent"
+#       copy_kubeconfig = false
+#       node_labels = {
+#         "dera.ovh/country" = "finland"
+#         "dera.ovh/provider" = "hetnzer"
+#         "dera.ovh/type" = "vm"
+#         "dera.ovh/owner" = "munna"
+#         "openebs.io/localpv-zfs" = true
+#         "openebs.io/nodeid" = "hzn-hel-0"
+#         "openebs.io/nfs-server" = true
+#       }
+#     }
+#   }
+#   Disabling Netcup machines to save costs. Re-add later if needed.
+#   netcup-neu-0 = {
+#     managed  = true
+#     provider = "netcup"
+#     user     = "muneeb"
+#     port     = 2203
+#     host = {
+#       ipv4 = "46.232.249.165"
+#       ipv6 = "2a03:4000:2b:74:6466:f3ff:fe64:150"
+#     }
+#     hostname        = "netcup-neu-0"
+#     provider_config = {}
+#     tailscale_config = {
+#       version   = global.infrastructure.tailscale.version
+#       exit_node = true
+#       mtu       = "1280"
+#     }
+#     zfs_config = {
+#       enable = true
+#       loopback = {}
+#       devices = {
+#         vda4 = {}
+#       }
+#     }
+#     k3s_config = {
+#       version = global.infrastructure.k3s.version
+#       init = true
+#       root_node = false
+#       role = "server"
+#       copy_kubeconfig = false
+#       node_labels = {
+#         "dera.ovh/country" = "germany"
+#         "dera.ovh/provider" = "netcup"
+#         "dera.ovh/type" = "vm"
+#         "dera.ovh/owner" = "munna"
+#         "openebs.io/localpv-zfs" = true
+#         "openebs.io/nodeid" = "netcup-neu-0"
+#       }
+#     }
+#   }
   rpi-dik-0 = {
     managed  = false
     provider = "self-hosted"
