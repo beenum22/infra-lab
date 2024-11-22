@@ -43,7 +43,7 @@ globals "terraform" "default_providers" {
   }
    ansible = {
      source = "ansible/ansible"
-     version = "1.2.0"
+     version = "1.3.0"
      config = {}
    }
   local = {
@@ -96,6 +96,11 @@ globals "terraform" "default_providers" {
     config = {
       api_token = global.secrets.cloudflare.api_token
     }
+  }
+  talos = {
+    source = "siderolabs/talos"
+    version = "0.7.0-alpha.0"
+    config = {}
   }
 }
 

@@ -186,6 +186,39 @@ resource "oci_core_security_list" "icmp" {
   }
 }
 
+resource "oci_core_security_list" "talos" {
+  compartment_id = var.compartment_id
+  display_name   = "${var.name}-talos"
+  vcn_id = oci_core_vcn.vcn.id
+  ingress_security_rules {
+    description = "allow Talos API"
+    source = "0.0.0.0/0"
+    protocol = "6"
+    tcp_options {
+      min = 50000
+      max = 50001
+    }
+  }
+  ingress_security_rules {
+    description = "allow Talos API IPv6"
+    source = "::/0"
+    protocol = "6"
+    tcp_options {
+      min = 50000
+      max = 50001
+    }
+  }
+  ingress_security_rules {
+    description = "allow K8s API"
+    source = "0.0.0.0/0"
+    protocol = "6"
+    tcp_options {
+      min = 6443
+      max = 6443
+    }
+  }
+}
+
 resource "oci_core_subnet" "private" {
   cidr_block     = cidrsubnet(oci_core_vcn.vcn.cidr_blocks[0], 8, 0)
   ipv6cidr_block  = cidrsubnet(oci_core_vcn.vcn.ipv6cidr_blocks[0], 8, 0)
@@ -212,6 +245,7 @@ resource "oci_core_subnet" "public" {
   security_list_ids = [
     oci_core_security_list.bastion.id,
     oci_core_security_list.icmp.id,
-    oci_core_security_list.tailscale.id
+    oci_core_security_list.tailscale.id,
+    oci_core_security_list.talos.id
   ]
 }
