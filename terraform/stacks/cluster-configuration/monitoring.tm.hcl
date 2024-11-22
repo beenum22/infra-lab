@@ -11,7 +11,7 @@ generate_hcl "_monitoring.tf" {
 #      namespace = kubernetes_namespace.monitoring.metadata[0].name
 #      issuer = module.cert_manager.issuer
 #      domains = [
-#        "netdata.dera.ovh"
+#        "netdata.moinmoin.fyi"
 #      ]
 #      ingress_password = null
 #      storage_class = global.project.storage_class
@@ -27,7 +27,7 @@ generate_hcl "_monitoring.tf" {
       ingress_hostname = global.project.ingress_hostname
       issuer = global.project.cert_manager_issuer
       domains = [
-        "dashdot.dera.ovh"
+        "dashdot.moinmoin.fyi"
       ]
       depends_on = [
         kubernetes_namespace.monitoring
@@ -39,10 +39,10 @@ generate_hcl "_monitoring.tf" {
 #       namespace = kubernetes_namespace.monitoring.metadata[0].name
 #       issuer = module.cert_manager.issuer
 #       grafana_domains = [
-#         "grafana.dera.ovh"
+#         "grafana.moinmoin.fyi"
 #       ]
 #       prometheus_domains = [
-#         "prometheus.dera.ovh"
+#         "prometheus.moinmoin.fyi"
 #       ]
 #       grafana_password = global.secrets.grafana_password
 #       storage_class = global.project.storage_class

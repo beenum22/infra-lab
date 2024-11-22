@@ -11,7 +11,7 @@ locals {
 #       title       = "Pihole"
 #       description = "DNS Server & Adblocker"
 #       icon        = "hl-pihole"
-#       url         = "https://pihole.dera.ovh/admin"
+#       url         = "https://pihole.moinmoin.fyi/admin"
 #       status_check = true
 #     }
 #     netdata = {
@@ -19,7 +19,7 @@ locals {
 #       title       = "Netdata"
 #       description = "Monitoring Dashboard"
 #       icon        = "hl-netdata"
-#       url         = "https://netdata.dera.ovh"
+#       url         = "https://netdata.moinmoin.fyi"
 #       status_check = true
 #     }
 #     grafana = {
@@ -27,7 +27,7 @@ locals {
 #       title       = "Grafana"
 #       description = "Monitoring Dashboard"
 #       icon        = "hl-grafana"
-#       url         = "https://grafana.dera.ovh"
+#       url         = "https://grafana.moinmoin.fyi"
 #       status_check = true
 #     }
 #     prometheus = {
@@ -35,7 +35,7 @@ locals {
 #       title       = "Prometheus"
 #       description = "Time Series Database"
 #       icon        = "hl-prometheus"
-#       url         = "https://prometheus.dera.ovh"
+#       url         = "https://prometheus.moinmoin.fyi"
 #       status_check = true
 #     }
 #     jellyfin = {
@@ -43,7 +43,7 @@ locals {
 #       title = "Jellyfin"
 #       description = "Media Server"
 #       icon = "hl-jellyfin"
-#       url = "https://jellyfin.dera.ovh"
+#       url = "https://jellyfin.moinmoin.fyi"
 #       status_check: true
 #     }
     filebrowser = {
@@ -51,7 +51,7 @@ locals {
       title = "Filebrowser"
       description = "Shared File Storage"
       icon = "hl-filebrowser"
-      url = "https://filebrowser.dera.ovh"
+      url = "https://filebrowser.moinmoin.fyi"
       status_check: true
     }
 #     jitsi = {
@@ -59,7 +59,7 @@ locals {
 #       title = "Jitsi Meet"
 #       description = "Video Calling Service"
 #       icon = "hl-jitsi"
-#       url = "https://jitsi.dera.ovh"
+#       url = "https://jitsi.moinmoin.fyi"
 #       status_check: true
 #     }
     homebox = {
@@ -67,7 +67,7 @@ locals {
       title = "Homebox"
       description = "Inventory Management"
       icon = "hl-homebox"
-      url = "https://homebox.dera.ovh"
+      url = "https://homebox.moinmoin.fyi"
       status_check: true
     }
 #     radarr = {
@@ -75,7 +75,7 @@ locals {
 #       title = "Radarr"
 #       description = "Movie Collection Manager"
 #       icon = "hl-radarr"
-#       url = "https://radarr.dera.ovh"
+#       url = "https://radarr.moinmoin.fyi"
 #       status_check: true
 #     }
 #     prowlarr = {
@@ -83,7 +83,7 @@ locals {
 #       title = "Prowlarr"
 #       description = "Media Sources Index Manager"
 #       icon = "hl-prowlarr"
-#       url = "https://prowlarr.dera.ovh"
+#       url = "https://prowlarr.moinmoin.fyi"
 #       status_check: true
 #     }
     dashdot-oci-fra-0 = {
@@ -91,7 +91,7 @@ locals {
       title       = "Dash. oci-fra-0"
       description = "Simple Node Monitoring Dashboard"
       icon        = "hl-dashdot"
-      url         = "https://oci-fra-0.dashdot.dera.ovh"
+      url         = "https://oci-fra-0.dashdot.moinmoin.fyi"
       status_check = true
     }
     dashdot-oci-fra-1 = {
@@ -99,7 +99,7 @@ locals {
       title       = "Dash. oci-fra-1"
       description = "Simple Node Monitoring Dashboard"
       icon        = "hl-dashdot"
-      url         = "https://oci-fra-1.dashdot.dera.ovh"
+      url         = "https://oci-fra-1.dashdot.moinmoin.fyi"
       status_check = true
     }
     dashdot-oci-fra-2 = {
@@ -107,7 +107,7 @@ locals {
       title       = "Dash. oci-fra-2"
       description = "Simple Node Monitoring Dashboard"
       icon        = "hl-dashdot"
-      url         = "https://oci-fra-2.dashdot.dera.ovh"
+      url         = "https://oci-fra-2.dashdot.moinmoin.fyi"
       status_check = true
     }
     dashdot-hzn-hel-0 = {
@@ -115,7 +115,7 @@ locals {
       title       = "Dash. hzn-hel-0"
       description = "Simple Node Monitoring Dashboard"
       icon        = "hl-dashdot"
-      url         = "https://hzn-hel-0.dashdot.dera.ovh"
+      url         = "https://hzn-hel-0.dashdot.moinmoin.fyi"
       status_check = true
     }
     dashdot-netcup-neu-0 = {
@@ -123,7 +123,7 @@ locals {
       title       = "Dash. netcup-neu-0"
       description = "Simple Node Monitoring Dashboard"
       icon        = "hl-dashdot"
-      url         = "https://netcup-neu-0.dashdot.dera.ovh"
+      url         = "https://netcup-neu-0.dashdot.moinmoin.fyi"
       status_check = true
     }
   }
@@ -202,7 +202,7 @@ locals {
         title       = "OVH Cloud"
         description = "Public Domain Provider"
         icon        = "hl-ovh"
-        url         = "https://www.ovh.com/manager/#/web/domain/dera.ovh/zone"
+        url         = "https://www.ovh.com/manager/#/web/domain/moinmoin.fyi/zone"
         target      = "newtab"
         provider    = "OVH"
         id          = "7_2647_ovh"

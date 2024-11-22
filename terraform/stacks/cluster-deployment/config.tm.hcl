@@ -2,7 +2,8 @@ globals "terraform" {
   providers = [
     "tailscale",
     "ssh",
-    "ovh"
+    "ovh",
+    "cloudflare"
   ]
 
   remote_states = {
@@ -98,6 +99,22 @@ generate_hcl "_k3s.tf" {
       special          = true
     }
 
+    resource "cloudflare_record" "k3s_api_ipv4" {
+      zone_id = global.infrastructure.cloudflare.zone_id
+      name    = global.infrastructure.k3s.api_host.domain
+      value   = data.terraform_remote_state.infra_configuration_stack_state.outputs.tailscale_ips[global.infrastructure.k3s.api_host.target].ipv4
+      type    = "A"
+      proxied = false
+    }
+
+    resource "cloudflare_record" "k3s_api_ipv6" {
+      zone_id = global.infrastructure.cloudflare.zone_id
+      name    = global.infrastructure.k3s.api_host.domain
+      value   = data.terraform_remote_state.infra_configuration_stack_state.outputs.tailscale_ips[global.infrastructure.k3s.api_host.target].ipv6
+      type    = "AAAA"
+      proxied = false
+    }
+
     module "k3s_init" {
       source = "${terramate.root.path.fs.absolute}/terraform/modules/infra/k3s"
       for_each = let.init_node
@@ -127,7 +144,7 @@ generate_hcl "_k3s.tf" {
       hostname = each.key
       cluster_init = each.value.k3s_config.init
       cluster_role = each.value.k3s_config.role
-      api_host = global.infrastructure.k3s.api_host
+      api_host = global.infrastructure.k3s.api_host.domain
       token = nonsensitive(random_password.k3s_secret.result)
       kubeconfig = local.kubeconfig
       node_labels = each.value.k3s_config.node_labels
@@ -154,7 +171,7 @@ generate_hcl "_k3s.tf" {
         clusters = [{
           cluster = {
             certificate-authority-data = base64encode(tls_self_signed_cert.kubernetes_ca_certs["server-ca"].cert_pem)
-            server                     = "https://${global.infrastructure.k3s.api_host}:6443"
+            server                     = "https://${global.infrastructure.k3s.api_host.domain}:6443"
           }
           name = "default"
         }]

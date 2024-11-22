@@ -6,6 +6,10 @@ generate_hcl "_outputs.tf" {
   }
 
   content {
+    output "oci_vcn_id" {
+      value = module.oci_vcn.vcn.vcn_id
+    }
+
     output "ssh_private_key" {
       value     = trimspace(tls_private_key.this.private_key_openssh)
       sensitive = true
@@ -18,8 +22,8 @@ generate_hcl "_outputs.tf" {
     output "node_ips" {
       value = {
         for node, info in local.nodes : node => {
-          ipv4 = try(info.host.ipv4, info.provider == "hetzner" ? module.hetzner_instances[node].ipv4_address : try(module.oci_instances[node].primary_public_ipv4_address, module.oci_instances[node].primary_ipv4_address))
-          ipv6 = try(info.host.ipv6, info.provider == "hetzner" ? module.hetzner_instances[node].ipv6_address : module.oci_instances[node].primary_ipv6_address)
+          ipv4 = try(module.oci_instances[node].primary_public_ipv4_address, module.oci_instances[node].primary_ipv4_address, null)
+          ipv6 = try(module.oci_instances[node].primary_ipv6_address, null)
         }
       }
     }

@@ -16,7 +16,7 @@ generate_hcl "_dns.tf" {
 #      namespace = kubernetes_namespace.dns.metadata.0.name
 #      expose = true
 #      domains = [
-#        "pihole.dera.ovh"
+#        "pihole.moinmoin.fyi"
 #      ]
 #      password = global.secrets.pihole_password
 #      ingress_class = global.project.ingress_class
@@ -43,7 +43,7 @@ generate_hcl "_dns.tf" {
       source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/blocky"
       namespace = kubernetes_namespace.dns.metadata.0.name
       domains = [
-        "blocky.dera.ovh"
+        "blocky.moinmoin.fyi"
       ]
       ingress_class = global.project.ingress_class
       ingress_hostname = global.project.ingress_hostname
