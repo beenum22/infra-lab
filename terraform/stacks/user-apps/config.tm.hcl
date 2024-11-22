@@ -61,7 +61,7 @@ generate_hcl "_apps.tf" {
      ingress_hostname = global.project.ingress_hostname
      issuer = global.project.cert_manager_issuer
      node_selectors = {
-       "dera.ovh/country" = "germany"
+       "moinmoin.fyi/country" = "germany"
      }
      config_storage = "1Gi"
      data_storage = "30Gi"
@@ -77,7 +77,7 @@ generate_hcl "_apps.tf" {
 #        }
      ]
      domains = [
-       "jellyfin.dera.ovh"
+       "jellyfin.moinmoin.fyi"
      ]
      depends_on = [kubernetes_namespace.apps]
    }
@@ -93,7 +93,7 @@ generate_hcl "_apps.tf" {
 #        kubernetes_persistent_volume_claim.nfs_share.metadata.0.name
 #      ]
 #      domains = [
-#        "radarr.dera.ovh"
+#        "radarr.moinmoin.fyi"
 #      ]
 #      depends_on = [kubernetes_namespace.apps]
 #    }
@@ -109,7 +109,7 @@ generate_hcl "_apps.tf" {
 #        kubernetes_persistent_volume_claim.nfs_share.metadata.0.name
 #      ]
 #      domains = [
-#        "prowlarr.dera.ovh"
+#        "prowlarr.moinmoin.fyi"
 #      ]
 #      depends_on = [kubernetes_namespace.apps]
 #    }
@@ -120,7 +120,7 @@ generate_hcl "_apps.tf" {
       ingress_hostname = global.project.ingress_hostname
       issuer = global.project.cert_manager_issuer
       domains = [
-        "dashy.dera.ovh"
+        "dashy.moinmoin.fyi"
       ]
       depends_on = [kubernetes_namespace.apps]
     }
@@ -131,7 +131,7 @@ generate_hcl "_apps.tf" {
       admin_password = global.secrets.filebrowser_password
       issuer = global.project.cert_manager_issuer
       domains = [
-        "filebrowser.dera.ovh"
+        "filebrowser.moinmoin.fyi"
       ]
       ingress_hostname = global.project.ingress_hostname
       data_storage = "16Gi"
@@ -153,7 +153,7 @@ generate_hcl "_apps.tf" {
       storage_size = "10Gi"
       storage_class = global.project.storage_class
       domains = [
-        "homebox.dera.ovh"
+        "homebox.moinmoin.fyi"
       ]
       depends_on = [kubernetes_namespace.apps]
     }
@@ -163,7 +163,7 @@ generate_hcl "_apps.tf" {
       namespace = kubernetes_namespace.apps.metadata[0].name
       issuer = global.project.cert_manager_issuer
       domains = [
-        "echo.dera.ovh"
+        "echo.moinmoin.fyi"
       ]
       ingress_class = "nginx"
       ingress_hostname = global.project.ingress_hostname
