@@ -1,10 +1,10 @@
 globals "project" {
   name = "dera-lab"
-  zone = "dera.ovh"
-  domain = "dera.ovh"
+  zone = "moinmoin.fyi"
+  domain = "moinmoin.fyi"
   domain_email = "muneeb.gandapur@gmail.com"
   ingress_class = "nginx"
-  ingress_hostname = "wormhole.dera.ovh"
+  ingress_hostname = "wormhole.moinmoin.fyi"
   storage_class = "openebs-zfs"
   cert_manager_issuer = "cert-manager-cloudflare"
 }
@@ -19,7 +19,7 @@ globals "infrastructure" "ovh" {
 globals "infrastructure" "tailscale" {
   tailnet  = "tail03622.ts.net"
   org = "muneeb.gandapur@gmail.com"
-  version = "1.62.1"
+  version = "1.76.1"
   acl = {
     admins = [
       "muneeb.gandapur@gmail.com",
@@ -43,8 +43,8 @@ globals "infrastructure" "tailscale" {
 globals "infrastructure" "oci" {
   tenancy_ocid     = "ocid1.tenancy.oc1..aaaaaaaa6pope5hp7f7kxyhpiljh53ww4v2ehsiq4xzjz3u6rpxoqj2bdoua"
   user_ocid        = "ocid1.user.oc1..aaaaaaaa7o5auyixstrtsrcgvoo5gyp2yj5iwwirowqpeaa2cbbtedzpgala"
-  private_key_path = "~/.oci/oci_api_key.pem"
-  fingerprint      = "0c:4c:7a:f7:c6:d7:8c:e6:65:46:df:90:d1:e0:d2:b7"
+  private_key      = global.secrets.oci.private_key
+  fingerprint      = "8b:16:de:80:45:8d:22:69:be:32:dc:c3:81:e5:b9:bf"
   region           = "eu-frankfurt-1"
   compartment_id   = "ocid1.tenancy.oc1..aaaaaaaa6pope5hp7f7kxyhpiljh53ww4v2ehsiq4xzjz3u6rpxoqj2bdoua"
 }
@@ -88,10 +88,10 @@ globals "infrastructure" "instances" {
       role = "server"
       copy_kubeconfig = true
       node_labels = {
-        "dera.ovh/country" = "germany"
-        "dera.ovh/provider" = "oci"
-        "dera.ovh/type" = "vm"
-        "dera.ovh/owner" = "munna"
+        "moinmoin.fyi/country" = "germany"
+        "moinmoin.fyi/provider" = "oci"
+        "moinmoin.fyi/type" = "vm"
+        "moinmoin.fyi/owner" = "munna"
         "openebs.io/localpv-zfs" = false
         "openebs.io/nodeid" = "oci-fra-0"
       }
@@ -134,10 +134,10 @@ globals "infrastructure" "instances" {
       role = "server"
       copy_kubeconfig = false
       node_labels = {
-        "dera.ovh/country" = "germany"
-        "dera.ovh/provider" = "oci"
-        "dera.ovh/owner" = "munna"
-        "dera.ovh/type" = "vm"
+        "moinmoin.fyi/country" = "germany"
+        "moinmoin.fyi/provider" = "oci"
+        "moinmoin.fyi/owner" = "munna"
+        "moinmoin.fyi/type" = "vm"
         "openebs.io/localpv-zfs" = false
         "openebs.io/nodeid" = "oci-fra-1"
       }
@@ -179,10 +179,10 @@ globals "infrastructure" "instances" {
       role = "server"
       copy_kubeconfig = false
       node_labels = {
-        "dera.ovh/country" = "germany"
-        "dera.ovh/provider" = "oci"
-        "dera.ovh/type" = "vm"
-        "dera.ovh/owner" = "munna"
+        "moinmoin.fyi/country" = "germany"
+        "moinmoin.fyi/provider" = "oci"
+        "moinmoin.fyi/type" = "vm"
+        "moinmoin.fyi/owner" = "munna"
         "openebs.io/localpv-zfs" = true
         "openebs.io/nodeid" = "oci-fra-2"
         "openebs.io/nfs-server" = true
@@ -227,10 +227,10 @@ globals "infrastructure" "instances" {
 #       role = "agent"
 #       copy_kubeconfig = false
 #       node_labels = {
-#         "dera.ovh/country" = "finland"
-#         "dera.ovh/provider" = "hetnzer"
-#         "dera.ovh/type" = "vm"
-#         "dera.ovh/owner" = "munna"
+#         "moinmoin.fyi/country" = "finland"
+#         "moinmoin.fyi/provider" = "hetnzer"
+#         "moinmoin.fyi/type" = "vm"
+#         "moinmoin.fyi/owner" = "munna"
 #         "openebs.io/localpv-zfs" = true
 #         "openebs.io/nodeid" = "hzn-hel-0"
 #         "openebs.io/nfs-server" = true
@@ -268,55 +268,55 @@ globals "infrastructure" "instances" {
 #       role = "server"
 #       copy_kubeconfig = false
 #       node_labels = {
-#         "dera.ovh/country" = "germany"
-#         "dera.ovh/provider" = "netcup"
-#         "dera.ovh/type" = "vm"
-#         "dera.ovh/owner" = "munna"
+#         "moinmoin.fyi/country" = "germany"
+#         "moinmoin.fyi/provider" = "netcup"
+#         "moinmoin.fyi/type" = "vm"
+#         "moinmoin.fyi/owner" = "munna"
 #         "openebs.io/localpv-zfs" = true
 #         "openebs.io/nodeid" = "netcup-neu-0"
 #       }
 #     }
 #   }
-  rpi-dik-0 = {
-    managed  = false
-    provider = "self-hosted"
-    user     = "pi"
-    port     = 2203
-    host = {
-      ipv4 = "192.168.100.51"
-      ipv6 = ""
-    }
-    hostname        = "rpi-dik-0"
-    provider_config = {}
-    tailscale_config = {
-      version   = global.infrastructure.tailscale.version
-      exit_node = true
-      mtu       = "1280"
-    }
-    zfs_config = {
-      enable = true
-      loopback = {}
-      devices = {
-        sda3 = {}
-      }
-    }
-    k3s_config = {
-      version = global.infrastructure.k3s.version
-      init = false
-      root_node = false
-      role = "agent"
-      copy_kubeconfig = false
-      node_labels = {
-        "dera.ovh/country" = "pakistan"
-        "dera.ovh/provider" = "self-hosted"
-        "dera.ovh/type" = "sbc"
-        "dera.ovh/owner" = "munna"
-        "openebs.io/localpv-zfs" = true
-        "openebs.io/nodeid" = "rpi-dik-0"
-        "openebs.io/nfs-server" = true
-      }
-    }
-  }
+#   rpi-dik-0 = {
+#     managed  = false
+#     provider = "self-hosted"
+#     user     = "pi"
+#     port     = 2203
+#     host = {
+#       ipv4 = "192.168.100.51"
+#       ipv6 = ""
+#     }
+#     hostname        = "rpi-dik-0"
+#     provider_config = {}
+#     tailscale_config = {
+#       version   = global.infrastructure.tailscale.version
+#       exit_node = true
+#       mtu       = "1280"
+#     }
+#     zfs_config = {
+#       enable = true
+#       loopback = {}
+#       devices = {
+#         sda3 = {}
+#       }
+#     }
+#     k3s_config = {
+#       version = global.infrastructure.k3s.version
+#       init = false
+#       root_node = false
+#       role = "agent"
+#       copy_kubeconfig = false
+#       node_labels = {
+#         "moinmoin.fyi/country" = "pakistan"
+#         "moinmoin.fyi/provider" = "self-hosted"
+#         "moinmoin.fyi/type" = "sbc"
+#         "moinmoin.fyi/owner" = "munna"
+#         "openebs.io/localpv-zfs" = true
+#         "openebs.io/nodeid" = "rpi-dik-0"
+#         "openebs.io/nfs-server" = true
+#       }
+#     }
+#   }
 }
 
 globals "infrastructure" "config" {
@@ -348,8 +348,12 @@ globals "infrastructure" "config" {
 }
 
 globals "infrastructure" "k3s" {
-  version = "v1.28.5+k3s1"
-  api_host = "netcup-neu-0"
+  version = "v1.31.1+k3s1"
+#   api_host = tm_join(".", ["oci-fra-1", global.infrastructure.tailscale.tailnet])
+  api_host = {
+    domain = "k8s-api.moinmoin.fyi"
+    target = "oci-fra-1"
+  }
   cluster_cidrs = [
     "10.42.0.0/16",
     "2001:cafe:42:0::/56"
@@ -361,7 +365,7 @@ globals "infrastructure" "k3s" {
 }
 
 globals "infrastructure" "cloudflare" {
-  zone_id = "17e986ac03eea904a1ced4c28a48240a"
+  zone_id = "caee740b96fd9709c0fcc1934bd59da9"
   account_id = "03614fa9b630f5b0984e241fe4aa1fc9"
 }
 
@@ -394,18 +398,18 @@ globals "apps" {
   ]
 
   public_hostnames = [
-    "echo.dera.ovh"
+    "echo.moinmoin.fyi"
   ]
   private_hostnames = [
-    "filebrowser.dera.ovh",
-    "dashy.dera.ovh",
-    "homebox.dera.ovh",
-    "jellyfin.dera.ovh",
-    "oci-fra-0.dashdot.dera.ovh",
-    "oci-fra-1.dashdot.dera.ovh",
-    "oci-fra-2.dashdot.dera.ovh",
-    "hzn-hel-0.dashdot.dera.ovh",
-    "netcup-neu-0.dashdot.dera.ovh",
-    "rpi-dik-0.dashdot.dera.ovh",
+    "filebrowser.moinmoin.fyi",
+    "dashy.moinmoin.fyi",
+    "homebox.moinmoin.fyi",
+    "jellyfin.moinmoin.fyi",
+    "oci-fra-0.dashdot.moinmoin.fyi",
+    "oci-fra-1.dashdot.moinmoin.fyi",
+    "oci-fra-2.dashdot.moinmoin.fyi",
+    "hzn-hel-0.dashdot.moinmoin.fyi",
+    "netcup-neu-0.dashdot.moinmoin.fyi",
+    "rpi-dik-0.dashdot.moinmoin.fyi",
   ]
 }

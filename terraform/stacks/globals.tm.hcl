@@ -8,11 +8,14 @@ globals "terraform" {
 globals "terraform" "default_providers" {
   oci = {
     source  = "oracle/oci"
-    version = "4.111.0"
+    version = "6.18.0"
     config = {
-      auth = "SecurityToken"
       config_file_profile = "DEFAULT"
       region = global.infrastructure.oci.region
+      tenancy_ocid = global.infrastructure.oci.tenancy_ocid
+      user_ocid = global.infrastructure.oci.user_ocid
+      fingerprint = global.infrastructure.oci.fingerprint
+      private_key = global.infrastructure.oci.private_key
     }
   }
   template = {
