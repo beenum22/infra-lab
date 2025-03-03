@@ -70,6 +70,14 @@ locals {
       url = "https://homebox.moinmoin.fyi"
       status_check: true
     }
+    echo = {
+      section = "Apps"
+      title = "HTTP Echo"
+      description = "Test Public HTTP Echo Server"
+      icon = "hl-ghostfolio"
+      url = "https://echo.moinmoin.fyi"
+      status_check: true
+    }
 #     radarr = {
 #       section = "Apps"
 #       title = "Radarr"
@@ -163,14 +171,14 @@ locals {
         url         = "https://cloud.oracle.com/?region=eu-frankfurt-1"
         id          = "2_2647_oracle"
       },
-      {
-        title       = "Bytehosting"
-        description = "VM Provider"
-        icon        = "https://bytehosting.cloud/white.png"
-        target      = "newtab"
-        url         = "https://panel.bytehosting.cloud/"
-        id          = "3_2647_bytehosting"
-      },
+      # {
+      #   title       = "Bytehosting"
+      #   description = "VM Provider"
+      #   icon        = "https://bytehosting.cloud/white.png"
+      #   target      = "newtab"
+      #   url         = "https://panel.bytehosting.cloud/"
+      #   id          = "3_2647_bytehosting"
+      # },
       {
         title       = "Netcup"
         description = "VM Provider"
@@ -180,15 +188,15 @@ locals {
         provider    = "Netcup"
         id          = "4_2647_netcup"
       },
-      {
-        title       = "Regxa"
-        description = "VPS Provider"
-        icon        = "https://regxa.com/__logo.svg"
-        target      = "newtab"
-        url         = "https://my.regxa.com/clientarea.php"
-        provider    = "Regxa"
-        id          = "5_2647_regxa"
-      },
+      # {
+      #   title       = "Regxa"
+      #   description = "VPS Provider"
+      #   icon        = "https://regxa.com/__logo.svg"
+      #   target      = "newtab"
+      #   url         = "https://my.regxa.com/clientarea.php"
+      #   provider    = "Regxa"
+      #   id          = "5_2647_regxa"
+      # },
       {
         title       = "Tailscale"
         description = "Mesh VPN Provider"
@@ -215,6 +223,15 @@ locals {
         target      = "newtab"
         provider    = "Github"
         id          = "8_2647_git"
+      },
+      {
+        title       = "Cloudflare"
+        description = "DNS Provider and Public Gateway"
+        icon        = "hl-cloudflare"
+        url         = "https://dash.cloudflare.com/"
+        target      = "newtab"
+        provider    = "Cloudflare"
+        id          = "8_2647_cf"
       }
     ]
   }]
