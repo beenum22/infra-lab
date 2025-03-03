@@ -351,7 +351,9 @@ globals "infrastructure" "k3s" {
   version = "v1.31.1+k3s1"
 #   api_host = tm_join(".", ["oci-fra-1", global.infrastructure.tailscale.tailnet])
   api_host = {
-    domain = "k8s-api.moinmoin.fyi"
+    # domain = "k8s-api.moinmoin.fyi"
+    # TODO: Implemetation is incorrect currently as it's supposed to add domain in Cloudflare
+    domain = "oci-fra-1"
     target = "oci-fra-1"
   }
   cluster_cidrs = [
