@@ -99,21 +99,21 @@ generate_hcl "_k3s.tf" {
       special          = true
     }
 
-    resource "cloudflare_record" "k3s_api_ipv4" {
-      zone_id = global.infrastructure.cloudflare.zone_id
-      name    = global.infrastructure.k3s.api_host.domain
-      value   = data.terraform_remote_state.infra_configuration_stack_state.outputs.tailscale_ips[global.infrastructure.k3s.api_host.target].ipv4
-      type    = "A"
-      proxied = false
-    }
+    # resource "cloudflare_record" "k3s_api_ipv4" {
+    #   zone_id = global.infrastructure.cloudflare.zone_id
+    #   name    = global.infrastructure.k3s.api_host.domain
+    #   value   = data.terraform_remote_state.infra_configuration_stack_state.outputs.tailscale_ips[global.infrastructure.k3s.api_host.target].ipv4
+    #   type    = "A"
+    #   proxied = false
+    # }
 
-    resource "cloudflare_record" "k3s_api_ipv6" {
-      zone_id = global.infrastructure.cloudflare.zone_id
-      name    = global.infrastructure.k3s.api_host.domain
-      value   = data.terraform_remote_state.infra_configuration_stack_state.outputs.tailscale_ips[global.infrastructure.k3s.api_host.target].ipv6
-      type    = "AAAA"
-      proxied = false
-    }
+    # resource "cloudflare_record" "k3s_api_ipv6" {
+    #   zone_id = global.infrastructure.cloudflare.zone_id
+    #   name    = global.infrastructure.k3s.api_host.domain
+    #   value   = data.terraform_remote_state.infra_configuration_stack_state.outputs.tailscale_ips[global.infrastructure.k3s.api_host.target].ipv6
+    #   type    = "AAAA"
+    #   proxied = false
+    # }
 
     module "k3s_init" {
       source = "${terramate.root.path.fs.absolute}/terraform/modules/infra/k3s"
