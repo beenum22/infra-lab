@@ -42,6 +42,9 @@ generate_hcl "_network.tf" {
       }
     }
 
+    # NOTE:
+    # Make sure host machines have the following set if QUIC is used:
+    # sudo sysctl -w net.core.wmem_max=7500000 && sudo sysctl -w net.core.rmem_max=7500000
     module "cloudflared" {
       source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/cloudflared"
       namespace = kubernetes_namespace.network.metadata.0.name
