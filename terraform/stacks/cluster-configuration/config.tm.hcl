@@ -31,17 +31,17 @@ generate_hcl "_cluster_info.tf" {
         for owner in local.owners : owner => {
           namespace = owner
           nodes = [
-            for node in data.kubernetes_nodes.this.nodes : node.metadata.0.name if node.metadata.0.labels["moinmoin.fyi/owner"] == owner
+            for node in data.kubernetes_nodes.this.nodes : node.metadata.0.name if can(node.metadata.0.labels["moinmoin.fyi/owner"]) == owner
           ]
-          cpus = sum([
-            for node in data.kubernetes_nodes.this.nodes : tonumber(node.status.0.capacity.cpu) if node.metadata.0.labels["moinmoin.fyi/owner"] == owner
-          ])
-          memory = "${sum([
-            for node in data.kubernetes_nodes.this.nodes : tonumber(regex("\\d+", node.status.0.capacity.memory)) * local.convert_to_ki_factor[regex("[A-Za-z]+", node.status.0.capacity.memory)] if node.metadata.0.labels["moinmoin.fyi/owner"] == owner
-          ])}Ki"
-          storage = "${sum([
-            for node in data.kubernetes_nodes.this.nodes : tonumber(regex("\\d+", node.status.0.capacity.ephemeral-storage)) * local.convert_to_ki_factor[regex("[A-Za-z]+", node.status.0.capacity.ephemeral-storage)] if node.metadata.0.labels["moinmoin.fyi/owner"] == owner
-          ])}Ki"
+          cpus = try(sum([
+            for node in data.kubernetes_nodes.this.nodes : tonumber(node.status.0.capacity.cpu) if can(node.metadata.0.labels["moinmoin.fyi/owner"]) == owner
+          ]), 0)
+          memory = "${try(sum([
+            for node in data.kubernetes_nodes.this.nodes : tonumber(regex("\\d+", node.status.0.capacity.memory)) * local.convert_to_ki_factor[regex("[A-Za-z]+", node.status.0.capacity.memory)] if can(node.metadata.0.labels["moinmoin.fyi/owner"]) == owner
+          ]), 0)}Ki"
+          storage = "${try(sum([
+            for node in data.kubernetes_nodes.this.nodes : tonumber(regex("\\d+", node.status.0.capacity.ephemeral-storage)) * local.convert_to_ki_factor[regex("[A-Za-z]+", node.status.0.capacity.ephemeral-storage)] if can(node.metadata.0.labels["moinmoin.fyi/owner"]) == owner
+          ]), 0)}Ki"
         }
       }
     }
