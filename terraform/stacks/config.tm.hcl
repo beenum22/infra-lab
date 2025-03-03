@@ -391,6 +391,37 @@ globals "cluster" {
 }
 
 globals "apps" {
+  filebrowser = {
+    enable = false
+    backup = true
+    hostnames = ["filebrowser.moinmoin.fyi"]
+    public = false
+  }
+  homebox = {
+    enable = false
+    backup = true
+    hostnames = ["homebox.moinmoin.fyi"]
+    public = false
+  }
+  dashy = {
+    enable = true
+    backup = false
+    hostnames = ["dashy.moinmoin.fyi"]
+    public = false
+  }
+  jellyfin = {
+    enable = false
+    backup = false
+    hostnames = ["jellyfin.moinmoin.fyi"]
+    public = false
+  }
+  http_echo = {
+    enable = true
+    backup = false
+    hostnames = ["echo.moinmoin.fyi"]
+    public = true
+  }
+
   backups = [
     "filebrowser",
     "homebox",

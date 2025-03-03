@@ -56,6 +56,7 @@ generate_hcl "_apps.tf" {
     }
 
    module "jellyfin" {
+    count = tm_try(global.apps.jellyfin.enable, false) == true ? 1 : 0
      source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/jellyfin"
      namespace = kubernetes_namespace.apps.metadata[0].name
      ingress_hostname = global.project.ingress_hostname
@@ -115,6 +116,7 @@ generate_hcl "_apps.tf" {
 #    }
 
     module "dashy" {
+      count = tm_try(global.apps.dashy.enable, false) == true ? 1 : 0
       source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/dashy"
       namespace = kubernetes_namespace.apps.metadata[0].name
       ingress_hostname = global.project.ingress_hostname
@@ -126,6 +128,7 @@ generate_hcl "_apps.tf" {
     }
 
     module "filebrowser" {
+      count = tm_try(global.apps.filebrowser.enable, false) == true ? 1 : 0
       source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/filebrowser"
       namespace = kubernetes_namespace.apps.metadata[0].name
       admin_password = global.secrets.filebrowser_password
@@ -146,6 +149,7 @@ generate_hcl "_apps.tf" {
     }
 
     module "homebox" {
+      count = tm_try(global.apps.homebox.enable, false) == true ? 1 : 0
       source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/homebox"
       namespace = kubernetes_namespace.apps.metadata[0].name
       ingress_hostname = global.project.ingress_hostname
@@ -159,6 +163,7 @@ generate_hcl "_apps.tf" {
     }
 
     module "http_echo" {
+      count = tm_try(global.apps.http_echo.enable, false) == true ? 1 : 0
       source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/http-echo"
       namespace = kubernetes_namespace.apps.metadata[0].name
       issuer = global.project.cert_manager_issuer
