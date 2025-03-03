@@ -125,6 +125,7 @@ resource "kubernetes_deployment" "this" {
           image = "${var.image}:${var.tag}"
           args = [
             "tunnel",
+            "--protocol=http2",
             "--config",
             "/etc/cloudflared/config/config.yaml",
             "run"
