@@ -50,53 +50,53 @@ globals "infrastructure" "oci" {
 }
 
 globals "infrastructure" "instances" {
-  oci-fra-0 = {
-    managed  = false
-    provider = "oracle"
-    user     = "opc"
-    port     = 2203
-    host     = {}
-    hostname = null
-    provider_config = {
-      shape_name    = "VM.Standard.A1.Flex"
-      image_ocid    = "ocid1.image.oc1.eu-frankfurt-1.aaaaaaaaujyukkfkoanatqanh2qe4bxhwwg2j44fjn2folihrfvsxd5jv5bq"
-      vcpus         = 1
-      memory        = 6
-      boot_volume   = 50
-      block_volumes = []
-    }
-    tailscale_config = {
-      version   = global.infrastructure.tailscale.version
-      exit_node = false
-      mtu       = "1280"
-      routes    = "10.42.2.0/24,2001:cafe:42:3::/64"
-    }
-    zfs_config = {
-      enable = false
-      loopback = {
-        loop0 = {
-          path = "/mnt/zfs-loop0.img"
-          size = "20G"
-        }
-      }
-      devices = {}
-    }
-    k3s_config = {
-      version = global.infrastructure.k3s.version
-      init = false
-      root_node = false
-      role = "server"
-      copy_kubeconfig = true
-      node_labels = {
-        "moinmoin.fyi/country" = "germany"
-        "moinmoin.fyi/provider" = "oci"
-        "moinmoin.fyi/type" = "vm"
-        "moinmoin.fyi/owner" = "munna"
-        "openebs.io/localpv-zfs" = false
-        "openebs.io/nodeid" = "oci-fra-0"
-      }
-    }
-  }
+  # oci-fra-0 = {
+  #   managed  = false
+  #   provider = "oracle"
+  #   user     = "opc"
+  #   port     = 2203
+  #   host     = {}
+  #   hostname = null
+  #   provider_config = {
+  #     shape_name    = "VM.Standard.A1.Flex"
+  #     image_ocid    = "ocid1.image.oc1.eu-frankfurt-1.aaaaaaaaujyukkfkoanatqanh2qe4bxhwwg2j44fjn2folihrfvsxd5jv5bq"
+  #     vcpus         = 1
+  #     memory        = 6
+  #     boot_volume   = 50
+  #     block_volumes = []
+  #   }
+  #   tailscale_config = {
+  #     version   = global.infrastructure.tailscale.version
+  #     exit_node = false
+  #     mtu       = "1280"
+  #     routes    = "10.42.2.0/24,2001:cafe:42:3::/64"
+  #   }
+  #   zfs_config = {
+  #     enable = false
+  #     loopback = {
+  #       loop0 = {
+  #         path = "/mnt/zfs-loop0.img"
+  #         size = "20G"
+  #       }
+  #     }
+  #     devices = {}
+  #   }
+  #   k3s_config = {
+  #     version = global.infrastructure.k3s.version
+  #     init = false
+  #     root_node = false
+  #     role = "server"
+  #     copy_kubeconfig = true
+  #     node_labels = {
+  #       "moinmoin.fyi/country" = "germany"
+  #       "moinmoin.fyi/provider" = "oci"
+  #       "moinmoin.fyi/type" = "vm"
+  #       "moinmoin.fyi/owner" = "munna"
+  #       "openebs.io/localpv-zfs" = false
+  #       "openebs.io/nodeid" = "oci-fra-0"
+  #     }
+  #   }
+  # }
   oci-fra-1 = {
     managed  = false
     provider = "oracle"
@@ -143,52 +143,52 @@ globals "infrastructure" "instances" {
       }
     }
   }
-  oci-fra-2 = {
-    managed  = false
-    provider = "oracle"
-    user     = "opc"
-    port     = 2203
-    host     = {}
-    hostname = null
-    provider_config = {
-      shape_name  = "VM.Standard.A1.Flex"
-      image_ocid  = "ocid1.image.oc1.eu-frankfurt-1.aaaaaaaaujyukkfkoanatqanh2qe4bxhwwg2j44fjn2folihrfvsxd5jv5bq"
-      vcpus       = 2
-      memory      = 12
-      boot_volume = 50
-      block_volumes = [
-        50
-      ]
-    }
-    tailscale_config = {
-      version   = global.infrastructure.tailscale.version
-      exit_node = false
-      mtu       = "1280"
-    }
-    zfs_config = {
-      enable = true
-      loopback = {}
-      devices = {
-        sdb = {}
-      }
-    }
-    k3s_config = {
-      version = global.infrastructure.k3s.version
-      init = false
-      root_node = false
-      role = "server"
-      copy_kubeconfig = false
-      node_labels = {
-        "moinmoin.fyi/country" = "germany"
-        "moinmoin.fyi/provider" = "oci"
-        "moinmoin.fyi/type" = "vm"
-        "moinmoin.fyi/owner" = "munna"
-        "openebs.io/localpv-zfs" = true
-        "openebs.io/nodeid" = "oci-fra-2"
-        "openebs.io/nfs-server" = true
-      }
-    }
-  }
+  # oci-fra-2 = {
+  #   managed  = false
+  #   provider = "oracle"
+  #   user     = "opc"
+  #   port     = 2203
+  #   host     = {}
+  #   hostname = null
+  #   provider_config = {
+  #     shape_name  = "VM.Standard.A1.Flex"
+  #     image_ocid  = "ocid1.image.oc1.eu-frankfurt-1.aaaaaaaaujyukkfkoanatqanh2qe4bxhwwg2j44fjn2folihrfvsxd5jv5bq"
+  #     vcpus       = 2
+  #     memory      = 12
+  #     boot_volume = 50
+  #     block_volumes = [
+  #       50
+  #     ]
+  #   }
+  #   tailscale_config = {
+  #     version   = global.infrastructure.tailscale.version
+  #     exit_node = false
+  #     mtu       = "1280"
+  #   }
+  #   zfs_config = {
+  #     enable = true
+  #     loopback = {}
+  #     devices = {
+  #       sdb = {}
+  #     }
+  #   }
+  #   k3s_config = {
+  #     version = global.infrastructure.k3s.version
+  #     init = false
+  #     root_node = false
+  #     role = "server"
+  #     copy_kubeconfig = false
+  #     node_labels = {
+  #       "moinmoin.fyi/country" = "germany"
+  #       "moinmoin.fyi/provider" = "oci"
+  #       "moinmoin.fyi/type" = "vm"
+  #       "moinmoin.fyi/owner" = "munna"
+  #       "openebs.io/localpv-zfs" = true
+  #       "openebs.io/nodeid" = "oci-fra-2"
+  #       "openebs.io/nfs-server" = true
+  #     }
+  #   }
+  # }
 #   Disabling Hetzner machines to save costs. Re-add later if needed.
 #   hzn-hel-0 = {
 #     managed  = false
