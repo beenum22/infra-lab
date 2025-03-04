@@ -1,5 +1,17 @@
 # Troubleshooting
 
+## K3s Orphans
+K3s cluster can lose qurom in case of orphan nodes If the nodes are not properly cleaned. This state requires manually running the following on the only server node that is left:
+```shell
+sudo su
+export PATH=/usr/local/bin:$PATH
+rm /var/lib/rancher/k3s/server/db/reset-flag
+
+systemctl stop k3s
+k3s server --cluster-reset --flannel-backend=host-gw --flannel-iface=tailscale0  --flannel-ipv6-masq
+systemctl start k3s
+```
+
 ## Storage
 
 ### ZFS Node Migration
