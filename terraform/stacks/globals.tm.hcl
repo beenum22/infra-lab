@@ -8,7 +8,8 @@ globals "terraform" {
 globals "terraform" "default_providers" {
   oci = {
     source  = "oracle/oci"
-    version = "6.18.0"
+    # version = "4.111.0"
+    version = ">= 4.67.3, < 7.0.0"
     config = {
       config_file_profile = "DEFAULT"
       region = global.infrastructure.oci.region
