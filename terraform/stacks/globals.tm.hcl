@@ -93,7 +93,8 @@ globals "terraform" "default_providers" {
   }
   cloudflare = {
     source = "cloudflare/cloudflare"
-    version = "4.29.0"
+    version = "5.1.0"
+    # version = "4.29.0"
     config = {
       api_token = global.secrets.cloudflare.api_token
     }
