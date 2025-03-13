@@ -9,6 +9,14 @@ globals "project" {
   cert_manager_issuer = "cert-manager-cloudflare"
 }
 
+globals "feature_toggles" {
+  enable_talos = false
+}
+
+globals "infrastructure" "dns" {
+  zone = "moinmoin.fyi"
+}
+
 globals "infrastructure" "ovh" {
   endpoint           = "ovh-eu"
   application_key    = global.secrets.ovh.application_key
@@ -20,6 +28,10 @@ globals "infrastructure" "tailscale" {
   tailnet  = "tail03622.ts.net"
   org = "muneeb.gandapur@gmail.com"
   version = "1.76.1"
+  cidrs = [
+    "100.64.0.0/10",
+    "fd7a:115c:a1e0::/48",
+  ]
   acl = {
     admins = [
       "muneeb.gandapur@gmail.com",
@@ -47,6 +59,139 @@ globals "infrastructure" "oci" {
   fingerprint      = "8b:16:de:80:45:8d:22:69:be:32:dc:c3:81:e5:b9:bf"
   region           = "eu-frankfurt-1"
   compartment_id   = "ocid1.tenancy.oc1..aaaaaaaa6pope5hp7f7kxyhpiljh53ww4v2ehsiq4xzjz3u6rpxoqj2bdoua"
+}
+
+globals "infrastructure" "k3s" {
+  version = "v1.31.1+k3s1"
+#   api_host = tm_join(".", ["oci-fra-1", global.infrastructure.tailscale.tailnet])
+  api_host = {
+    # domain = "k8s-api.moinmoin.fyi"
+    # TODO: Implemetation is incorrect currently as it's supposed to add domain in Cloudflare
+    domain = "oci-fra-1"
+    target = "oci-fra-1"
+  }
+  cluster_cidrs = [
+    "10.42.0.0/16",
+    "2001:cafe:42:0::/56"
+  ]
+  service_cidrs = [
+    "10.43.0.0/16",
+    "2001:cafe:42:1::/112"
+  ]
+}
+
+globals "infrastructure" "talos" {
+  version = "v1.9.4"
+  k8s_version = "1.32.2"
+  cluster_name = "dera-lab"
+  cluster_endpoint = "endpoint.cluster.${global.infrastructure.dns.zone}"
+  cluster_cidrs = [
+    # "10.42.0.0/16",
+    # "2001:cafe:42:0::/56"
+    "10.244.0.0/16",
+    "2001:db8:42:0::/56",
+  ]
+  service_cidrs = [
+    # "10.43.0.0/16",
+    # "2001:cafe:42:1::/112"
+    "10.96.0.0/12",
+    "2001:db8:42:1::/112",
+  ]
+}
+
+globals "infrastructure" "talos_instances" {
+  oci-fra-0 = {
+    managed  = false
+    provider = "oracle"
+    hostname = "oci-fra-0.cluster.${global.infrastructure.dns.zone}"
+    # user     = "opc"
+    # port     = 2203
+    # host     = {}
+    # hostname = null
+    provider_config = {
+      shape_name    = "VM.Standard.A1.Flex"
+      image_ocid    = "ocid1.image.oc1.eu-frankfurt-1.aaaaaaaaujyukkfkoanatqanh2qe4bxhwwg2j44fjn2folihrfvsxd5jv5bq"
+      vcpus         = 1
+      memory        = 6
+      boot_volume   = 50
+      block_volumes = []
+    }
+    tailscale_config = {
+      version   = global.infrastructure.tailscale.version
+      exit_node = true
+      mtu       = "1280"
+      routes    = ""
+    }
+    zfs_config = {
+      enable = false
+      loopback = {
+        loop0 = {
+          path = "/mnt/zfs-loop0.img"
+          size = "20G"
+        }
+      }
+      devices = {}
+    }
+    talos_config = {
+      version = global.infrastructure.talos.version
+      k8s_version = global.infrastructure.talos.k8s_version
+      bootstrap = true
+      machine_type = "controlplane"
+      # copy_kubeconfig = true
+      node_labels = {
+        "moinmoin.fyi/country" = "germany"
+        "moinmoin.fyi/provider" = "oci"
+        "moinmoin.fyi/type" = "vm"
+        "moinmoin.fyi/owner" = "munna"
+        "openebs.io/localpv-zfs" = false
+        "openebs.io/nodeid" = "oci-fra-0"
+      }
+    }
+  }
+  oci-fra-2 = {
+    managed  = false
+    provider = "oracle"
+    hostname = "oci-fra-2.cluster.${global.infrastructure.dns.zone}"
+    provider_config = {
+      shape_name    = "VM.Standard.A1.Flex"
+      # image_ocid    = "ocid1.image.oc1.eu-frankfurt-1.aaaaaaaaujyukkfkoanatqanh2qe4bxhwwg2j44fjn2folihrfvsxd5jv5bq"
+      vcpus         = 2
+      memory        = 12
+      boot_volume   = 50
+      block_volumes = []
+    }
+    tailscale_config = {
+      version   = global.infrastructure.tailscale.version
+      exit_node = false
+      mtu       = "1280"
+      routes    = ""
+    }
+    zfs_config = {
+      enable = false
+      loopback = {
+        loop0 = {
+          path = "/mnt/zfs-loop0.img"
+          size = "20G"
+        }
+      }
+      devices = {}
+    }
+    talos_config = {
+      version = global.infrastructure.talos.version
+      k8s_version = global.infrastructure.talos.k8s_version
+      bootstrap = false
+      machine_type = "controlplane"
+      # copy_kubeconfig = true
+      node_labels = {
+        "moinmoin.fyi/country" = "germany"
+        "moinmoin.fyi/provider" = "oci"
+        "moinmoin.fyi/type" = "vm"
+        "moinmoin.fyi/owner" = "munna"
+        "openebs.io/localpv-zfs" = false
+        "openebs.io/nodeid" = "oci-fra-0"
+      }
+    }
+  }
 }
 
 globals "infrastructure" "instances" {
@@ -345,25 +490,6 @@ globals "infrastructure" "config" {
       password = null
     }
   }
-}
-
-globals "infrastructure" "k3s" {
-  version = "v1.31.1+k3s1"
-#   api_host = tm_join(".", ["oci-fra-1", global.infrastructure.tailscale.tailnet])
-  api_host = {
-    # domain = "k8s-api.moinmoin.fyi"
-    # TODO: Implemetation is incorrect currently as it's supposed to add domain in Cloudflare
-    domain = "oci-fra-1"
-    target = "oci-fra-1"
-  }
-  cluster_cidrs = [
-    "10.42.0.0/16",
-    "2001:cafe:42:0::/56"
-  ]
-  service_cidrs = [
-    "10.43.0.0/16",
-    "2001:cafe:42:1::/112"
-  ]
 }
 
 globals "infrastructure" "cloudflare" {
