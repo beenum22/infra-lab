@@ -8,6 +8,7 @@ globals "terraform" {
     "oci",
     "talos",
     "helm",
+    "external",
   ]
 
   remote_states = {
@@ -218,14 +219,6 @@ generate_hcl "_talos_providers.tf" {
   content {
     provider "helm" {
       alias = "talos"
-      kubernetes {
-        config_path = "~/.kube/talosconfig"
-      }
-    }
-
-    provider "kubernetes" {
-      alias = "talos"
-      config_path = "~/.kube/talosconfig"
     }
   }
 }
@@ -233,103 +226,40 @@ generate_hcl "_talos_providers.tf" {
 generate_hcl "_talos_cluster.tf" {
   condition = global.feature_toggles.enable_talos == true
   content {
-    locals {
-      talos_init = {
-        machine = {
-          certSANs = [
-            global.infrastructure.talos.cluster_endpoint,
-          ]
-        }
+    data "helm_template" "flannel" {
+      provider = helm.talos
+      name  = "flannel"
+      chart = "https://github.com/flannel-io/flannel/releases/latest/download/flannel.tgz"
+      namespace = "kube-system"
+      set {
+        name = "podCidr"
+        value = global.infrastructure.talos.cluster_cidrs[0]
       }
-      # talos_tailscale_init = {
-      #   apiVersion = "v1alpha1"
-      #   kind = "ExtensionServiceConfig"
-      #   name = "tailscale"
-      #   environment = [
-      #     "TS_AUTHKEY=${tailscale_tailnet_key.this[each.key].key}",
-      #     # "TS_ROUTES=${join(",", local.node_cidrs[each.key].node_cidrs)}",
-      #     # "TS_EXTRA_ARGS=--reset --accept-routes=true${each.value.tailscale_config.exit_node ? " --advertise-exit-node" : ""}",
-      #     # "TS_ACCEPT_DNS=true",
-      #     # "TS_USERSPACE=false",
-      #     "TS_AUTH_ONCE=true"
-      #   ]
-      # }
-      talos_zfs_patch = {
-        machine = {
-          kernel = {
-            modules = [{
-              name = "zfs"
-            }]
-          }
-        }
+      set {
+        name = "podCidrv6"
+        value = global.infrastructure.talos.cluster_cidrs[1]
       }
-      talos_kubelet = {
-        machine = {
-          kubelet = {
-            nodeIP = {
-              validSubnets = global.infrastructure.tailscale.cidrs
-            }
-          }
-        }
+      set {
+        name = "flannel.backend"
+        value = "host-gw"
       }
-      talos_cni = {
-        cluster = {
-          etcd = {
-            advertisedSubnets = global.infrastructure.tailscale.cidrs
-          }
-          network = {
-            podSubnets = global.infrastructure.talos.cluster_cidrs
-            serviceSubnets = global.infrastructure.talos.service_cidrs
-            cni = {
-              name = "none"
-            }
-          }
-        }
+      set {
+        name  = "flannel.args[0]"
+        value = "--iface=tailscale0"
       }
-      talos_sysctl = {
-        machine = {
-          sysctls = {
-            "net.ipv4.ip_forward" = 1
-            "net.ipv6.conf.all.forwarding" = 1
-          }
-        }
+      set {
+        name  = "flannel.args[1]"
+        value = "--ip-masq"
+      }
+      set {
+        name  = "flannel.args[2]"
+        value = "--kube-subnet-mgr"
       }
     }
 
     resource "talos_machine_secrets" "this" {
       talos_version = global.infrastructure.talos.version
     }
-
-    # resource "talos_machine_configuration_apply" "this" {
-    #   for_each = local.oci_talos_nodes
-    #   client_configuration        = talos_machine_secrets.this.client_configuration
-    #   machine_configuration_input = data.talos_machine_configuration.oci[each.key].machine_configuration
-    #   node = global.infrastructure.talos_instances[each.key].hostname
-    #   config_patches     = [
-    #     yamlencode({
-    #       machine = {
-    #       certSANs = [
-    #         global.infrastructure.talos.cluster_endpoint,
-    #         global.infrastructure.talos_instances[each.key].hostname,
-    #       ]
-    #     }
-    #     }),
-    #     yamlencode({
-    #       apiVersion = "v1alpha1"
-    #       kind = "ExtensionServiceConfig"
-    #       name = "tailscale"
-    #       environment = [
-    #         "TS_AUTHKEY=${tailscale_tailnet_key.this[each.key].key}"
-    #       ]
-    #     }),
-    #     # yamlencode(local.talos_tailscale_patch),
-    #     yamlencode(local.talos_kubelet),
-    #     yamlencode(local.talos_cni),
-    #     yamlencode(local.talos_zfs_patch),
-    #     # yamlencode(global.talos_network),
-    #   ]
-    #   depends_on = [oci_core_instance.this]
-    # }
 
     data "talos_machine_configuration" "machine_init" {
       for_each = local.oci_talos_nodes
@@ -383,35 +313,16 @@ generate_hcl "_talos_cluster.tf" {
                 name = "none"
               }
             }
+            inlineManifests = [
+              {
+                name = "flannel"
+                contents = data.helm_template.flannel.manifest
+              },
+            ]
           }
         }),
       ]
     }
-
-    # data "talos_machine_configuration" "cluster_init" {
-    #   cluster_endpoint   = "https://${global.infrastructure.talos.cluster_endpoint}:6443"
-    #   cluster_name       = global.infrastructure.talos.cluster_name
-    #   talos_version      = global.infrastructure.talos.version
-    #   kubernetes_version = global.infrastructure.talos.k8s_version
-    #   machine_secrets    = talos_machine_secrets.this.machine_secrets
-    #   machine_type       = "controlplane"
-    #   config_patches     = [
-    #     yamlencode({
-    #       cluster = {
-    #         etcd = {
-    #           advertisedSubnets = global.infrastructure.tailscale.cidrs
-    #         }
-    #         network = {
-    #           podSubnets = global.infrastructure.talos.cluster_cidrs
-    #           serviceSubnets = global.infrastructure.talos.service_cidrs
-    #           cni = {
-    #             name = "none"
-    #           }
-    #         }
-    #       }
-    #     }),
-    #   ]
-    # }
 
     resource "talos_machine_configuration_apply" "machine_init" {
       for_each = local.oci_talos_nodes
@@ -429,14 +340,7 @@ generate_hcl "_talos_cluster.tf" {
       ]
     }
 
-    # resource "talos_machine_configuration_apply" "cluster_init" {
-    #   client_configuration = talos_machine_secrets.this.client_configuration
-    #   machine_configuration_input = data.talos_machine_configuration.cluster_init.machine_configuration
-    #   node = global.infrastructure.talos.cluster_endpoint
-    # }
-
     resource "time_sleep" "wait_30_seconds" {
-      # depends_on = [talos_machine_configuration_apply.this]
       create_duration = "30s"
     }
 
@@ -448,8 +352,6 @@ generate_hcl "_talos_cluster.tf" {
       depends_on = [
         time_sleep.wait_30_seconds,
         talos_machine_configuration_apply.machine_init,
-        # oci_core_instance.this,
-        # talos_machine_configuration_apply.this,
       ]
     }
 
@@ -482,7 +384,7 @@ generate_hcl "_talos_cluster.tf" {
           name = "tailscale"
           environment = [
             # "TS_AUTHKEY=${tailscale_tailnet_key.this[each.key].key}",
-            "TS_ROUTES=${join(",", local.node_cidrs[each.key].node_cidrs)}",
+            "TS_ROUTES=${local.node_cidrs[each.key].node_cidrs}",
             # "TS_EXTRA_ARGS=--reset --accept-routes=true${each.value.tailscale_config.exit_node ? " --advertise-exit-node" : ""}",
             # "TS_EXTRA_ARGS=--reset --accept-routes=true${each.value.tailscale_config.exit_node ? " --advertise-exit-node" : ""}",
             "TS_EXTRA_ARGS=--reset --accept-routes=true${each.value.tailscale_config.exit_node ? " --advertise-exit-node" : ""}",
@@ -526,44 +428,6 @@ generate_hcl "_talos_cluster.tf" {
       filename   = "${pathexpand("~")}/.kube/talosconfig"
     }
 
-    # TODO: It runs before the bootstrap is in a good state. Might need to fix.
-    resource "helm_release" "flannel" {
-      provider = helm.talos
-      name  = "flannel"
-      chart = "https://github.com/flannel-io/flannel/releases/latest/download/flannel.tgz"
-      namespace = "kube-system"
-      set {
-        name = "podCidr"
-        value = global.infrastructure.talos.cluster_cidrs[0]
-      }
-      set {
-        name = "podCidrv6"
-        value = global.infrastructure.talos.cluster_cidrs[1]
-      }
-      set {
-        name = "flannel.backend"
-        value = "host-gw"
-      }
-      set {
-        name  = "flannel.args[0]"
-        value = "--iface=tailscale0"
-      }
-      set {
-        name  = "flannel.args[1]"
-        value = "--ip-masq"
-      }
-      set {
-        name  = "flannel.args[2]"
-        value = "--kube-subnet-mgr"
-      }
-      depends_on = [
-        # oci_core_instance.this,
-        talos_machine_bootstrap.this,
-        # local_sensitive_file.export_kubeconfig
-        talos_cluster_kubeconfig.this,
-      ]
-    }
-
     # data "talos_cluster_health" "this" {
     #   for_each = local.talos_nodes
     #   client_configuration = talos_machine_secrets.this.client_configuration
@@ -583,16 +447,39 @@ generate_hcl "_talos_cluster.tf" {
     #   ]
     # }
 
-    data "kubernetes_nodes" "this" {
-      provider = kubernetes.talos
+    # data "kubernetes_nodes" "this" {
+    #   provider = kubernetes.talos
+    #   depends_on = [
+    #     talos_machine_bootstrap.this,
+    #     talos_cluster_kubeconfig.this,
+    #   ]
+    # }
+
+    data "external" "node_cidrs" {
+      for_each = local.talos_nodes
+      program = ["bash", "-c", <<EOT
+        while [ -f "~/.kube/talosconfig" ]; do
+          sleep 2
+        done
+
+        until kubectl --kubeconfig ~/.kube/talosconfig get node "${each.key}" >/dev/null 2>&1; do
+          sleep 5
+        done
+
+        CIDRS=$(kubectl --kubeconfig ~/.kube/talosconfig get nodes ${each.key} -o json | jq -r '.spec.podCIDRs | join(",")')
+
+        echo "{\"node_cidrs\": \"$CIDRS\"}"
+      EOT
+      ]
       depends_on = [
         talos_machine_bootstrap.this,
+        talos_cluster_kubeconfig.this,
       ]
     }
 
     locals {
       node_cidrs = {
-        for node in data.kubernetes_nodes.this.nodes : node.metadata[0].name => {node_cidrs = tolist(node.spec[0].pod_cidrs)}
+        for node, cidr in local.talos_nodes : node => {node_cidrs = data.external.node_cidrs[node].result.node_cidrs}
       }
     }
 
