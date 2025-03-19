@@ -10,7 +10,7 @@ globals "project" {
 }
 
 globals "feature_toggles" {
-  enable_talos = false
+  enable_talos = true
 }
 
 globals "infrastructure" "dns" {
@@ -97,17 +97,15 @@ globals "infrastructure" "talos" {
     "10.96.0.0/12",
     "2001:db8:42:1::/112",
   ]
+  bootstrap_node = "oci-fra-0"
 }
 
 globals "infrastructure" "talos_instances" {
   oci-fra-0 = {
+    enable = true
     managed  = false
     provider = "oracle"
     hostname = "oci-fra-0.cluster.${global.infrastructure.dns.zone}"
-    # user     = "opc"
-    # port     = 2203
-    # host     = {}
-    # hostname = null
     provider_config = {
       shape_name    = "VM.Standard.A1.Flex"
       image_ocid    = "ocid1.image.oc1.eu-frankfurt-1.aaaaaaaaujyukkfkoanatqanh2qe4bxhwwg2j44fjn2folihrfvsxd5jv5bq"
@@ -137,7 +135,6 @@ globals "infrastructure" "talos_instances" {
       k8s_version = global.infrastructure.talos.k8s_version
       bootstrap = true
       machine_type = "controlplane"
-      # copy_kubeconfig = true
       node_labels = {
         "moinmoin.fyi/country" = "germany"
         "moinmoin.fyi/provider" = "oci"
@@ -149,6 +146,7 @@ globals "infrastructure" "talos_instances" {
     }
   }
   oci-fra-2 = {
+    enable = true
     managed  = false
     provider = "oracle"
     hostname = "oci-fra-2.cluster.${global.infrastructure.dns.zone}"
@@ -158,7 +156,7 @@ globals "infrastructure" "talos_instances" {
       vcpus         = 2
       memory        = 12
       boot_volume   = 50
-      block_volumes = []
+      block_volumes = [50]
     }
     tailscale_config = {
       version   = global.infrastructure.tailscale.version
