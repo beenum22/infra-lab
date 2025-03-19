@@ -447,5 +447,15 @@ generate_hcl "_oci_talos_vms.tf" {
       proxied = false
       ttl     = "60"
     }
+
+    output "talos" {
+      value = {
+        for node, info in local.talos_nodes : node => {
+          node_cidrs = split(",", module.talos_node[node].node_cidrs)
+          tailscale_ips = module.talos_node[node].node_tailscale_ips
+          hostname = cloudflare_dns_record.nodes[node].name
+        }
+      }
+    }
   }
 }
