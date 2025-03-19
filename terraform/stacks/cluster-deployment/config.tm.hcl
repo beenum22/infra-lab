@@ -9,6 +9,7 @@ globals "terraform" {
     "talos",
     "helm",
     "external",
+    "null",
   ]
 
   remote_states = {
@@ -226,8 +227,11 @@ generate_hcl "_talos_providers.tf" {
 generate_hcl "_talos_cluster.tf" {
   condition = global.feature_toggles.enable_talos == true
   content {
+    resource "talos_machine_secrets" "this" {
+      talos_version = global.infrastructure.talos.version
+    }
+
     data "helm_template" "flannel" {
-      provider = helm.talos
       name  = "flannel"
       chart = "https://github.com/flannel-io/flannel/releases/latest/download/flannel.tgz"
       namespace = "kube-system"
@@ -257,151 +261,51 @@ generate_hcl "_talos_cluster.tf" {
       }
     }
 
-    resource "talos_machine_secrets" "this" {
+    module "talos_node" {
+      for_each = local.talos_nodes
+      source = "${terramate.root.path.fs.absolute}/terraform/modules/infra/talos-node"
       talos_version = global.infrastructure.talos.version
-    }
-
-    data "talos_machine_configuration" "machine_init" {
-      for_each = local.oci_talos_nodes
-      cluster_endpoint   = "https://${global.infrastructure.talos.cluster_endpoint}:6443"
-      cluster_name       = global.infrastructure.talos.cluster_name
-      talos_version      = global.infrastructure.talos.version
-      kubernetes_version = global.infrastructure.talos.k8s_version
-      machine_secrets    = talos_machine_secrets.this.machine_secrets
-      machine_type       = each.value.talos_config.machine_type
-      config_patches     = [
-        yamlencode({
-          machine = {
-            certSANs = [
-              global.infrastructure.talos.cluster_endpoint,
-              global.infrastructure.talos_instances[each.key].hostname
-            ]
-            sysctls = {
-              "net.ipv4.ip_forward" = 1
-              "net.ipv6.conf.all.forwarding" = 1
-            }
-            kubelet = {
-              nodeIP = {
-                validSubnets = global.infrastructure.tailscale.cidrs
-              }
-            }
-            kernel = {
-              modules = [{
-                name = "zfs"
-              }]
+      k8s_version = global.infrastructure.talos.k8s_version
+      machine_secret = talos_machine_secrets.this
+      machine_name = each.key
+      machine_type = each.value.talos_config.machine_type
+      machine_domain = cloudflare_dns_record.nodes[each.key].name
+      machine_bootstrap = each.value.talos_config.bootstrap
+      machine_network_overlay = {
+        tailscale = {
+          advertise_exit_node = each.value.tailscale_config.exit_node
+          accept_routes = true
+          accept_dns = false
+          tailnet = global.infrastructure.tailscale.tailnet
+        }
+      }
+      machine_cert_sans = []
+      cluster_config = {
+        cluster = {
+          etcd = {
+            advertisedSubnets = global.infrastructure.tailscale.cidrs
+          }
+          network = {
+            podSubnets = global.infrastructure.talos.cluster_cidrs
+            serviceSubnets = global.infrastructure.talos.service_cidrs
+            cni = {
+              name = "none"
             }
           }
-        }),
-        yamlencode({
-          apiVersion = "v1alpha1"
-          kind = "ExtensionServiceConfig"
-          name = "tailscale"
-          environment = [
-            "TS_AUTHKEY=${tailscale_tailnet_key.this[each.key].key}",
-            # "TS_AUTH_ONCE=true"
+          inlineManifests = [
+            {
+              name = "flannel"
+              contents = data.helm_template.flannel.manifest
+            },
           ]
-        }),
-        yamlencode({
-          cluster = {
-            etcd = {
-              advertisedSubnets = global.infrastructure.tailscale.cidrs
-            }
-            network = {
-              podSubnets = global.infrastructure.talos.cluster_cidrs
-              serviceSubnets = global.infrastructure.talos.service_cidrs
-              cni = {
-                name = "none"
-              }
-            }
-            inlineManifests = [
-              {
-                name = "flannel"
-                contents = data.helm_template.flannel.manifest
-              },
-            ]
-          }
-        }),
-      ]
-    }
-
-    resource "talos_machine_configuration_apply" "machine_init" {
-      for_each = local.oci_talos_nodes
-      client_configuration = talos_machine_secrets.this.client_configuration
-      machine_configuration_input = data.talos_machine_configuration.machine_init[each.key].machine_configuration
-      node = global.infrastructure.talos_instances[each.key].hostname
-    }
-
-    data "tailscale_device" "this" {
-      for_each = local.oci_talos_nodes
-      name     = "${each.key}.${global.infrastructure.tailscale.tailnet}"
-      wait_for = "60s"
-      depends_on = [
-        talos_machine_configuration_apply.machine_init,
-      ]
-    }
-
-    resource "time_sleep" "wait_30_seconds" {
-      create_duration = "30s"
-    }
-
-    resource "talos_machine_bootstrap" "this" {
-      for_each = local.bootstrap_node
-      client_configuration = talos_machine_secrets.this.client_configuration
-      endpoint             = global.infrastructure.talos.cluster_endpoint
-      node                 = global.infrastructure.talos_instances[each.key].hostname
-      depends_on = [
-        time_sleep.wait_30_seconds,
-        talos_machine_configuration_apply.machine_init,
-      ]
-    }
-
-    data "talos_machine_configuration" "tailscale_config" {
-      for_each = local.oci_talos_nodes
-      cluster_endpoint   = "https://${global.infrastructure.talos.cluster_endpoint}:6443"
+        }
+      }
+      cluster_endpoint   = global.infrastructure.talos.cluster_endpoint
       cluster_name       = global.infrastructure.talos.cluster_name
-      talos_version      = global.infrastructure.talos.version
-      kubernetes_version = global.infrastructure.talos.k8s_version
-      machine_secrets    = talos_machine_secrets.this.machine_secrets
-      machine_type       = each.value.talos_config.machine_type
-      config_patches     = concat(data.talos_machine_configuration.machine_init[each.key].config_patches, [
-        # NOTE: This is a workaround to add routes for IPv4 Node CIDRs.
-        # yamlencode({
-        #   machine = {
-        #     network = {
-        #       interfaces = [{
-        #         interface = "tailscale0"
-        #         routes = [ for node, info in local.talos_nodes : {
-        #           network = local.node_cidrs[node].node_cidrs[0]
-        #           # gateway = data.tailscale_device.this[node].addresses[0]
-        #         } if node != each.key ]
-        #       }]
-        #     }
-        #   }
-        # }),
-        yamlencode({
-          apiVersion = "v1alpha1"
-          kind = "ExtensionServiceConfig"
-          name = "tailscale"
-          environment = [
-            # "TS_AUTHKEY=${tailscale_tailnet_key.this[each.key].key}",
-            "TS_ROUTES=${local.node_cidrs[each.key].node_cidrs}",
-            # "TS_EXTRA_ARGS=--reset --accept-routes=true${each.value.tailscale_config.exit_node ? " --advertise-exit-node" : ""}",
-            # "TS_EXTRA_ARGS=--reset --accept-routes=true${each.value.tailscale_config.exit_node ? " --advertise-exit-node" : ""}",
-            "TS_EXTRA_ARGS=--reset --accept-routes=true${each.value.tailscale_config.exit_node ? " --advertise-exit-node" : ""}",
-            # "TS_EXTRA_ARGS=--accept-routes",
-            # "TS_ACCEPT_DNS=true",
-            "TS_USERSPACE=false",
-            # "TS_AUTH_ONCE=true"
-          ]
-        }),
-      ])
-    }
-
-    resource "talos_machine_configuration_apply" "tailscale_config" {
-      for_each = local.oci_talos_nodes
-      client_configuration        = talos_machine_secrets.this.client_configuration
-      machine_configuration_input = data.talos_machine_configuration.tailscale_config[each.key].machine_configuration
-      node = global.infrastructure.talos_instances[each.key].hostname
+      cluster_advertised_subnets = global.infrastructure.tailscale.cidrs
+      depends_on = [
+        oci_core_instance.this,
+      ]
     }
 
     data "talos_client_configuration" "this" {
@@ -412,83 +316,17 @@ generate_hcl "_talos_cluster.tf" {
 
     resource "local_sensitive_file" "export_talosconfig" {
       content    = data.talos_client_configuration.this.talos_config
-      filename   = "${pathexpand("~")}/.talos/talosconfig"
+      filename   = pathexpand("~/.talos/talosconfig")
     }
 
     resource "talos_cluster_kubeconfig" "this" {
-      depends_on = [
-        talos_machine_bootstrap.this
-      ]
       client_configuration = talos_machine_secrets.this.client_configuration
       node                 = global.infrastructure.talos.cluster_endpoint
     }
 
     resource "local_sensitive_file" "export_kubeconfig" {
       content    = talos_cluster_kubeconfig.this.kubeconfig_raw
-      filename   = "${pathexpand("~")}/.kube/talosconfig"
-    }
-
-    # data "talos_cluster_health" "this" {
-    #   for_each = local.talos_nodes
-    #   client_configuration = talos_machine_secrets.this.client_configuration
-    #   control_plane_nodes = flatten([
-    #     for node, info in data.tailscale_device.this : info.addresses if local.talos_nodes[node].talos_config.machine_type == "controlplane"
-    #   ])
-    #   endpoints = [
-    #     global.infrastructure.talos.cluster_endpoint
-    #   ]
-    #   timeouts = {
-    #     read = "30s"
-    #   }
-    #   skip_kubernetes_checks = true
-    #   depends_on = [
-    #     talos_machine_bootstrap.this,
-    #     # helm_release.this
-    #   ]
-    # }
-
-    # data "kubernetes_nodes" "this" {
-    #   provider = kubernetes.talos
-    #   depends_on = [
-    #     talos_machine_bootstrap.this,
-    #     talos_cluster_kubeconfig.this,
-    #   ]
-    # }
-
-    data "external" "node_cidrs" {
-      for_each = local.talos_nodes
-      program = ["bash", "-c", <<EOT
-        while [ -f "~/.kube/talosconfig" ]; do
-          sleep 2
-        done
-
-        until kubectl --kubeconfig ~/.kube/talosconfig get node "${each.key}" >/dev/null 2>&1; do
-          sleep 5
-        done
-
-        CIDRS=$(kubectl --kubeconfig ~/.kube/talosconfig get nodes ${each.key} -o json | jq -r '.spec.podCIDRs | join(",")')
-
-        echo "{\"node_cidrs\": \"$CIDRS\"}"
-      EOT
-      ]
-      depends_on = [
-        talos_machine_bootstrap.this,
-        talos_cluster_kubeconfig.this,
-      ]
-    }
-
-    locals {
-      node_cidrs = {
-        for node, cidr in local.talos_nodes : node => {node_cidrs = data.external.node_cidrs[node].result.node_cidrs}
-      }
-    }
-
-    output "talos_node_cidrs" {
-      value = local.node_cidrs
-    }
-
-    output "talos_node_tailscale_ips" {
-      value = { for node, info in data.tailscale_device.this : node => info.addresses }
+      filename   = pathexpand("~/.kube/talosconfig")
     }
   }
 }
@@ -547,7 +385,6 @@ generate_hcl "_oci_talos_vms.tf" {
       }
       source_details {
         source_type = "image"
-        # source_id   = oci_core_image.this["arm64-${each.value.talos_config.version}"].id
         source_id   = data.terraform_remote_state.infra_deployment_stack_state.outputs.oci_talos_image_ids["arm64-${each.value.talos_config.version}"]
         boot_volume_size_in_gbs = each.value.provider_config.boot_volume
       }
@@ -555,6 +392,38 @@ generate_hcl "_oci_talos_vms.tf" {
         memory_in_gbs = each.value.provider_config.memory
         ocpus = each.value.provider_config.vcpus
       }
+    }
+
+    resource "oci_core_volume" "this" {
+      for_each = { for item in flatten([
+        for node, info in local.oci_talos_nodes : [
+          for index, vol in info.provider_config.block_volumes : {
+            node   = node
+            name   = "${node}-volume-${index}"
+            volume = vol
+          }
+        ]
+      ]) : "${item.name}" => item }
+      availability_domain = data.oci_identity_availability_domains.this.availability_domains.0.name
+      compartment_id      = global.infrastructure.oci.compartment_id
+      display_name        = each.value.name
+      size_in_gbs         = each.value.volume
+    }
+
+    resource "oci_core_volume_attachment" "this" {
+      for_each = { for item in flatten([
+        for node, info in local.oci_talos_nodes : [
+          for index, vol in info.provider_config.block_volumes : {
+            node   = node
+            name   = "${node}-volume-${index}"
+            volume = vol
+          }
+        ]
+      ]) : "${item.name}" => item }
+      attachment_type = "paravirtualized"
+      instance_id     = oci_core_instance.this[each.value.node].id
+      volume_id       = oci_core_volume.this[each.key].id
+      use_chap        = false
     }
 
     resource "cloudflare_dns_record" "endpoint" {
@@ -577,36 +446,6 @@ generate_hcl "_oci_talos_vms.tf" {
       type    = "A"
       proxied = false
       ttl     = "60"
-    }
-
-    # resource "cloudflare_record" "endpoint" {
-    #   for_each = local.oci_talos_nodes
-    #   zone_id = global.infrastructure.cloudflare.zone_id
-    #   name    = global.infrastructure.talos.cluster_endpoint
-    #   value   = oci_core_instance.this[each.key].public_ip
-    #   type    = "A"
-    #   proxied = false
-    #   # ttl     = "60"
-    # }
-
-    # resource "cloudflare_record" "nodes" {
-    #   for_each = local.oci_talos_nodes
-    #   zone_id = global.infrastructure.cloudflare.zone_id
-    #   name    = global.infrastructure.talos_instances[each.key].hostname
-    #   value   = oci_core_instance.this[each.key].public_ip
-    #   type    = "A"
-    #   proxied = false
-    #   # ttl     = "60"
-    # }
-
-    resource "tailscale_tailnet_key" "this" {
-      for_each      = local.oci_talos_nodes
-      reusable      = true  # TODO: Check if it can be disabled
-      ephemeral     = true
-      preauthorized = true
-      expiry        = 3600
-      description   = "Talos Cluster Node - ${each.key}"
-      tags          = ["tag:talos"]
     }
   }
 }
