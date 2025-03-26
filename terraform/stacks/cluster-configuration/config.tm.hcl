@@ -15,6 +15,29 @@ globals "terraform" {
   }
 }
 
+generate_hcl "_locals.tf" {
+  content {
+    locals {
+      nodes = [for node in data.kubernetes_nodes.this.nodes : node.metadata.0.name]
+      apps = global.cluster.apps
+    }
+  }
+}
+
+generate_hcl "_node_labels.tf" {
+  content {
+    resource "kubernetes_labels" "nodes" {
+      for_each = toset(local.nodes)
+      api_version = "v1"
+      kind        = "Node"
+      metadata {
+        name = each.key
+      }
+      labels = global.infrastructure.talos_instances[each.key].talos_config.node_labels
+    }
+  }
+}
+
 generate_hcl "_cluster_info.tf" {
   content {
     data "kubernetes_nodes" "this" {}
@@ -25,7 +48,6 @@ generate_hcl "_cluster_info.tf" {
         "Mi" = 1024,
         "Gi" = 1024 * 1024
       }
-      nodes = [for node in data.kubernetes_nodes.this.nodes : node.metadata.0.name]
       owners = distinct([for node in data.kubernetes_nodes.this.nodes : node.metadata.0.labels["moinmoin.fyi/owner"] if can(node.metadata.0.labels["moinmoin.fyi/owner"])])
       owner_namespaces = {
         for owner in local.owners : owner => {
@@ -54,7 +76,7 @@ generate_hcl "_cluster_info.tf" {
   }
 }
 
-generate_hcl "_k3s_users.tf" {
+generate_hcl "_users.tf" {
   content {
     resource "kubernetes_namespace" "users" {
       for_each = local.owner_namespaces
@@ -170,7 +192,7 @@ generate_hcl "_k3s_users.tf" {
         for user, info in local.owner_namespaces: user => yamlencode({
           apiVersion  = "v1"
           kind        = "Config"
-          clusters    = yamldecode(data.terraform_remote_state.cluster_deployment_stack_state.outputs.kubeconfig)["clusters"]
+          clusters    = yamldecode(data.terraform_remote_state.cluster_deployment_stack_state.outputs.talos_kubeconfig)["clusters"]
           current-context = user
           contexts    = [{
             name = user
