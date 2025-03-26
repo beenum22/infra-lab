@@ -39,8 +39,7 @@ variable "issuer" {
 variable "domains" {
   type = list(string)
 }
-#
-# variable "publish" {
-#   type = bool
-#   default = false
-# }
+
+variable "nodes" {
+  type = list(string)
+}

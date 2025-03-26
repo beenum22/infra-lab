@@ -262,10 +262,8 @@ resource "kubernetes_daemonset" "this" {
   }
 }
 
-data "kubernetes_nodes" "this" {}
-
 resource "kubernetes_service" "this" {
-  for_each = toset([for node in data.kubernetes_nodes.this.nodes : node.metadata.0.name])
+  for_each = toset(var.nodes)
   metadata {
     name = "${var.name}-${each.value}"
     namespace = var.namespace
@@ -310,10 +308,10 @@ resource "kubernetes_ingress_v1" "this" {
     ingress_class_name = var.ingress_class
     tls {
       secret_name = "${var.name}-tls"
-      hosts = flatten([ for node in [for node in data.kubernetes_nodes.this.nodes : node.metadata.0.name] : [for domain in var.domains : "${node}.${domain}"] ])
+      hosts = flatten([ for node in var.nodes : [for domain in var.domains : "${node}.${domain}"] ])
     }
     dynamic "rule" {
-      for_each = toset(flatten([ for node in [for node in data.kubernetes_nodes.this.nodes : node.metadata.0.name] : [for domain in var.domains : "${node}.${domain}"] ]))
+      for_each = toset(flatten([ for node in var.nodes : [for domain in var.domains : "${node}.${domain}"] ]))
       content {
         host = rule.value
         http {
