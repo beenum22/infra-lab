@@ -3,6 +3,9 @@ generate_hcl "_storage.tf" {
     resource "kubernetes_namespace" "storage" {
       metadata {
         name = "storage"
+        labels = {
+          "pod-security.kubernetes.io/enforce" = "privileged"
+        }
       }
     }
 
