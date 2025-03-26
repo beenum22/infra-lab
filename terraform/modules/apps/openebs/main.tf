@@ -97,6 +97,10 @@ resource "helm_release" "this" {
 #    name  = "zfs-localpv.zfsNode.allowedTopologyKeys"
 #    value = "openebs.io/localpv-zfs"
 #  }
+ set {
+   name  = "zfs-localpv.zfsNode.encrKeysDir"
+   value = "/var/zfs"
+ }
 }
 
 resource "kubernetes_storage_class" "zfs_loopback" {
