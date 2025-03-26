@@ -53,6 +53,7 @@ data "talos_machine_configuration" "machine_init" {
       name = "tailscale"
       environment = [
         "TS_AUTHKEY=${tailscale_tailnet_key.this.key}",
+        "TS_EXTRA_ARGS=--reset",
         # NOTE: mem state currently doesn't work due to readonly Talos file system.
         # "TS_TAILSCALED_EXTRA_ARGS=--state=mem"
         # "TS_AUTH_ONCE=true"

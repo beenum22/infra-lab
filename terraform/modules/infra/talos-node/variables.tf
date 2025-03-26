@@ -161,6 +161,7 @@ variable "machine_kernel_modules" {
 variable "cluster_config" {
   type = object({
     cluster = object({
+      allowSchedulingOnControlPlanes = bool
       etcd = object({
         advertisedSubnets = list(string)
       })
