@@ -39,19 +39,26 @@ generate_hcl "_dns.tf" {
 #      ]
 #    }
 
+    data "kubernetes_service" "cluster_dns" {
+      metadata {
+        name = "kube-dns"
+        namespace = "kube-system"
+      }
+    }
+
     module "blocky" {
       source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/blocky"
       namespace = kubernetes_namespace.dns.metadata.0.name
       domains = [
-        "blocky.moinmoin.fyi"
+        "blocky.cluster.moinmoin.fyi"
       ]
       ingress_class = global.project.ingress_class
       ingress_hostname = global.project.ingress_hostname
       issuer = module.cert_manager.issuer
       expose_on_tailnet = true
-      tailnet_hostname = "blocky"
+      tailnet_hostname = "talos-blocky"
       conditional_mappings = {
-        "cluster.local" = "10.43.0.10"
+        "cluster.local" = data.kubernetes_service.cluster_dns.spec.0.cluster_ip
       }
       custom_dns_rewrites = {}
       custom_dns_mappings = {
@@ -63,7 +70,9 @@ generate_hcl "_dns.tf" {
     }
 
     resource "cloudflare_record" "private_a" {
-      for_each = toset(let.private_hostnames)
+      for_each = toset(flatten([
+        for app, info in local.apps : info.hostnames if info.public == false && info.enable == true
+      ]))
       zone_id = global.infrastructure.cloudflare.zone_id
       name    = each.key
       value   = module.nginx.ipv4_endpoint
@@ -72,7 +81,9 @@ generate_hcl "_dns.tf" {
     }
 
     resource "cloudflare_record" "private_aaaa" {
-      for_each = toset(let.private_hostnames)
+      for_each = toset(flatten([
+        for app, info in local.apps : info.hostnames if info.public == false && info.enable == true
+      ]))
       zone_id = global.infrastructure.cloudflare.zone_id
       name    = each.key
       value   = module.nginx.ipv6_endpoint
@@ -81,7 +92,9 @@ generate_hcl "_dns.tf" {
     }
 
     resource "cloudflare_record" "public_cname_records" {
-      for_each = toset(let.public_hostnames)
+      for_each = toset(flatten([
+        for app, info in local.apps : info.hostnames if info.public == true && info.enable == true
+      ]))
       zone_id = global.infrastructure.cloudflare.zone_id
       name    = each.key
       value   = module.cloudflared.tunnel_hostname
