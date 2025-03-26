@@ -23,12 +23,12 @@ terraform {
 }
 
 resource "b2_bucket" "backup_storage" {
-  bucket_name = "k3s-${var.name}-backup-storage"
+  bucket_name = var.backup_storage_bucket
   bucket_type = "allPrivate"
 }
 
 resource "b2_bucket" "volume_snapshots" {
-  bucket_name = "k3s-${var.name}-volume-snapshots"
+  bucket_name = var.volume_snapshot_bucket
   bucket_type = "allPrivate"
 }
 
