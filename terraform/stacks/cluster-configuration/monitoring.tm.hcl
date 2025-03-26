@@ -3,6 +3,9 @@ generate_hcl "_monitoring.tf" {
     resource "kubernetes_namespace" "monitoring" {
       metadata {
         name = "monitoring"
+        labels = {
+          "pod-security.kubernetes.io/enforce" = "privileged"
+        }
       }
     }
 
@@ -24,11 +27,12 @@ generate_hcl "_monitoring.tf" {
 
     module "dashdot" {
       source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/dashdot"
+      count = global.cluster.apps.dashdot.enable ? 1 : 0
+      namespace = kubernetes_namespace.monitoring.metadata.0.name
       ingress_hostname = global.project.ingress_hostname
       issuer = global.project.cert_manager_issuer
-      domains = [
-        "dashdot.moinmoin.fyi"
-      ]
+      domains = global.cluster.apps.dashdot.hostnames
+      nodes = [for node in data.kubernetes_nodes.this.nodes : node.metadata.0.name]
       depends_on = [
         kubernetes_namespace.monitoring
       ]
