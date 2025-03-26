@@ -2,6 +2,7 @@ terraform {
   required_providers {
     cloudflare = {
       source = "cloudflare/cloudflare"
+      version = "4.29.0"
     }
   }
 }
@@ -23,7 +24,7 @@ resource "random_password" "this" {
 
 resource "cloudflare_tunnel" "this" {
   account_id = var.account_id
-  name       = "${var.name}-k3s"
+  name       = var.name
   secret     = base64encode(random_password.this.result)
 }
 
