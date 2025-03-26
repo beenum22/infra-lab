@@ -1,10 +1,9 @@
 stack {
-  name        = "cluster-configuration"
+  name        = "talos-cluster-configuration"
   description = "Terramate stack for deployment of foundational Kubernetes resources"
-  id          = "b97be7e9-18c0-45bf-86b3-44ffc5bcf9a8"
+  id          = "2816199f-af4e-4541-8c91-763f7c6d4ea7"
   after = [
-    "tag:vms:infra-deployment",
-    "tag:infra-configuration",
+    "tag:infra-deployment",
     "tag:cluster-deployment"
   ]
   tags = [
