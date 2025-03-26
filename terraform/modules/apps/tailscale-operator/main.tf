@@ -12,6 +12,10 @@ resource "helm_release" "this" {
     name  = "oauth.clientSecret"
     value = var.client_secret
   }
+  set {
+    name = "operatorConfig.hostname"
+    value = var.name
+  }
   dynamic "set" {
     for_each = var.extra_values
     content {
