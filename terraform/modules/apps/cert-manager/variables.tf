@@ -25,7 +25,7 @@ variable "chart_url" {
 
 variable "chart_version" {
   type = string
-  default = "1.14.4"
+  default = "1.17.1"
 }
 
 variable "domain_email" {
