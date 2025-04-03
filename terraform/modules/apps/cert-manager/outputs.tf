@@ -1,5 +1,5 @@
 output "name" {
-  value = helm_release.this.name
+  value = helm_release.cert_manager.name
 }
 
 output "issuer" {
