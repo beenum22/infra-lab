@@ -57,3 +57,23 @@ variable "page_config" {
     theme = "colorful"
   }
 }
+
+variable "service_providers" {
+  type = list(object({
+    title = string
+    description = string
+    icon = string
+    url = string
+  }))
+}
+
+variable "apps" {
+  type = list(object({
+    title = string
+    description = string
+    section = string
+    icon = string
+    url = string
+    statusCheck = bool
+  }))
+}
