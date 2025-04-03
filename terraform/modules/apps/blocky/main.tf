@@ -189,7 +189,7 @@ resource "kubernetes_deployment" "this" {
   }
 }
 
-resource "kubernetes_service" "ts_ipv6" {
+resource "kubernetes_service" "ts" {
   count = var.expose_on_tailnet ? 1 : 0
   metadata {
     name = var.name
@@ -204,49 +204,11 @@ resource "kubernetes_service" "ts_ipv6" {
   spec {
     type = "LoadBalancer"
     load_balancer_class = "tailscale"
-    ip_families = ["IPv6"]
-    ip_family_policy = "SingleStack"
-    selector = {
-      "app.kubernetes.io/name" = var.name
-    }
-    port {
-      name = "http"
-      port = 4000
-      target_port = 4000
-      protocol = "TCP"
-    }
-    port {
-      name = "dns-tcp"
-      port = 53
-      target_port = 53
-      protocol = "TCP"
-    }
-    port {
-      name = "dns-udp"
-      port = 53
-      target_port = 53
-      protocol = "UDP"
-    }
-  }
-}
-
-resource "kubernetes_service" "ts_ipv4" {
-  count = var.expose_on_tailnet ? 1 : 0
-  metadata {
-    name = "${var.name}-v4"
-    namespace = var.namespace
-    labels = {
-      "app.kubernetes.io/name" = var.name
-    }
-    annotations = {
-      "tailscale.com/hostname" = "${var.tailnet_hostname}-v4"
-    }
-  }
-  spec {
-    type = "LoadBalancer"
-    load_balancer_class = "tailscale"
-    ip_families = ["IPv4"]
-    ip_family_policy = "SingleStack"
+    ip_families = [
+      "IPv6",
+      "IPv4"
+    ]
+    ip_family_policy = "PreferDualStack"
     selector = {
       "app.kubernetes.io/name" = var.name
     }
