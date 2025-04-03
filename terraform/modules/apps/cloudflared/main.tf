@@ -1,3 +1,10 @@
+# Warnings:
+# - Description: Cloudflare free plan doesn't allow multilevel domains for tunnel public hostnames.
+#   Reference: https://developers.cloudflare.com/ssl/troubleshooting/version-cipher-mismatch/#multi-level-subdomains
+# - Description: Latest cloudflare provider fails to delete the tunnel. Keep track of it. 
+#   Reference: https://github.com/cloudflare/terraform-provider-cloudflare/issues/5255
+# TODOs:
+# - Latest cloudflare provider fails to delete the tunnel. Keep track of it.
 terraform {
   required_providers {
     cloudflare = {
@@ -129,6 +136,7 @@ resource "kubernetes_deployment" "this" {
             "--protocol=http2",
             "--config",
             "/etc/cloudflared/config/config.yaml",
+            "--loglevel=info",
             "run"
           ]
           liveness_probe {

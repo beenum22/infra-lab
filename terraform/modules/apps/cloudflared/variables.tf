@@ -25,7 +25,7 @@ variable "image" {
 
 variable "tag" {
   type = string
-  default = "2025.2.1"
+  default = "2025.4.0"
 }
 
 variable "ingress_hostname" {
