@@ -96,6 +96,7 @@ generate_hcl "_talos_cluster.tf" {
       cluster_advertised_subnets = global.infrastructure.tailscale.cidrs
       depends_on = [
         oci_core_instance.this,
+        cloudflare_dns_record.nodes,
       ]
     }
 
