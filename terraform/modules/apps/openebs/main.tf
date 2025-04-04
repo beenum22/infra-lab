@@ -6,7 +6,7 @@ data "kubernetes_nodes" "this" {
   }
 }
 
-resource "helm_release" "this" {
+resource "helm_release" "openebs" {
   name       = var.name
   repository = var.chart_url
   chart      = var.chart_name
@@ -126,4 +126,16 @@ resource "kubernetes_storage_class" "zfs_loopback" {
 #       values = [for node in data.kubernetes_nodes.this.nodes : node.metadata.0.name]
 #     }
 #   }
+}
+
+# NOTE: Temporary workaround for kubernetes_manifest issue where the it fails because the CRD doesn't exist yet.
+resource "helm_release" "snapshot" {
+  name       = "${var.name}-snapshot"
+  depends_on = [ helm_release.openebs ]
+  chart = "${path.module}/snapshot"
+  namespace  = var.namespace
+  set {
+    name = "name"
+    value = "${var.name}-snapshot"
+  }
 }
