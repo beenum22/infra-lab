@@ -69,45 +69,18 @@ generate_hcl "_dns.tf" {
       ]
     }
 
-    resource "cloudflare_record" "private_a" {
-      for_each = toset(flatten([
-        for app, info in local.apps : info.hostnames if info.public == false && info.enable == true
-      ]))
-      zone_id = global.infrastructure.cloudflare.zone_id
-      name    = each.key
-      value   = module.nginx.ipv4_endpoint
-      type    = "A"
-      proxied = false
-    }
-
-    resource "cloudflare_record" "private_aaaa" {
-      for_each = toset(flatten([
-        for app, info in local.apps : info.hostnames if info.public == false && info.enable == true
-      ]))
-      zone_id = global.infrastructure.cloudflare.zone_id
-      name    = each.key
-      value   = module.nginx.ipv6_endpoint
-      type    = "AAAA"
-      proxied = false
-    }
-
-    resource "cloudflare_record" "public_cname_records" {
-      for_each = toset(flatten([
-        for app, info in local.apps : info.hostnames if info.public == true && info.enable == true
-      ]))
-      zone_id = global.infrastructure.cloudflare.zone_id
-      name    = each.key
-      value   = module.cloudflared.tunnel_hostname
-      type    = "CNAME"
-      proxied = true
+    data "tailscale_device" "blocky_node" {
+      # name         = module.blocky.endpoint
+      hostname     = module.blocky.tailscale_hostname
+      wait_for = "60s"
+      depends_on = [
+        module.blocky
+      ]
     }
 
     resource "tailscale_dns_nameservers" "this" {
-      nameservers = module.blocky.endpoints
-    }
-
-    output "dns_servers" {
-      value = module.blocky.endpoints
+      # nameservers = module.blocky.endpoints
+      nameservers = data.tailscale_device.blocky_node.addresses
     }
   }
 }
