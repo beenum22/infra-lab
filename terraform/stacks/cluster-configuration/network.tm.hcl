@@ -23,24 +23,17 @@ generate_hcl "_network.tf" {
       namespace = kubernetes_namespace.network.metadata.0.name
       domain = "ingress.cluster.${global.infrastructure.dns.zone}"
       expose_on_tailnet = true
-      tailnet_hostname = "ingress"
+      tailnet_hostname = "talos-ingress"
       depends_on = [kubernetes_namespace.network]
     }
 
-    resource "kubernetes_manifest" "tailscale_subnet_router" {
-      manifest = {
-        "apiVersion" = "tailscale.com/v1alpha1"
-        "kind"       = "Connector"
-        "metadata" = {
-          "name"      = "tailscale-router"
-        }
-        "spec" = {
-          "hostname" = "talos-subnet-router"
-          "subnetRouter" = {
-            "advertiseRoutes" = global.infrastructure.talos.service_cidrs
-          }
-        }
-      }
+    module "tailscale_router" {
+      depends_on = [module.tailscale_operator]
+      source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/tailscale-router"
+      name = "talos-ts-router"
+      hostname = "talos-router"
+      namespace = kubernetes_namespace.network.metadata.0.name
+      routes = global.infrastructure.talos.service_cidrs
     }
 
     # NOTE:
