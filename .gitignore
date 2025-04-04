@@ -2,4 +2,4 @@
 .terraform/
 .terraform.lock.hcl
 _*.tf
-terraform/stacks/secrets.tm.hcl
+secrets.tm.hcl
