@@ -19,6 +19,11 @@ globals "terraform" "default_providers" {
       private_key = global.infrastructure.oci.private_key
     }
   }
+  null = {
+    source  = "hashicorp/null"
+    version = "3.2.3"
+    config  = {}
+  }
   template = {
     source  = "hashicorp/template"
     version = "2.2.0"
@@ -31,7 +36,7 @@ globals "terraform" "default_providers" {
   }
   tailscale = {
     source  = "tailscale/tailscale"
-    version = "0.13.13"
+    version = "0.18.0"
     config = {
       api_key = global.secrets.tailscale.apikey
       tailnet = global.infrastructure.tailscale.org
@@ -93,16 +98,36 @@ globals "terraform" "default_providers" {
   }
   cloudflare = {
     source = "cloudflare/cloudflare"
-    version = "5.1.0"
-    # version = "4.29.0"
+    # version = "5.1.0"
+    version = ">= 4.29.0, <= 5.2.0"
     config = {
       api_token = global.secrets.cloudflare.api_token
     }
   }
+  random = {
+    source = "hashicorp/random"
+    version = "3.7.1"
+    config = {}
+  }
+  # Experimental: Testing Talos as K3s alternative
+  external = {
+    source = "hashicorp/external"
+    version = "2.3.4"
+    config = {}
+  }
+  # Experimental: Testing Talos as K3s alternative
   talos = {
     source = "siderolabs/talos"
     version = "0.7.0-alpha.0"
     config = {}
+  }
+  # Experimental: Testing as Tailscale alternative for cluster network
+  zerotier = {
+    source = "zerotier/zerotier"
+    version = "1.6.0"
+    config = {
+      zerotier_central_token = global.secrets.zerotier.api_token
+    }
   }
 }
 
