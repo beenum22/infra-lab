@@ -60,48 +60,7 @@ resource "helm_release" "chart" {
   }
 }
 
-resource "kubernetes_service" "ipv4" {
-  count = var.expose_on_tailnet ? 1 : 0
-  metadata {
-    name = "${var.name}-controller-v4"
-    namespace = var.namespace
-    labels = {
-      "app.kubernetes.io/name" = var.name
-      "app.kubernetes.io/component" = "controller"
-      "app.kubernetes.io/part-of" = var.name
-      "app.kubernetes.io/instance" = var.name
-    }
-    annotations = {
-      "external-dns.alpha.kubernetes.io/internal-hostname" = var.domain
-      "tailscale.com/hostname" = "${var.tailnet_hostname}-v4"
-    }
-  }
-  spec {
-    type = "LoadBalancer"
-    load_balancer_class = "tailscale"
-    ip_families = ["IPv4"]
-    ip_family_policy = "SingleStack"
-    selector = {
-      "app.kubernetes.io/name" = var.name
-      "app.kubernetes.io/component" = "controller"
-      "app.kubernetes.io/instance" = var.name
-    }
-    port {
-      name = "http"
-      port = 80
-      target_port = "http"
-      protocol = "TCP"
-    }
-    port {
-      name = "https"
-      port = 443
-      target_port = "https"
-      protocol = "TCP"
-    }
-  }
-}
-
-resource "kubernetes_service" "ipv6" {
+resource "kubernetes_service" "this" {
   count = var.expose_on_tailnet ? 1 : 0
   metadata {
     name = "${var.name}-controller"
@@ -120,8 +79,8 @@ resource "kubernetes_service" "ipv6" {
   spec {
     type = "LoadBalancer"
     load_balancer_class = "tailscale"
-    ip_families = ["IPv6"]
-    ip_family_policy = "SingleStack"
+    ip_families = ["IPv4", "IPv6"]
+    ip_family_policy = "PreferDualStack"
     selector = {
       "app.kubernetes.io/name" = var.name
       "app.kubernetes.io/component" = "controller"
