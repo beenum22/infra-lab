@@ -116,7 +116,7 @@ globals "infrastructure" "talos_instances" {
     }
     tailscale_config = {
       version   = global.infrastructure.tailscale.version
-      exit_node = true
+      exit_node = false
       mtu       = "1280"
       routes    = ""
     }
@@ -145,6 +145,49 @@ globals "infrastructure" "talos_instances" {
       }
     }
   }
+  oci-fra-1 = {
+    enable   = true
+    managed  = false
+    provider = "oracle"
+    hostname = "oci-fra-1.cluster.${global.infrastructure.dns.zone}"
+    provider_config = {
+      shape_name    = "VM.Standard.A1.Flex"
+      image_ocid    = "ocid1.image.oc1.eu-frankfurt-1.aaaaaaaaujyukkfkoanatqanh2qe4bxhwwg2j44fjn2folihrfvsxd5jv5bq"
+      vcpus         = 1
+      memory        = 6
+      boot_volume   = 50
+      block_volumes = []
+    }
+    tailscale_config = {
+      version   = global.infrastructure.tailscale.version
+      exit_node = true
+      mtu       = "1280"
+    }
+    zfs_config = {
+      enable = false
+      loopback = {
+        loop0 = {
+          path = "/mnt/zfs-loop0.img"
+          size = "20G"
+        }
+      }
+      devices = {}
+    }
+    talos_config = {
+      version = global.infrastructure.talos.version
+      k8s_version = global.infrastructure.talos.k8s_version
+      bootstrap = false
+      machine_type = "controlplane"
+      node_labels = {
+        "moinmoin.fyi/country" = "germany"
+        "moinmoin.fyi/provider" = "oci"
+        "moinmoin.fyi/owner" = "munna"
+        "moinmoin.fyi/type" = "vm"
+        "openebs.io/localpv-zfs" = false
+        "openebs.io/nodeid" = "oci-fra-1"
+      }
+    }
+  }
   oci-fra-2 = {
     enable = true
     managed  = false
@@ -160,7 +203,7 @@ globals "infrastructure" "talos_instances" {
     }
     tailscale_config = {
       version   = global.infrastructure.tailscale.version
-      exit_node = false
+      exit_node = true
       mtu       = "1280"
       routes    = ""
     }
@@ -185,7 +228,7 @@ globals "infrastructure" "talos_instances" {
         "moinmoin.fyi/provider" = "oci"
         "moinmoin.fyi/type" = "vm"
         "moinmoin.fyi/owner" = "munna"
-        "openebs.io/localpv-zfs" = false
+        "openebs.io/localpv-zfs" = true
         "openebs.io/nodeid" = "oci-fra-0"
       }
     }
@@ -240,52 +283,52 @@ globals "infrastructure" "instances" {
   #     }
   #   }
   # }
-  oci-fra-1 = {
-    managed  = false
-    provider = "oracle"
-    user     = "opc"
-    port     = 2203
-    host     = {}
-    hostname = null
-    provider_config = {
-      shape_name    = "VM.Standard.A1.Flex"
-      image_ocid    = "ocid1.image.oc1.eu-frankfurt-1.aaaaaaaaujyukkfkoanatqanh2qe4bxhwwg2j44fjn2folihrfvsxd5jv5bq"
-      vcpus         = 1
-      memory        = 6
-      boot_volume   = 50
-      block_volumes = []
-    }
-    tailscale_config = {
-      version   = global.infrastructure.tailscale.version
-      exit_node = true
-      mtu       = "1280"
-    }
-    zfs_config = {
-      enable = false
-      loopback = {
-        loop0 = {
-          path = "/mnt/zfs-loop0.img"
-          size = "20G"
-        }
-      }
-      devices = {}
-    }
-    k3s_config = {
-      version = global.infrastructure.k3s.version
-      init = false
-      root_node = false
-      role = "server"
-      copy_kubeconfig = false
-      node_labels = {
-        "moinmoin.fyi/country" = "germany"
-        "moinmoin.fyi/provider" = "oci"
-        "moinmoin.fyi/owner" = "munna"
-        "moinmoin.fyi/type" = "vm"
-        "openebs.io/localpv-zfs" = false
-        "openebs.io/nodeid" = "oci-fra-1"
-      }
-    }
-  }
+  # oci-fra-1 = {
+  #   managed  = false
+  #   provider = "oracle"
+  #   user     = "opc"
+  #   port     = 2203
+  #   host     = {}
+  #   hostname = null
+  #   provider_config = {
+  #     shape_name    = "VM.Standard.A1.Flex"
+  #     image_ocid    = "ocid1.image.oc1.eu-frankfurt-1.aaaaaaaaujyukkfkoanatqanh2qe4bxhwwg2j44fjn2folihrfvsxd5jv5bq"
+  #     vcpus         = 1
+  #     memory        = 6
+  #     boot_volume   = 50
+  #     block_volumes = []
+  #   }
+  #   tailscale_config = {
+  #     version   = global.infrastructure.tailscale.version
+  #     exit_node = true
+  #     mtu       = "1280"
+  #   }
+  #   zfs_config = {
+  #     enable = false
+  #     loopback = {
+  #       loop0 = {
+  #         path = "/mnt/zfs-loop0.img"
+  #         size = "20G"
+  #       }
+  #     }
+  #     devices = {}
+  #   }
+  #   k3s_config = {
+  #     version = global.infrastructure.k3s.version
+  #     init = false
+  #     root_node = false
+  #     role = "server"
+  #     copy_kubeconfig = false
+  #     node_labels = {
+  #       "moinmoin.fyi/country" = "germany"
+  #       "moinmoin.fyi/provider" = "oci"
+  #       "moinmoin.fyi/owner" = "munna"
+  #       "moinmoin.fyi/type" = "vm"
+  #       "openebs.io/localpv-zfs" = false
+  #       "openebs.io/nodeid" = "oci-fra-1"
+  #     }
+  #   }
+  # }
   # oci-fra-2 = {
   #   managed  = false
   #   provider = "oracle"
@@ -516,11 +559,11 @@ globals "cluster" {
   }
 }
 
-globals "apps" {
+globals "cluster" "apps" {
   filebrowser = {
     enable = false
     backup = true
-    hostnames = ["filebrowser.moinmoin.fyi"]
+    hostnames = ["filebrowser.cluster.moinmoin.fyi"]
     public = false
   }
   homebox = {
@@ -532,7 +575,7 @@ globals "apps" {
   dashy = {
     enable = true
     backup = false
-    hostnames = ["dashy.moinmoin.fyi"]
+    hostnames = ["dashy.cluster.moinmoin.fyi"]
     public = false
   }
   jellyfin = {
@@ -541,18 +584,30 @@ globals "apps" {
     hostnames = ["jellyfin.moinmoin.fyi"]
     public = false
   }
+  # WARNING: Cloudflare tunneling doesn't work for multilevel domains and also faced intermittent 301 redirect issues. Disabling public access.
+  # TODO: Check if this issue can be fixed.
   http_echo = {
     enable = true
     backup = false
-    hostnames = ["echo.moinmoin.fyi"]
-    public = true
+    hostnames = ["echo.cluster.moinmoin.fyi"]
+    public = false
   }
+  dashdot = {
+    enable = true
+    backup = false
+    hostnames = [
+      "dashdot.cluster.moinmoin.fyi"
+    ]
+    public = false
+  }
+}
 
-  backups = [
-    "filebrowser",
-    "homebox",
-    "nfs-share"
-  ]
+globals "apps" {
+  # backups = [
+  #   "filebrowser",
+  #   "homebox",
+  #   "nfs-share"
+  # ]
 
   public_hostnames = [
     "echo.moinmoin.fyi"
