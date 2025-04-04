@@ -314,13 +314,12 @@ globals "cluster" "apps" {
     hostnames = ["jellyfin.moinmoin.fyi"]
     public = false
   }
-  # WARNING: Cloudflare tunneling doesn't work for multilevel domains and also faced intermittent 301 redirect issues. Disabling public access.
-  # TODO: Check if this issue can be fixed.
+  # WARNING: Cloudflare tunneling doesn't work for multilevel domains in the Free Plan.
   http_echo = {
     enable = true
     backup = false
-    hostnames = ["echo.cluster.moinmoin.fyi"]
-    public = false
+    hostnames = ["echo.moinmoin.fyi", "echo.cluster.moinmoin.fyi"]
+    public = true
   }
   dashdot = {
     enable = true

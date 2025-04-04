@@ -33,3 +33,6 @@ Worklog:
 
 19th March:
     * Add and refactor Talos Node Terraform module. I initially tried with Talos Cluster terraform module but it caused dependency issues with the OCI VM resources.
+
+4th April:
+    * Cloudflare tunnel intermittent 301 HTTP Error Code was resolved by setting Cloudflare SSL config from Flexible to Full to avoid redirects.
