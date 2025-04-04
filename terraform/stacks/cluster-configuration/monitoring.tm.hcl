@@ -38,6 +38,18 @@ generate_hcl "_monitoring.tf" {
       ]
     }
 
+    resource "cloudflare_record" "dashdot_cname" {
+      for_each = toset(flatten([
+        for node in [for node in data.kubernetes_nodes.this.nodes : node.metadata.0.name] : node if global.cluster.apps.dashdot.enable == true && global.cluster.apps.dashdot.public == false
+      ]))
+      zone_id = global.infrastructure.cloudflare.zone_id
+      name    = "${each.key}.${global.cluster.apps.dashdot.hostnames[0]}"
+      value   = module.nginx.endpoint
+      type    = "CNAME"
+      proxied = false
+      ttl     = "60"
+    }
+
 #     module "prometheus_stack" {
 #       source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/prometheus-stack"
 #       namespace = kubernetes_namespace.monitoring.metadata[0].name
