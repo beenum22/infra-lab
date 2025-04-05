@@ -361,6 +361,27 @@ generate_hcl "_apps.tf" {
       ttl     = local.apps.http_echo.public ? "1" : "60"
     }
 
+    module "dex" {
+      count = global.cluster.apps.dex.enable ? 1 : 0
+      source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/dex"
+      namespace = kubernetes_namespace.apps.metadata[0].name
+      # issuer = global.project.cert_manager_issuer
+      domains = global.cluster.apps.dex.hostnames
+      # ingress_class = "nginx"
+      # ingress_hostname = global.project.ingress_hostname
+      depends_on = [kubernetes_namespace.apps]
+    }
+
+    resource "cloudflare_dns_record" "dex" {
+      for_each = toset(local.apps.dex.enable ? local.apps.dex.hostnames : [])
+      zone_id  = global.infrastructure.cloudflare.zone_id
+      name     = each.value
+      content  = local.apps.dex.public ? data.terraform_remote_state.cluster_configuration_stack_state.outputs.ingress_endpoints.public : data.terraform_remote_state.cluster_configuration_stack_state.outputs.ingress_endpoints.private
+      type     = "CNAME"
+      proxied  = local.apps.dex.public ? true : false
+      ttl      = local.apps.dex.public ? "1" : "60"
+    }
+
     # TODO: Uncomment and review whenever you have time.
     # resource "kubernetes_manifest" "backups" {
     #   for_each = toset(global.apps.backups)

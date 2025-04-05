@@ -3,3 +3,4 @@
 .terraform.lock.hcl
 _*.tf
 secrets.tm.hcl
+config.tm.hcl
