@@ -1,3 +1,4 @@
+# NOTE: If needed, find the Hetnzer VM setup code in c6bb21d1daef7f005d3e15b9b695b5a6172a8278
 globals "terraform" {
   providers = [
     "tailscale",
