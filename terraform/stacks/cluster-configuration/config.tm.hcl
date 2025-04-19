@@ -43,27 +43,27 @@ generate_hcl "_cluster_info.tf" {
     data "kubernetes_nodes" "this" {}
 
     locals {
-      convert_to_ki_factor = {
-        "Ki" = 1,
-        "Mi" = 1024,
-        "Gi" = 1024 * 1024
+      convert_to_gi_factor = {
+        "Ki" = 1 / (1024 * 1024),
+        "Mi" = 1 / 1024,
+        "Gi" = 1
       }
       owners = distinct([for node in data.kubernetes_nodes.this.nodes : node.metadata.0.labels["moinmoin.fyi/owner"] if can(node.metadata.0.labels["moinmoin.fyi/owner"])])
       owner_namespaces = {
         for owner in local.owners : owner => {
           namespace = owner
           nodes = [
-            for node in data.kubernetes_nodes.this.nodes : node.metadata.0.name if can(node.metadata.0.labels["moinmoin.fyi/owner"]) == owner
+            for node in data.kubernetes_nodes.this.nodes : node.metadata.0.name if try(node.metadata.0.labels["moinmoin.fyi/owner"], "unknown") == owner
           ]
           cpus = try(sum([
-            for node in data.kubernetes_nodes.this.nodes : tonumber(node.status.0.capacity.cpu) if can(node.metadata.0.labels["moinmoin.fyi/owner"]) == owner
+            for node in data.kubernetes_nodes.this.nodes : tonumber(node.status.0.capacity.cpu) if try(node.metadata.0.labels["moinmoin.fyi/owner"], "unknown") == owner
           ]), 0)
-          memory = "${try(sum([
-            for node in data.kubernetes_nodes.this.nodes : tonumber(regex("\\d+", node.status.0.capacity.memory)) * local.convert_to_ki_factor[regex("[A-Za-z]+", node.status.0.capacity.memory)] if can(node.metadata.0.labels["moinmoin.fyi/owner"]) == owner
-          ]), 0)}Ki"
-          storage = "${try(sum([
-            for node in data.kubernetes_nodes.this.nodes : tonumber(regex("\\d+", node.status.0.capacity.ephemeral-storage)) * local.convert_to_ki_factor[regex("[A-Za-z]+", node.status.0.capacity.ephemeral-storage)] if can(node.metadata.0.labels["moinmoin.fyi/owner"]) == owner
-          ]), 0)}Ki"
+          memory = format("%.2fGi", "${try(sum([
+            for node in data.kubernetes_nodes.this.nodes : tonumber(regex("\\d+", node.status.0.capacity.memory)) * local.convert_to_gi_factor[regex("[A-Za-z]+", node.status.0.capacity.memory)] if try(node.metadata.0.labels["moinmoin.fyi/owner"], "unknown") == owner
+          ]), 0)}")
+          storage = format("%.2fGi", "${try(sum([
+            for node in data.kubernetes_nodes.this.nodes : tonumber(regex("\\d+", node.status.0.capacity.ephemeral-storage)) * local.convert_to_gi_factor[regex("[A-Za-z]+", node.status.0.capacity.ephemeral-storage)] if try(node.metadata.0.labels["moinmoin.fyi/owner"], "unknown") == owner
+          ]), 0)}")
         }
       }
     }
@@ -197,7 +197,7 @@ generate_hcl "_users.tf" {
           contexts    = [{
             name = user
             context = {
-              cluster = "default"
+              cluster = yamldecode(data.terraform_remote_state.cluster_deployment_stack_state.outputs.talos_kubeconfig)["clusters"][0].name
               user = user
               namespace = info.namespace
             }
