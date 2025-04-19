@@ -42,24 +42,24 @@ generate_hcl "_apps.tf" {
       }
     }
 
-    resource "kubernetes_persistent_volume_claim" "nfs_media" {
-      metadata {
-        name = "nfs-media"
-        namespace = kubernetes_namespace.apps.metadata[0].name
-        labels = {
-          "app.kubernetes.io/name" = "nfs-media"
-        }
-      }
-      spec {
-        access_modes = ["ReadWriteMany"]
-        resources {
-          requests = {
-            storage = "50Gi"
-          }
-        }
-        storage_class_name = "openebs-kernel-nfs"
-      }
-    }
+    # resource "kubernetes_persistent_volume_claim" "nfs_media" {
+    #   metadata {
+    #     name = "nfs-media"
+    #     namespace = kubernetes_namespace.apps.metadata[0].name
+    #     labels = {
+    #       "app.kubernetes.io/name" = "nfs-media"
+    #     }
+    #   }
+    #   spec {
+    #     access_modes = ["ReadWriteMany"]
+    #     resources {
+    #       requests = {
+    #         storage = "50Gi"
+    #       }
+    #     }
+    #     storage_class_name = "openebs-kernel-nfs"
+    #   }
+    # }
 
 #    module "jellyfin" {
 #     count = tm_try(global.cluster.apps.jellyfin.enable, false) == true ? 1 : 0
@@ -302,7 +302,7 @@ generate_hcl "_apps.tf" {
       config_storage = "1Gi"
       config_storage_class = global.project.storage_class
       shared_pvcs = [
-       kubernetes_persistent_volume_claim.nfs_media.metadata.0.name,
+      #  kubernetes_persistent_volume_claim.nfs_media.metadata.0.name,
        kubernetes_persistent_volume_claim.nfs_misc.metadata.0.name
       ]
       depends_on = [kubernetes_namespace.apps]
