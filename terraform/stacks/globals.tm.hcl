@@ -62,9 +62,9 @@ globals "terraform" "default_providers" {
     version = "0.35.0"
     config = {
       endpoint           = global.infrastructure.ovh.endpoint
-      application_key    = global.secrets.ovh.application_key
-      application_secret = global.secrets.ovh.application_secret
-      consumer_key       = global.secrets.ovh.consumer_key
+      application_key    = global.infrastructure.ovh.application_key
+      application_secret = global.infrastructure.ovh.application_secret
+      consumer_key       = global.infrastructure.ovh.consumer_key
     }
   }
   helm = {
