@@ -1,9 +1,4 @@
 generate_hcl "_dns.tf" {
-  lets {
-    public_hostnames = global.apps.public_hostnames
-    private_hostnames = global.apps.private_hostnames
-  }
-
   content {
     resource "kubernetes_namespace" "dns" {
       metadata {
