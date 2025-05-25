@@ -390,6 +390,28 @@ generate_hcl "_apps.tf" {
       ttl      = local.apps.dex.public ? "1" : "60"
     }
 
+    module "honeygain" {
+      count = global.cluster.apps.honeygain.enable ? 1 : 0
+      source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/honeygain"
+      namespace = kubernetes_namespace.apps.metadata[0].name
+      account_name = global.secrets.honeygain.account_name
+      account_password = global.secrets.honeygain.account_password
+      node_selector = {
+        "moinmoin.fyi/residential-ip" = true
+      }
+      depends_on = [kubernetes_namespace.apps]
+    }
+
+    # module "kasm" {
+    #   count = global.cluster.apps.kasm.enable ? 1 : 0
+    #   source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/kasm"
+    #   namespace = kubernetes_namespace.apps.metadata[0].name
+    #   issuer = global.project.cert_manager_issuer
+    #   domains = global.cluster.apps.kasm.hostnames
+    #   ingress_class = "nginx"
+    #   depends_on = [kubernetes_namespace.apps]
+    # }
+
     # TODO: Uncomment and review whenever you have time.
     # resource "kubernetes_manifest" "backups" {
     #   for_each = toset(global.apps.backups)
@@ -421,3 +443,20 @@ generate_hcl "_apps.tf" {
     # }
   }
 }
+
+# generate_hcl "_stockseer.tf" {
+#   condition = global.cluster.apps.stockseer.enable 
+#   content {
+#     module "stockseer" {
+#       source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/stockseer"
+#       namespace = kubernetes_namespace.apps.metadata[0].name
+#       argo_workflow = {
+#         enable = true
+#         namespace = "cicd"
+#       }
+#       issuer = global.project.cert_manager_issuer
+#       domains = global.cluster.apps.stockseer.hostnames
+#       depends_on = [kubernetes_namespace.apps]
+#     }
+#   }
+# }
