@@ -232,7 +232,15 @@ generate_hcl "_apps.tf" {
           title = "HTTP Echo"
           description = "Test Public HTTP Echo Server"
           icon = "hl-ghostfolio"
-          url = "https://echo.cluster.moinmoin.fyi"
+          url = "https://echo.moinmoin.fyi"
+          statusCheck = true
+        },
+        {
+          section     = "Cluster"
+          title       = "Headlamp"
+          description = "Kubernetes Dashboard"
+          icon        = "hl-headlamp"
+          url         = "https://headlamp.cluster.moinmoin.fyi"
           statusCheck = true
         },
         {
@@ -274,7 +282,7 @@ generate_hcl "_apps.tf" {
           icon        = "hl-dashdot"
           url         = "https://netcup-neu-0.dashdot.cluster.moinmoin.fyi"
           statusCheck = true
-        }
+        },
       ]
       depends_on = [kubernetes_namespace.apps]
     }
