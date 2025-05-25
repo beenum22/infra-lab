@@ -76,7 +76,7 @@ globals "terraform" "default_providers" {
   }
   kubernetes = {
     source = "hashicorp/kubernetes"
-    version = "2.20.0"
+    version = "~> 2.36"
     config = {
       config_path = "~/.kube/config"
     }
@@ -127,6 +127,16 @@ globals "terraform" "default_providers" {
     version = "1.6.0"
     config = {
       zerotier_central_token = global.secrets.zerotier.api_token
+    }
+  }
+  # Experimental: Testing ArgoCD
+  argocd = {
+    source = "argoproj-labs/argocd"
+    version = "7.6.1"
+    config = {
+      username = global.secrets.argocd.username
+      password = global.secrets.argocd.password
+      server_addr = global.cluster.cicd.argocd.domain
     }
   }
 }
