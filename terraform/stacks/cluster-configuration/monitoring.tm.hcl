@@ -50,6 +50,30 @@ generate_hcl "_monitoring.tf" {
       ttl     = "60"
     }
 
+    module "headlamp" {
+      source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/headlamp"
+      count = global.cluster.apps.headlamp.enable ? 1 : 0
+      flux_managed = true
+      chart_version = "0.*.*"  # Use latest upstream version
+      namespace = kubernetes_namespace.monitoring.metadata[0].name
+      issuer = module.cert_manager.issuer
+      domains = global.cluster.apps.headlamp.hostnames
+      ingress_class = global.project.ingress_class
+      depends_on = [
+        kubernetes_namespace.monitoring
+      ]
+    }
+
+    resource "cloudflare_record" "headlamp" {
+      count = global.cluster.apps.headlamp.enable ? 1 : 0
+      zone_id = global.infrastructure.cloudflare.zone_id
+      name    = global.cluster.apps.headlamp.hostnames[0]
+      value   = module.nginx.endpoint
+      type    = "CNAME"
+      proxied = false
+      ttl     = "60"
+    }
+
 #     module "prometheus_stack" {
 #       source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/prometheus-stack"
 #       namespace = kubernetes_namespace.monitoring.metadata[0].name
