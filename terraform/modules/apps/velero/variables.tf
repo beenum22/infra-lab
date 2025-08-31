@@ -1,3 +1,9 @@
+variable "flux_managed" {
+  type = bool
+  default = false
+  description = "Whether the application is managed by FluxCD."
+}
+
 variable "kubeconfig" {
   type = string
   default = "~/.kube/config"
@@ -25,7 +31,7 @@ variable "chart_name" {
 
 variable "chart_version" {
   type = string
-  default = "6.0.0"
+  default = "10.1.0"
 }
 
 variable "chart_url" {
