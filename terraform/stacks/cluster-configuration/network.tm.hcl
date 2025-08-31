@@ -11,6 +11,8 @@ generate_hcl "_network.tf" {
 
     module "tailscale_operator" {
       source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/tailscale-operator"
+      flux_managed = true
+      chart_version = "1.*.*"  # Use latest upstream version
       name = "talos-ts-operator"
       namespace = kubernetes_namespace.network.metadata.0.name
       client_id = global.secrets.tailscale.client_id
