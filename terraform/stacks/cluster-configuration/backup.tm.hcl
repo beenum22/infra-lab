@@ -8,6 +8,8 @@ generate_hcl "_backup.tf" {
 
     module "velero" {
       source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/velero"
+      flux_managed = true
+      chart_version = "10.*.*"  # Use latest upstream version
       namespace = kubernetes_namespace.backup.metadata[0].name
       backup_storage_provider = "aws"
       volume_snapshot_provider = "openebs.io/zfspv-blockstore"

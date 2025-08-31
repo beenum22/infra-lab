@@ -20,6 +20,8 @@ generate_hcl "_network.tf" {
 
     module "nginx" {
       source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/nginx"
+      flux_managed = true
+      chart_version = "4.*.*"  # Use latest upstream version
       namespace = kubernetes_namespace.network.metadata.0.name
       domain = "ingress.cluster.${global.infrastructure.dns.zone}"
       expose_on_tailnet = true
