@@ -6,12 +6,11 @@ resource "helm_release" "this" {
   chart      = var.chart_name
   version    = var.chart_version
   namespace   = var.namespace
-  dynamic "set" {
-    for_each = var.extra_values
-    content {
-      name = set.key
-      value = set.value
+  set = [
+    for key, value in var.extra_values :{
+      key = key,
+      value = value,
       type = "string"
     }
-  }
+  ]
 }
