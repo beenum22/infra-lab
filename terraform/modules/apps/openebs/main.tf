@@ -1,3 +1,76 @@
+locals {
+  values = {
+    loki = {
+      enabled = false
+      localpvScConfig = {
+        enabled = false
+      }
+      minio = {
+        enabled = false
+      }
+    }
+    alloy = {
+      enabled = false
+    }
+    engines = {
+      lvm = {
+        enabled = false
+      }
+      zfs = {
+        enabled = true
+      }
+      rawfile = {
+        enabled = false
+      }
+      replicated = {
+        mayastor = {
+          enabled = false
+        }
+      }
+    }
+    zfs-localpv = {
+      crds = {
+        zfsLocalPv = {
+          enabled = true
+        }
+        csi = {
+          volumeSnapshots = {
+            enabled = true
+          }
+        }
+      }
+      # enabled = true
+      zfsNode = {
+        encrKeysDir = "/var/zfs"
+        nodeSelector = {
+          "openebs.io/localpv-zfs" = "true"
+        }
+        # allowedTopologyKeys = "openebs.io/localpv-zfs"
+      }
+    }
+    nfs-provisioner = {
+      # enabled = true
+      nfsStorageClass = {
+        backendStorageClass = "${var.name}-zfs"
+      }
+      # nfsProvisioner = {
+      #   nfsServerNodeAffinity = "openebs.io/localpv-zfs,openebs.io/nfs-server"
+      # }
+    }
+    snapshotOperator = {
+      enabled = true
+    }
+    defaultStorageConfig = false
+    openebs-crds = {
+      csi = {
+        volumeSnapshots = {
+          enabled = false
+        }
+      }
+    }
+  }
+}
+
 data "kubernetes_nodes" "this" {
   metadata {
     labels = {
@@ -11,96 +84,16 @@ resource "helm_release" "openebs" {
   repository = var.chart_url
   chart      = var.chart_name
   version    = var.chart_version
-  namespace   = var.namespace
-  set {
-    name  = "jiva.enabled"
-    value = false
-  }
-  set {
-    name  = "cstor.enabled"
-    value = false
-  }
-  set {
-    name  = "lvm-localpv.enabled"
-    value = false
-  }
-  set {
-    name  = "apiserver.enabled"
-    value = false
-  }
-  set {
-    name  = "provisioner.enabled"
-    value = false
-  }
-  set {
-    name  = "defaultStorageConfig"
-    value = false
-  }
-  set {
-    name  = "openebs-ndm.enabled"
-    value = false
-  }
-  set {
-    name  = "localprovisioner.enabled"
-    value = true
-  }
-  set {
-    name  = "localprovisioner.deviceClass.enabled"
-    value = false
-  }
-  set {
-    name  = "localprovisioner.hostpathClass.enabled"
-    value = true
-  }
-  set {
-    name  = "localprovisioner.hostpathClass.isDefaultClass"
-    value = false
-  }
-  set {
-    name  = "ndm.enabled"
-    value = true
-  }
-  set {
-    name  = "ndmOperator.enabled"
-    value = true
-  }
-  set {
-    name  = "ndmExporter.enabled"
-    value = false
-  }
-  set {
-    name  = "zfs-localpv.enabled"
-    value = true
-  }
-  set {
-    name  = "zfs-localpv.zfsNode.nodeSelector.openebs\\.io/localpv-zfs"
-    value = "true"
-    type  = "string"
-  }
-  set {
-    name  = "nfs-provisioner.enabled"
-    value = true
-  }
-  set {
-    name  = "nfs-provisioner.nfsStorageClass.backendStorageClass"
-    value = "${var.name}-zfs"
-  }
+  namespace  = var.namespace
+  values     = [yamlencode(local.values)]
 #   set {
 #     name  = "nfs-provisioner.nfsProvisioner.nfsServerNodeAffinity"
 #     value = "openebs.io/localpv-zfs\\,openebs.io/nfs-server"
 #   }
-  set {
-    name  = "snapshotOperator.enabled"
-    value = true
-  }
 #  set {
 #    name  = "zfs-localpv.zfsNode.allowedTopologyKeys"
 #    value = "openebs.io/localpv-zfs"
 #  }
- set {
-   name  = "zfs-localpv.zfsNode.encrKeysDir"
-   value = "/var/zfs"
- }
 }
 
 resource "kubernetes_storage_class" "zfs_loopback" {
@@ -134,8 +127,8 @@ resource "helm_release" "snapshot" {
   depends_on = [ helm_release.openebs ]
   chart = "${path.module}/snapshot"
   namespace  = var.namespace
-  set {
+  set = [{
     name = "name"
     value = "${var.name}-snapshot"
-  }
+  }]
 }
