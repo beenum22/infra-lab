@@ -1,62 +1,83 @@
 locals {
-  ingress_annotations = {
-    "external-dns\\.alpha\\.kubernetes\\.io/internal-hostname" = var.domain
-    "tailscale\\.com/hostname" = var.tailnet_hostname
+  # ingress_annotations = {
+  #   "external-dns\\.alpha\\.kubernetes\\.io/internal-hostname" = var.domain
+  #   "tailscale\\.com/hostname" = var.tailnet_hostname
+  # }
+  values = {
+    controller = {
+      kind = "DaemonSet"
+      service = {
+        enabled = var.expose_on_tailnet ? false : true
+        type = "ClusterIP"
+        ipFamilyPolicy = "PreferDualStack"
+        # Note: Primary IP because Tailscale Operator has some issues with exposing IPv6
+        ipFamilies = ["IPv4", "IPv6"]
+        annotations = {
+          "external-dns.alpha.kubernetes.io/internal-hostname" = var.domain
+          "tailscale.com/hostname" = var.tailnet_hostname
+        }
+      }
+      ingressClassResource = {
+        name = replace(var.name, "ingress-", "")
+        controllerValue = "k8s.io/${var.name}"
+      }
+      ingressClass = replace(var.name, "ingress-", "")
+    }
   }
 }
 
 resource "helm_release" "chart" {
+  count      = var.flux_managed ? 0 : 1
   name       = var.name
   repository = var.chart_url
   chart      = var.chart_name
   version    = var.chart_version
-  namespace   = var.namespace
-  set {
-    name = "controller.kind"
-    value = "DaemonSet"
-  }
-  set {
-    name = "controller.service.enabled"
-    value = var.expose_on_tailnet ? false : true
-  }
-  set {
-    name = "controller.service.type"
-    value = "ClusterIP"
-    type = "string"
-  }
-  set {
-    name = "controller.service.ipFamilyPolicy"
-    value = "PreferDualStack"
-    type = "string"
-  }
-  set {
-    name = "controller.service.ipFamilies[1]"
-    value = "IPv6"
-    type = "string"
-  }
-  set {
-    name = "controller.service.ipFamilies[0]"  # Primary IP because Tailscale Operator has some issues with exposing IPv6
-    value = "IPv4"
-    type = "string"
-  }
-  dynamic "set" {
-    for_each   = local.ingress_annotations
-    content {
-      name = "controller.service.annotations.${set.key}"
-      value = set.value
+  namespace  = var.namespace
+  values     = [yamlencode(local.values)]
+}
+
+resource "kubernetes_manifest" "helm_repo" {
+  count = var.flux_managed ? 1 : 0
+  manifest = {
+    apiVersion = "source.toolkit.fluxcd.io/v1"
+    kind       = "HelmRepository"
+    metadata = {
+      name      = var.chart_name
+      namespace = var.namespace
+    }
+    spec = {
+      interval = "5m"
+      url      = var.chart_url
     }
   }
-  set {
-    name  = "controller.ingressClassResource.name"
-    value = replace(var.name, "ingress-", "")
-  }
-  set {
-    name  = "controller.ingressClass"
-    value = replace(var.name, "ingress-", "")
-  }
-  set {
-    name  = "controller.ingressClassResource.controllerValue"
-    value = "k8s.io/${var.name}"
+}
+
+resource "kubernetes_manifest" "helm_release" {
+  count = var.flux_managed ? 1 : 0
+  manifest = {
+    apiVersion = "helm.toolkit.fluxcd.io/v2"
+    kind       = "HelmRelease"
+    metadata = {
+      name      = var.name
+      namespace = var.namespace
+    }
+    spec = {
+      interval = "1m"
+      releaseName = var.name
+      chart = {
+        spec = {
+          chart   = var.chart_name
+          version = var.chart_version
+          sourceRef = {
+            kind     = "HelmRepository"
+            name     = var.chart_name
+            namespace = var.namespace
+          }
+        }
+      }
+      targetNamespace = var.namespace
+      values = local.values
+    }
   }
 }
 

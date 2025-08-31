@@ -1,3 +1,9 @@
+variable "flux_managed" {
+  type = bool
+  default = false
+  description = "Whether the application is managed by FluxCD."
+}
+
 variable "kubeconfig" {
   type = string
   default = "~/.kube/config"
