@@ -30,29 +30,47 @@ generate_hcl "_storage.tf" {
             host_pid = true
             host_network = true
             restart_policy = "Always"
+            init_container {
+              name  = "zfs-init"
+              image = "alpine:latest"
+              command = [
+                "/bin/sh",
+                "-c",
+                join("\n", [
+                  "apk add --no-cache zfs lsblk",
+                ])
+              ]
+            }
             container {
               name  = "zfs"
               image = "alpine:latest"
               security_context {
                 privileged = true
               }
+              env {
+                name = "NODE_NAME"
+                value_from {
+                  field_ref {
+                    field_path = "spec.nodeName"
+                  }
+                }
+              }
               command = [
                 "/bin/sh",
                 "-c",
                 join("\n", [
-                  "apk add --no-cache zfs lsblk",
-                  "echo \"[ZFS Init] Detecting available disks on $(hostname)...\"",
+                  "echo \"[ZFS Init] Detecting available disks on $NODE_NAME...\"",
                   "",
                   "while true; do",
 
                   " DEVICES=$(lsblk -ndo NAME,TYPE | awk '$2 == \"disk\" { print \"/dev/\" $1 }' | grep -vE 'sda|vda|nvme0n1')",
+                  " echo \"[ZFS Init] Found devices: $DEVICES\"",
                   " POOL_DEVICES=\"\"",
                   " for dev in $DEVICES; do",
                   "   if [ -z \"$(lsblk -n $dev | tail -n +2)\" ] && [ -z \"$(blkid $dev)\" ]; then",
                   "      POOL_DEVICES=\"$POOL_DEVICES $dev\"",
                   "   fi",
                   " done",
-                  " echo \"[ZFS Init] Found devices: $POOL_DEVICES\"",
                   " if [ -z \"$POOL_DEVICES\" ]; then",
                   "   echo \"[ZFS Init] No clean disks found. Skipping.\"",
                   " else",
@@ -65,7 +83,6 @@ generate_hcl "_storage.tf" {
                   " fi",
                   " sleep 5",
                   "done",
-
                 ])
               ]
             }
