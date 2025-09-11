@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Infra-Lab Helm Charts</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        h1 { color: #326ce5; }
+        .chart { margin: 20px 0; padding: 15px; border-left: 4px solid #326ce5; }
+        code { background: #f4f4f4; padding: 2px 4px; border-radius: 3px; }
+        pre { background: #f8f8f8; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🎯 Infra-Lab Helm Charts Repository</h1>
+    
+    <p>This repository contains Helm charts for infrastructure and application deployments.</p>
+    
+    <h2>📦 Available Charts</h2>
+    
+    <div class="chart">
+        <h3>velero-schedule</h3>
+        <p>Deploy Velero Schedule resources for automated Kubernetes cluster backups with advanced features including storage locations, restore templates, and monitoring integration.</p>
+        <p><strong>Version:</strong> 0.1.0</p>
+    </div>
+    
+    <h2>🚀 Quick Start</h2>
+    
+    <h3>Add this repository:</h3>
+    <pre><code>helm repo add infra-lab https://beenum22.github.io/infra-lab/
+helm repo update</code></pre>
+    
+    <h3>Install a chart:</h3>
+    <pre><code>helm install my-backup infra-lab/velero-schedule -n velero</code></pre>
+    
+    <h3>Search available charts:</h3>
+    <pre><code>helm search repo infra-lab</code></pre>
+    
+    <h2>📚 Documentation</h2>
+    
+    <p>For detailed documentation and examples, visit the <a href="https://github.com/beenum22/infra-lab">GitHub repository</a>.</p>
+    
+    <h2>🤝 Contributing</h2>
+    
+    <p>Contributions are welcome! Please read the contributing guidelines in the repository.</p>
+    
+    <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee;">
+        <p><small>Generated automatically from <a href="https://github.com/beenum22/infra-lab">infra-lab</a></small></p>
+    </footer>
+</body>
+</html>
