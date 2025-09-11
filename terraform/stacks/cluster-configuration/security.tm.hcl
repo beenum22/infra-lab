@@ -20,13 +20,15 @@ generate_hcl "_security.tf" {
     module "authelia" {
       source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/authelia"
       flux_managed = true
-      chart_version = "0.*.*"  # Use latest upstream version
+      chart_version = "0.10.43"  # Use latest upstream version
       namespace = kubernetes_namespace.security.metadata[0].name
       issuer = module.cert_manager.issuer
       domains = global.cluster.apps.authelia.hostnames
       ingress_class = global.project.ingress_class
       storage_class = global.project.storage_class
       credentials = global.secrets.authelia.credentials
+      oidc_clients = global.cluster.oidc_clients
+      oidc_authorization_policies = global.cluster.oidc_authorization_policies
     }
 
     resource "cloudflare_record" "authelia" {
