@@ -1,3 +1,9 @@
+variable "flux_managed" {
+  type = bool
+  default = false
+  description = "Whether the application is managed by FluxCD."
+}
+
 variable "kubeconfig" {
   type = string
   default = "~/.kube/config"
@@ -26,6 +32,24 @@ variable "config_storage" {
 variable "data_storage" {
  type = string
  default = "10Gi"
+}
+
+variable "chart_name" {
+  type = string
+  default = "jellyfin"
+  description = "Name of the Helm chart for Jellyfin."
+}
+
+variable "chart_version" {
+  type = string
+  default = "2.3.0"
+  description = "Version of the Helm chart for Jellyfin."
+}
+
+variable "chart_url" {
+  type = string
+  default = "https://jellyfin.github.io/jellyfin-helm"
+  description = "URL of the Helm chart repository for Jellyfin."
 }
 
 variable "replicas" {
@@ -70,4 +94,56 @@ variable "shared_pvcs" {
 variable "node_selectors" {
   type = map(string)
   default = null
+}
+
+variable "oidc_client" {
+  type = object({
+    id                 = string
+    secret             = string
+    provider_name      = string
+    provider_endpoint  = string
+    admin_roles        = list(string)
+    user_roles         = list(string)
+  })
+  description = "OIDC client configuration for SSO authentication"
+  sensitive = true
+}
+
+variable "plugin_versions" {
+  type = object({
+    sso_auth = string
+    custom_js = string
+  })
+  description = "Jellyfin plugin versions"
+  default = {
+    sso_auth = "3.5.2.4"
+    custom_js = "0.0.0.2"
+  }
+}
+
+variable "admin_username" {
+  type        = string
+  default     = "admin"
+  description = "Default admin username (optional if using SSO-only)"
+}
+
+variable "admin_password" {
+  type        = string
+  default     = ""
+  description = "Default admin password (leave empty to skip user creation)"
+  sensitive   = true
+}
+
+variable "live_tv" {
+  type = object({
+    enabled = bool
+    m3u_url = optional(string)
+    epg_url = optional(string)
+    user_agent = optional(string)
+    refresh_hours = optional(number)
+  })
+  description = "Live TV configuration with M3U playlist and EPG settings"
+  default = {
+    enabled = false
+  }
 }
