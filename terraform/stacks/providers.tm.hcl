@@ -34,7 +34,7 @@ generate_hcl "_providers.tf" {
       for_each   = let.helm_provider
       labels     = [provider.key]
       content {
-        kubernetes {
+        kubernetes = {
           config_path = provider.value.config_path
         }
       }

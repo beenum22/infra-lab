@@ -69,7 +69,7 @@ globals "terraform" "default_providers" {
   }
   helm = {
     source = "hashicorp/helm"
-    version = "2.9.0"
+    version = "3.0.2"
     config = {
       config_path = "~/.kube/config"
     }
@@ -118,7 +118,7 @@ globals "terraform" "default_providers" {
   # Experimental: Testing Talos as K3s alternative
   talos = {
     source = "siderolabs/talos"
-    version = "0.7.0-alpha.0"
+    version = "0.9.0-alpha.0"
     config = {}
   }
   # Experimental: Testing as Tailscale alternative for cluster network
