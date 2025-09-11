@@ -1,3 +1,9 @@
+/*
+WORKAROUND: jsondecode(jsonencode()) on line 85 is used to fix Kubernetes provider inconsistent 
+result errors when applying complex nested arrays to Helm values. This forces consistent object 
+serialization. Only needed for arrays, not simple objects.
+Reference: https://github.com/hashicorp/terraform-provider-kubernetes/issues/1928
+*/
 locals {
   values = {
     persistence = {
@@ -6,6 +12,13 @@ locals {
     }
     pod = {
       kind = "Deployment"  # Change to Daemonset when the storage is set to MySQL/Postgres
+      strategy = {
+        type = "Recreate"
+      }
+      annotations = {
+        "authelia.io/oidc-clients-hash" = sha256(jsonencode(var.oidc_clients))
+        "authelia.io/users-hash" = sha256(kubernetes_secret.this.data["users_database.yml"])
+      }
       extraVolumes = [
         {
           name = "users"
@@ -16,14 +29,14 @@ locals {
                 path = "users_database.yml"
             }]
           }
-        }
+        },
       ]
       extraVolumeMounts = [
         {
           name      = "users"
           mountPath = "/config/mounts/users_database.yml"
           subPath   = "users_database.yml"
-        }
+        },
       ]
     }
     ingress = {
@@ -79,8 +92,61 @@ locals {
       log = {
         level = "info"
       }
+      access_control = {
+        default_policy = "deny"
+        rules = concat([
+          for domain in var.domains : {
+            domain = domain
+            policy = "one_factor"
+            subject = ["group:admins"]
+          }
+        ], [
+          {
+            domain = "*.moinmoin.fyi"
+            policy = "one_factor"
+            # subject = ["group:admins"]
+          }
+        ])
+      }
+      identity_providers = {
+        oidc = {
+          enabled = true
+          jwks = [
+            {
+              key_id = "main"
+              algorithm = "RS256"
+              use = "sig"
+              key = {
+                value = tls_private_key.oidc_jwks.private_key_pem
+              }
+            }
+          ]
+          claims_policies = {
+            kubectl-oidc-login = {
+              id_token = ["groups", "email"]
+            }
+          }
+          authorization_policies = var.oidc_authorization_policies
+          cors = {
+            endpoints = [
+              "authorization",
+              "token",
+              "revocation",
+              "introspection",
+              "userinfo",
+            ]
+            allowed_origins_from_client_redirect_uris = true
+          }
+          clients = jsondecode(jsonencode(var.oidc_clients))
+        }
+      }
     }
   }
+}
+
+resource "tls_private_key" "oidc_jwks" {
+  algorithm = "RSA"
+  rsa_bits  = 2048
 }
 
 resource "kubernetes_secret" "this" {
@@ -90,6 +156,43 @@ resource "kubernetes_secret" "this" {
   }
   data = {
     "users_database.yml" = yamlencode(var.credentials)
+  }
+  type = "Opaque"
+}
+
+resource "kubernetes_secret" "oidc_config" {
+  metadata {
+    name      = "${var.name}-oidc-config"
+    namespace = var.namespace
+  }
+  data = {
+    "configuration.oidc.yaml" = yamlencode({
+      identity_providers = {
+        oidc = {
+          enabled = true
+          jwks = [
+            {
+              key_id = "main"
+              algorithm = "RS256"
+              use = "sig"
+              key = {
+                value = tls_private_key.oidc_jwks.private_key_pem
+              }
+            }
+          ]
+          # cors = {
+          #   endpoints = [
+          #     # "authorization",
+          #     # "token",
+          #     # "revocation",
+          #     # "introspection",
+          #   ]
+          #   allowed_origins_from_client_redirect_uris = false
+          # }
+          clients = var.oidc_clients
+        }
+      }
+    })
   }
   type = "Opaque"
 }
@@ -144,7 +247,7 @@ resource "kubernetes_manifest" "helm_release" {
         }
       }
       targetNamespace = var.namespace
-      values = local.values
+      values = jsondecode(jsonencode(local.values))
     }
   }
 }

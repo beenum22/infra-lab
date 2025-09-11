@@ -30,7 +30,7 @@ variable "chart_name" {
 
 variable "chart_version" {
   type = string
-  default = "0.10.42"
+  default = "0.10.40"
   description = "Version of the Helm chart for Authelia."
 }
 
@@ -77,4 +77,49 @@ variable "extra_values" {
   type = map(string)
   default = {}
   description = "Additional values to be passed to the Helm chart for Authelia."
+}
+
+variable "oidc_authorization_policies" {
+  type = map(object({
+    default_policy = string
+    rules = list(object({
+      policy  = string
+      domain  = optional(list(string))
+      subject = optional(list(string))
+    }))
+  }))
+  default = {}
+  description = "Authorization policies for OIDC clients"
+}
+
+variable "oidc_clients" {
+  type = list(object({
+    client_id                        = string
+    client_name                      = string
+    client_secret                    = string
+    public                           = bool
+    claims_policy                    = optional(string, "")
+    authorization_policy             = string
+    require_pkce                     = optional(bool, false)
+    pkce_challenge_method            = optional(string, "plain")
+    consent_mode                     = optional(string, "auto")
+    redirect_uris                    = list(string)
+    scopes                           = list(string)
+    response_types                   = optional(list(string), ["code"])
+    grant_types                      = list(string)
+    access_token_signed_response_alg = optional(string, "none")
+    # userinfo_signed_response_alg     = optional(string, "none")
+    token_endpoint_auth_method       = optional(string, "none")
+  }))
+  default = []
+  description = "List of OIDC clients to configure for various applications"
+  sensitive = true
+
+  validation {
+    condition = alltrue([
+      for client in var.oidc_clients : 
+      client.public == true ? client.token_endpoint_auth_method == "none" : true
+    ])
+    error_message = "When public=true, token_endpoint_auth_method must be 'none' for OIDC security compliance."
+  }
 }
