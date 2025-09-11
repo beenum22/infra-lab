@@ -20,27 +20,30 @@ generate_hcl "_apps.tf" {
     resource "kubernetes_namespace" "apps" {
       metadata {
         name = "apps"
+        labels = {
+          "pod-security.kubernetes.io/enforce" = "privileged"
+        }
       }
     }
 
-    resource "kubernetes_persistent_volume_claim" "nfs_misc" {
-      metadata {
-        name = "nfs-misc"
-        namespace = kubernetes_namespace.apps.metadata[0].name
-        labels = {
-          "app.kubernetes.io/name" = "nfs-misc"
-        }
-      }
-      spec {
-        access_modes = ["ReadWriteMany"]
-        resources {
-          requests = {
-            storage = "30Gi"
-          }
-        }
-        storage_class_name = "openebs-kernel-nfs"
-      }
-    }
+    # resource "kubernetes_persistent_volume_claim" "nfs_misc" {
+    #   metadata {
+    #     name = "nfs-misc"
+    #     namespace = kubernetes_namespace.apps.metadata[0].name
+    #     labels = {
+    #       "app.kubernetes.io/name" = "nfs-misc"
+    #     }
+    #   }
+    #   spec {
+    #     access_modes = ["ReadWriteMany"]
+    #     resources {
+    #       requests = {
+    #         storage = "10Gi"
+    #       }
+    #     }
+    #     storage_class_name = "openebs-kernel-nfs"
+    #   }
+    # }
 
     # resource "kubernetes_persistent_volume_claim" "nfs_media" {
     #   metadata {
@@ -54,70 +57,54 @@ generate_hcl "_apps.tf" {
     #     access_modes = ["ReadWriteMany"]
     #     resources {
     #       requests = {
-    #         storage = "50Gi"
+    #         storage = "30Gi"
     #       }
     #     }
     #     storage_class_name = "openebs-kernel-nfs"
     #   }
     # }
 
-#    module "jellyfin" {
-#     count = tm_try(global.cluster.apps.jellyfin.enable, false) == true ? 1 : 0
-#      source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/jellyfin"
-#      namespace = kubernetes_namespace.apps.metadata[0].name
-#      ingress_hostname = global.project.ingress_hostname
-#      issuer = global.project.cert_manager_issuer
-#      node_selectors = {
-#        "moinmoin.fyi/country" = "germany"
-#      }
-#      config_storage = "1Gi"
-#      data_storage = "30Gi"
-#      storage_class = global.project.storage_class
-#      shared_pvcs = [
-#        {
-#          name = kubernetes_persistent_volume_claim.nfs_media.metadata.0.name
-#          path = kubernetes_persistent_volume_claim.nfs_media.metadata.0.name
-#        },
-# #        {
-# #          name = kubernetes_persistent_volume_claim.nfs_misc.metadata.0.name
-# #          path = "filebrowser"
-# #        }
-#      ]
-#      domains = global.cluster.apps.jellyfin.hostnames
-#      depends_on = [kubernetes_namespace.apps]
-#    }
+    module "jellyfin" {
+      count = global.cluster.apps.jellyfin.enable ? 1 : 0
+      source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/jellyfin"
+      flux_managed = true
+      chart_version = "2.*.*"
+      namespace = kubernetes_namespace.apps.metadata[0].name
+      ingress_hostname = global.project.ingress_hostname
+      issuer = global.project.cert_manager_issuer
+      node_selectors = {
+        "${global.project.domain}/country" = "germany"
+      }
+      config_storage = "5Gi"
+      data_storage = "10Gi"
+      storage_class = global.project.storage_class
+      shared_pvcs = []
+      domains = global.cluster.apps.jellyfin.hostnames
+      oidc_client = {
+        id = "jellyfin"
+        secret = global.secrets.oidc.jellyfin.secret
+        provider_name = "authelia"
+        provider_endpoint  = global.project.oidc_hostname
+        admin_roles        = ["jellyfin-admins"]
+        user_roles         = ["jellyfin-admins", "jellyfin-users"]
+      }
+      live_tv = {
+        enabled = true
+        m3u_url = "https://iptv-org.github.io/iptv/index.m3u"
+        user_agent = "Jellyfin"
+      }
+      depends_on = [kubernetes_namespace.apps]
+    }
 
-#    module "radarr" {
-#      source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/radarr"
-#      namespace = kubernetes_namespace.apps.metadata[0].name
-#      ingress_hostname = global.project.ingress_hostname
-#      issuer = global.project.cert_manager_issuer
-#      config_storage = "1Gi"
-#      storage_class = global.project.storage_class
-#      shared_pvcs = [
-#        kubernetes_persistent_volume_claim.nfs_share.metadata.0.name
-#      ]
-#      domains = [
-#        "radarr.moinmoin.fyi"
-#      ]
-#      depends_on = [kubernetes_namespace.apps]
-#    }
-
-#    module "prowlarr" {
-#      source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/prowlarr"
-#      namespace = kubernetes_namespace.apps.metadata[0].name
-#      ingress_hostname = global.project.ingress_hostname
-#      issuer = global.project.cert_manager_issuer
-#      config_storage = "1Gi"
-#      storage_class = global.project.storage_class
-#      shared_pvcs = [
-#        kubernetes_persistent_volume_claim.nfs_share.metadata.0.name
-#      ]
-#      domains = [
-#        "prowlarr.moinmoin.fyi"
-#      ]
-#      depends_on = [kubernetes_namespace.apps]
-#    }
+    resource "cloudflare_dns_record" "jellyfin" {
+      for_each = toset(local.apps.jellyfin.enable ? local.apps.jellyfin.hostnames : [])
+      zone_id = global.infrastructure.cloudflare.zone_id
+      name    = each.value
+      content   = local.apps.jellyfin.public ? data.terraform_remote_state.cluster_configuration_stack_state.outputs.ingress_endpoints.public : data.terraform_remote_state.cluster_configuration_stack_state.outputs.ingress_endpoints.private
+      type    = "CNAME"
+      proxied = local.apps.jellyfin.public ? true : false
+      ttl     = local.apps.jellyfin.public ? "1" : "60"
+    }
 
     module "dashy" {
       count = global.cluster.apps.dashy.enable ? 1 : 0
@@ -190,7 +177,7 @@ generate_hcl "_apps.tf" {
           title       = "OVH Cloud"
           description = "Public Domain Provider"
           icon        = "hl-ovh"
-          url         = "https://www.ovh.com/manager/#/web/domain/moinmoin.fyi/zone"
+          url         = "https://www.ovh.com/manager/#/web/domain/${global.project.domain}/zone"
           # target      = "newtab"
           provider    = "OVH"
           # id          = "7_2647_ovh"
@@ -208,6 +195,13 @@ generate_hcl "_apps.tf" {
           icon        = "hl-cloudflare"
           url         = "https://dash.cloudflare.com/"
           provider    = "Cloudflare"
+        },
+        {
+          title       = "Porkbun"
+          description = "Domain Name Registrar"
+          icon        = "hl-porkbun"
+          url         = "https://porkbun.com/account/domainsSpeedy"
+          provider    = "Porkbun"
         }
       ]
       apps = [
@@ -215,7 +209,7 @@ generate_hcl "_apps.tf" {
           title = "Filebrowser"
           description = "Shared File Storage"
           icon = "hl-filebrowser"
-          url = "https://filebrowser.cluster.moinmoin.fyi"
+          url = "https://filebrowser.cluster.${global.project.domain}"
           statusCheck = true
           section = "Apps"
         },
@@ -224,7 +218,7 @@ generate_hcl "_apps.tf" {
           title = "Homebox"
           description = "Inventory Management"
           icon = "hl-homebox"
-          url = "https://homebox.cluster.moinmoin.fyi"
+          url = "https://homebox.cluster.${global.project.domain}"
           statusCheck = true
         },
         {
@@ -232,7 +226,15 @@ generate_hcl "_apps.tf" {
           title = "HTTP Echo"
           description = "Test Public HTTP Echo Server"
           icon = "hl-ghostfolio"
-          url = "https://echo.moinmoin.fyi"
+          url = "https://echo.${global.project.domain}"
+          statusCheck = true
+        },
+        {
+          section = "Apps"
+          title = "Jellyfin"
+          description = "Media Streaming Server"
+          icon = "hl-jellyfin"
+          url = "https://jellyfin.${global.project.domain}"
           statusCheck = true
         },
         {
@@ -240,7 +242,7 @@ generate_hcl "_apps.tf" {
           title       = "Headlamp"
           description = "Kubernetes Dashboard"
           icon        = "hl-headlamp"
-          url         = "https://headlamp.cluster.moinmoin.fyi"
+          url         = "https://headlamp.cluster.${global.project.domain}"
           statusCheck = true
         },
         {
@@ -248,7 +250,7 @@ generate_hcl "_apps.tf" {
           title       = "Dash. oci-fra-0"
           description = "Simple Node Monitoring Dashboard"
           icon        = "hl-dashdot"
-          url         = "https://oci-fra-0.dashdot.cluster.moinmoin.fyi"
+          url         = "https://oci-fra-0.dashdot.cluster.${global.project.domain}"
           statusCheck = true
         },
         {
@@ -256,7 +258,7 @@ generate_hcl "_apps.tf" {
           title       = "Dash. oci-fra-1"
           description = "Simple Node Monitoring Dashboard"
           icon        = "hl-dashdot"
-          url         = "https://oci-fra-1.dashdot.cluster.moinmoin.fyi"
+          url         = "https://oci-fra-1.dashdot.cluster.${global.project.domain}"
           statusCheck = true
         },
         {
@@ -264,7 +266,7 @@ generate_hcl "_apps.tf" {
           title       = "Dash. oci-fra-2"
           description = "Simple Node Monitoring Dashboard"
           icon        = "hl-dashdot"
-          url         = "https://oci-fra-2.dashdot.cluster.moinmoin.fyi"
+          url         = "https://oci-fra-2.dashdot.cluster.${global.project.domain}"
           statusCheck = true
         },
         {
@@ -272,7 +274,7 @@ generate_hcl "_apps.tf" {
           title       = "Dash. hzn-hel-0"
           description = "Simple Node Monitoring Dashboard"
           icon        = "hl-dashdot"
-          url         = "https://hzn-hel-0.dashdot.cluster.moinmoin.fyi"
+          url         = "https://hzn-hel-0.dashdot.cluster.${global.project.domain}"
           statusCheck = true
         },
         {
@@ -280,7 +282,7 @@ generate_hcl "_apps.tf" {
           title       = "Dash. netcup-neu-0"
           description = "Simple Node Monitoring Dashboard"
           icon        = "hl-dashdot"
-          url         = "https://netcup-neu-0.dashdot.cluster.moinmoin.fyi"
+          url         = "https://netcup-neu-0.dashdot.cluster.${global.project.domain}"
           statusCheck = true
         },
       ]
@@ -311,7 +313,7 @@ generate_hcl "_apps.tf" {
       config_storage_class = global.project.storage_class
       shared_pvcs = [
       #  kubernetes_persistent_volume_claim.nfs_media.metadata.0.name,
-       kubernetes_persistent_volume_claim.nfs_misc.metadata.0.name
+      #  kubernetes_persistent_volume_claim.nfs_misc.metadata.0.name
       ]
       depends_on = [kubernetes_namespace.apps]
     }
@@ -369,27 +371,6 @@ generate_hcl "_apps.tf" {
       ttl     = local.apps.http_echo.public ? "1" : "60"
     }
 
-    module "dex" {
-      count = global.cluster.apps.dex.enable ? 1 : 0
-      source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/dex"
-      namespace = kubernetes_namespace.apps.metadata[0].name
-      # issuer = global.project.cert_manager_issuer
-      domains = global.cluster.apps.dex.hostnames
-      # ingress_class = "nginx"
-      # ingress_hostname = global.project.ingress_hostname
-      depends_on = [kubernetes_namespace.apps]
-    }
-
-    resource "cloudflare_dns_record" "dex" {
-      for_each = toset(local.apps.dex.enable ? local.apps.dex.hostnames : [])
-      zone_id  = global.infrastructure.cloudflare.zone_id
-      name     = each.value
-      content  = local.apps.dex.public ? data.terraform_remote_state.cluster_configuration_stack_state.outputs.ingress_endpoints.public : data.terraform_remote_state.cluster_configuration_stack_state.outputs.ingress_endpoints.private
-      type     = "CNAME"
-      proxied  = local.apps.dex.public ? true : false
-      ttl      = local.apps.dex.public ? "1" : "60"
-    }
-
     module "honeygain" {
       count = global.cluster.apps.honeygain.enable ? 1 : 0
       source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/honeygain"
@@ -397,20 +378,31 @@ generate_hcl "_apps.tf" {
       account_name = global.secrets.honeygain.account_name
       account_password = global.secrets.honeygain.account_password
       node_selector = {
-        "moinmoin.fyi/residential-ip" = true
+        "${global.project.domain}/residential-ip" = true
       }
       depends_on = [kubernetes_namespace.apps]
     }
 
-    # module "kasm" {
-    #   count = global.cluster.apps.kasm.enable ? 1 : 0
-    #   source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/kasm"
-    #   namespace = kubernetes_namespace.apps.metadata[0].name
-    #   issuer = global.project.cert_manager_issuer
-    #   domains = global.cluster.apps.kasm.hostnames
-    #   ingress_class = "nginx"
-    #   depends_on = [kubernetes_namespace.apps]
-    # }
+    module "stockseer" {
+      count = global.cluster.apps.stockseer.enable ? 1 : 0
+      source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/stockseer"
+      flux_managed = true
+      namespace = kubernetes_namespace.apps.metadata[0].name
+      issuer = global.project.cert_manager_issuer
+      domains = global.cluster.apps.stockseer.hostnames
+      tag = "v0.1.16"
+      depends_on = [kubernetes_namespace.apps]
+    }
+
+    resource "cloudflare_dns_record" "stockseer" {
+      for_each = toset(local.apps.stockseer.enable ? local.apps.stockseer.hostnames : [])
+      zone_id = global.infrastructure.cloudflare.zone_id
+      name    = each.value
+      content   = local.apps.stockseer.public ? data.terraform_remote_state.cluster_configuration_stack_state.outputs.ingress_endpoints.public : data.terraform_remote_state.cluster_configuration_stack_state.outputs.ingress_endpoints.private
+      type    = "CNAME"
+      proxied = local.apps.stockseer.public ? true : false
+      ttl     = local.apps.stockseer.public ? "1" : "60"
+    }
 
     # TODO: Uncomment and review whenever you have time.
     # resource "kubernetes_manifest" "backups" {
@@ -443,20 +435,3 @@ generate_hcl "_apps.tf" {
     # }
   }
 }
-
-# generate_hcl "_stockseer.tf" {
-#   condition = global.cluster.apps.stockseer.enable 
-#   content {
-#     module "stockseer" {
-#       source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/stockseer"
-#       namespace = kubernetes_namespace.apps.metadata[0].name
-#       argo_workflow = {
-#         enable = true
-#         namespace = "cicd"
-#       }
-#       issuer = global.project.cert_manager_issuer
-#       domains = global.cluster.apps.stockseer.hostnames
-#       depends_on = [kubernetes_namespace.apps]
-#     }
-#   }
-# }
