@@ -4,6 +4,7 @@ globals "terraform" {
     "external",
     "talos",
     "tailscale",
+    "cloudflare",
   ]
 }
 
@@ -44,6 +45,18 @@ globals "terraform" {
 #     }
 #   }
 # }
+
+generate_hcl "_locals.tf" {
+  content {
+    locals {
+      nodes = global.infrastructure.talos_instances
+      talos_nodes = {for node, info in local.nodes : node => info if info.enable == true}
+      oci_talos_nodes = {
+        for node, info in local.talos_nodes : node => info if info.provider == "oracle"
+      }
+    }
+  }
+}
 
 generate_hcl "_oci.tf" {
   content {
