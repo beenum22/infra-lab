@@ -1,11 +1,11 @@
-# Velero Schedule Helm Chart
+# Velero Backup Restore Helm Chart
 
-This Helm chart deploys Velero Schedule resources for automated Kubernetes cluster backups.
+This Helm chart provides automated backup and restore for Kubernetes resources using Velero with data movement to object storage.
 
 ## Installation
 
 ```bash
-helm install my-backup-schedule ./charts/velero-schedule -n velero
+helm install my-backup-restore ./charts/velero-backup-restore -n backup
 ```
 
 ## Configuration
@@ -104,9 +104,13 @@ schedules:
 
 ## Prerequisites
 
-- Velero must be installed and configured in the cluster
-- Storage location and volume snapshot location must be configured
-- Appropriate RBAC permissions for Velero
+- **Velero v1.12+** must be installed and configured in the cluster with:
+  - Node agent enabled (`--use-node-agent`)
+  - CSI features enabled (`--features=EnableCSI`)
+  - Backup storage location configured (S3-compatible)
+  - Volume snapshot location configured
+- **OpenEBS Velero plugin** installed for ZFS snapshot support
+- Appropriate RBAC permissions for Velero operations
 
 ## Troubleshooting
 

@@ -1,0 +1,17 @@
+apiVersion: v2
+name: velero-backup-restore
+description: Automated backup and restore for Kubernetes resources using Velero
+version: 0.1.0
+appVersion: "1.0"
+keywords:
+  - backup
+  - restore
+  - velero
+  - kubernetes
+  - scheduling
+  - automation
+  - disaster-recovery
+  - pvc
+  - volume-snapshots
+maintainers:
+  - name: infra-lab

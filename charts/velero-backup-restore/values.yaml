@@ -1,0 +1,43 @@
+# Default values for velero-backup-restore chart
+# Configurable backup and restore for Kubernetes resources with focus on PVC volume snapshots
+
+# Schedule configuration (creates one Schedule resource)
+schedule:
+  enabled: false
+  schedule: "0 2 * * *"
+  namespace: "apps"
+  retentionDays: 7
+  storageLocation: "default"
+  volumeSnapshotLocation: "default"
+  
+  # Resource types to include in backup (default: PVCs only)
+  includedResources:
+    - persistentvolumeclaims
+  # Alternative: include multiple resource types
+  # includedResources:
+  #   - persistentvolumeclaims
+  #   - configmaps
+  #   - secrets
+  
+  # Volume backup behavior
+  snapshotVolumes: true      # Create volume snapshots
+  snapshotMoveData: true     # Move snapshot data to object storage for DR
+
+# Restore configuration (creates one Restore resource)  
+restore:
+  enabled: false
+  backupName: ""  # If empty, restores from the schedule created by this chart
+
+# Label selector for targeting PVCs (used by both schedule and restore)
+labelSelector:
+  app.kubernetes.io/name: ""
+
+# Global defaults
+global:
+  # Storage locations (must match your Velero setup)
+  storageLocation: "default"
+  volumeSnapshotLocation: "default"
+  
+  # Default backup settings
+  defaultSchedule: "0 2 * * *"  # Daily at 2 AM
+  defaultRetentionDays: 7

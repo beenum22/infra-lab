@@ -1,0 +1,31 @@
+{{- if .Values.restore.enabled }}
+apiVersion: velero.io/v1
+kind: Restore
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "velero-backup-restore.labels" . | nindent 4 }}
+    app.kubernetes.io/component: restore
+spec:
+  {{- if .Values.restore.backupName }}
+  backupName: {{ .Values.restore.backupName }}
+  {{- else }}
+  # Restore from the schedule created by this same chart
+  scheduleName: {{ .Release.Name }}-backup
+  {{- end }}
+  
+  # Configurable resource restore
+  includedResources:
+    {{- toYaml .Values.schedule.includedResources | nindent 4 }}
+  
+  labelSelector:
+    matchLabels:
+      {{- toYaml .Values.labelSelector | nindent 6 }}
+  
+  # Skip cluster resources for resource-specific restore
+  includeClusterResources: false
+  
+  # Update existing resources with restored data
+  existingResourcePolicy: update
+{{- end }}

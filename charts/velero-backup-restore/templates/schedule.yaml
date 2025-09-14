@@ -1,0 +1,34 @@
+{{- if .Values.schedule.enabled }}
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "velero-backup-restore.labels" . | nindent 4 }}
+    backup-type: "pvc-snapshots"
+spec:
+  schedule: {{ .Values.schedule.schedule | quote }}
+  template:
+    ttl: {{ mul .Values.schedule.retentionDays 24 }}h
+    
+    # Configurable resource backup with volume snapshots
+    includedNamespaces:
+      - {{ .Values.schedule.namespace }}
+    
+    includedResources:
+      {{- toYaml .Values.schedule.includedResources | nindent 6 }}
+    
+    labelSelector:
+      matchLabels:
+        {{- toYaml .Values.labelSelector | nindent 8 }}
+    
+    # Volume snapshot configuration
+    snapshotVolumes: {{ .Values.schedule.snapshotVolumes }}
+    snapshotMoveData: {{ .Values.schedule.snapshotMoveData }}
+    includeClusterResources: false
+    
+    storageLocation: {{ .Values.schedule.storageLocation | quote }}
+    volumeSnapshotLocations:
+      - {{ .Values.schedule.volumeSnapshotLocation | quote }}
+{{- end }}
