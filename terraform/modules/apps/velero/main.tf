@@ -9,7 +9,7 @@ terraform {
 
 locals {
   values = {
-    deployNodeAgent = false
+    deployNodeAgent = true
     initContainers = [
       {
         name  = "velero-plugin-for-aws"
@@ -32,7 +32,7 @@ locals {
             mountPath = "/target"
           }
         ]
-      }
+      },
     ]
     metrics = {
       enabled = false
@@ -49,10 +49,12 @@ EOT
     }
     configuration = {
       namespace = var.namespace
+      features = "EnableCSI"
       backupStorageLocation = [
         {
-          provider = var.backup_storage_provider
-          bucket  = b2_bucket.backup_storage.bucket_name
+          name     = var.backup_storage.location_name
+          provider = var.backup_storage.provider
+          bucket   = b2_bucket.backup_storage.bucket_name
           config = {
             region = "eu-central-003"
             s3Url  = "https://s3.eu-central-003.backblazeb2.com"
@@ -65,11 +67,15 @@ EOT
       ]
       volumeSnapshotLocation = [
         {
-          provider = var.volume_snapshot_provider
-          bucket  = b2_bucket.volume_snapshots.bucket_name
+          name     = var.volume_snapshot.location_name
+          provider = var.volume_snapshot.provider
+          bucket   = b2_bucket.volume_snapshots.bucket_name
           config = {
-            region = "eu-central-003"
-            s3Url  = "https://s3.eu-central-003.backblazeb2.com"
+            namespace = var.volume_snapshot.namespace
+            region    = "eu-central-003"
+            s3Url     = "https://s3.eu-central-003.backblazeb2.com"
+            prefix    = "zfs"
+            incrBackupCount = "3"
           }
           credential = {
             name = var.name
@@ -82,12 +88,12 @@ EOT
 }
 
 resource "b2_bucket" "backup_storage" {
-  bucket_name = var.backup_storage_bucket
+  bucket_name = var.backup_storage.bucket
   bucket_type = "allPrivate"
 }
 
 resource "b2_bucket" "volume_snapshots" {
-  bucket_name = var.volume_snapshot_bucket
+  bucket_name = var.volume_snapshot.bucket
   bucket_type = "allPrivate"
 }
 

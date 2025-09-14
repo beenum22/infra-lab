@@ -39,22 +39,6 @@ variable "chart_url" {
   default = "https://vmware-tanzu.github.io/helm-charts/"
 }
 
-variable "backup_storage_provider" {
-  type = string
-}
-
-variable "volume_snapshot_provider" {
-  type = string
-}
-
-variable "backup_storage_bucket" {
-  type = string
-}
-
-variable "volume_snapshot_bucket" {
-  type = string
-}
-
 variable "access_key_id" {
   type = string
   sensitive = true
@@ -63,4 +47,21 @@ variable "access_key_id" {
 variable "secret_access_key" {
   type = string
   sensitive = true
+}
+
+variable "backup_storage" {
+  type = object({
+    location_name = string
+    provider      = string
+    bucket        = string
+  })
+}
+
+variable "volume_snapshot" {
+  type = object({
+    location_name = string
+    provider      = string
+    bucket        = string
+    namespace     = string
+  })
 }
