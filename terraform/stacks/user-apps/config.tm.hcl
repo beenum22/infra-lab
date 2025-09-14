@@ -93,6 +93,20 @@ generate_hcl "_apps.tf" {
         m3u_url = "https://iptv-org.github.io/iptv/index.m3u"
         user_agent = "Jellyfin"
       }
+      velero_config = {
+        namespace = "backup"
+        backup = {
+          enabled = global.cluster.apps.jellyfin.backup
+          schedule = "0 3 * * *"  # Daily at 3 AM
+          retention_days = 2      # Keep backups for 2 days
+          storage_location = "b2"
+          volume_snapshot_location = "b2"
+        }
+        restore = {
+          enabled = false
+          # backup_name = ""  # Optional: specific backup name, empty = latest from schedule
+        }
+      }
       depends_on = [kubernetes_namespace.apps]
     }
 
