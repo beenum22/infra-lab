@@ -1,21 +1,25 @@
 apiVersion: v1
 entries:
-  velero-schedule:
+  velero-backup-restore:
   - apiVersion: v2
     appVersion: "1.0"
     created: "2025-09-11T23:33:37.105482+02:00"
-    description: A Helm chart for deploying Velero Schedule resources for automated
-      backups
+    description: Automated backup and restore for Kubernetes resources using Velero
     digest: 3e353b9be5ac1eda9b18f9fa1c57452a5dcea2b674adcd63e9936cf89d627318
     keywords:
     - backup
+    - restore
     - velero
     - kubernetes
-    - schedule
+    - scheduling
+    - automation
+    - disaster-recovery
+    - pvc
+    - volume-snapshots
     maintainers:
     - name: infra-lab
-    name: velero-schedule
+    name: velero-backup-restore
     urls:
-    - https://beenum22.github.io/infra-lab/charts/velero-schedule-0.1.0.tgz
+    - https://beenum22.github.io/infra-lab/charts/velero-backup-restore-0.1.0.tgz
     version: 0.1.0
 generated: "2025-09-11T23:33:37.104902+02:00"
