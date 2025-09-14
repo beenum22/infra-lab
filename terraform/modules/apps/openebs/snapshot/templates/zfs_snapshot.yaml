@@ -7,4 +7,4 @@ metadata:
   annotations:
     "snapshot.storage.kubernetes.io/is-default-class": "true"
 driver: "zfs.csi.openebs.io"
-deletionPolicy: "Delete"
+deletionPolicy: "Retain"
