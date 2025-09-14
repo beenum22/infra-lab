@@ -55,11 +55,13 @@ locals {
         enabled = true
         size = var.config_storage
         storageClass = var.storage_class
+        existingClaim = var.velero_config.restore.enabled ? "${var.name}-config" : ""
       }
       media = {
         enabled = true
         size = var.data_storage
         storageClass = var.storage_class
+        existingClaim = var.velero_config.restore.enabled ? "${var.name}-media" : ""
       }
     }
     volumes = [
@@ -598,310 +600,36 @@ resource "kubernetes_manifest" "helm_release" {
   }
 }
 
+moved {
+  from = helm_release.velero_schedule
+  to = helm_release.velero_backup
+}
 
-# resource "kubernetes_persistent_volume_claim" "config" {
-#   metadata {
-#     name = "${var.name}-config"
-#     namespace = var.namespace
-#   }
-#   spec {
-#     access_modes = ["ReadWriteOnce"]
-#     resources {
-#       requests = {
-#         storage = var.config_storage
-#       }
-#     }
-#     storage_class_name = var.storage_class
-#   }
-# }
+# PVC Backup and Restore using velero-backup-restore chart
+resource "helm_release" "velero_backup" {
+  count = (var.velero_config.backup.enabled || var.velero_config.restore.enabled) ? 1 : 0
+  
+  name       = "${var.name}-backup"
+  chart      = "../../../charts/velero-backup-restore"
+  namespace  = var.velero_config.namespace
 
-# resource "kubernetes_persistent_volume_claim" "media" {
-#  metadata {
-#    name = "${var.name}-media"
-#    namespace = var.namespace
-#  }
-#  spec {
-#    access_modes = ["ReadWriteOnce"]
-#    resources {
-#      requests = {
-#        storage = var.data_storage
-#      }
-#    }
-#    storage_class_name = var.storage_class
-#  }
-# }
-
-# resource "kubernetes_config_map" "sso_config" {
-#   metadata {
-#     name      = "${var.name}-sso-config"
-#     namespace = var.namespace
-#   }
-#   data = {
-#     "SSO-Auth.xml" = <<-XML
-#       <?xml version="1.0" encoding="utf-8"?>
-#       <PluginConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-#         <OidConfig>
-#           <OidEndpoint>${var.oidc_provider_url}</OidEndpoint>
-#           <OidClientId>jellyfin</OidClientId>
-#           <OidSecret>${var.oidc_client_secret}</OidSecret>
-#           <EnableAuthorization>true</EnableAuthorization>
-#           <EnableAllFolders>true</EnableAllFolders>
-#           <EnabledFolders />
-#           <AdminPolicy>jellyfin-admins</AdminPolicy>
-#           <DisableHttps>false</DisableHttps>
-#           <SchemeOverride>https</SchemeOverride>
-#         </OidConfig>
-#       </PluginConfiguration>
-#     XML
-#   }
-# }
-
-
-# resource "kubernetes_deployment" "this" {
-#   metadata {
-#     name = var.name
-#     namespace = var.namespace
-#     labels = {
-#       app = var.name
-#       version = var.tag
-#     }
-#   }
-#   spec {
-#     replicas = var.replicas
-#     strategy {
-#       type = "RollingUpdate"
-#       rolling_update {
-#         max_surge = "1"
-#         max_unavailable = "1"
-#       }
-#     }
-#     selector {
-#       match_labels = {
-#         app = var.name
-#         version = var.tag
-#       }
-#     }
-#     template {
-#       metadata {
-#         name = var.name
-#         labels = {
-#           app = var.name
-#           version = var.tag
-#         }
-#       }
-#       spec {
-#         node_selector = var.node_selectors
-#         init_container {
-#           name = "plugin-installer"
-#           image = "alpine:latest"
-#           command = ["/bin/sh"]
-#           args = [
-
-#           ]
-# #           args = ["-c", <<-EOF
-# #             echo "Setting up SSO plugin repository..."
-# #             apk add --no-cache curl jq
-# #             mkdir -p /config/data/plugins
-# #             chown -R 1044:65541 /config/data/plugins
-            
-# #             # Add plugin repository configuration
-# #             mkdir -p /config/plugins/repositories
-# #             cat > /config/plugins/repositories/sso-plugin.json <<'PLUGINJSON'
-# # {
-# #   "repositoryUrl": "https://raw.githubusercontent.com/9p4/jellyfin-plugin-sso/manifest-release/manifest.json",
-# #   "repositoryName": "SSO-Auth Plugin Repository"
-# # }
-# # PLUGINJSON
-            
-# #             echo "SSO plugin repository configured"
-# #             echo "Plugin will be available in Jellyfin's plugin catalog after startup"
-# #             chown -R 1044:65541 /config
-# #           EOF
-# #           ]
-#           security_context {
-#             run_as_user = 0
-#           }
-#           volume_mount {
-#             mount_path = "/config"
-#             name = "config"
-#           }
-#         }
-#         container {
-#           name = "jellyfin"
-#           image = "${var.image}:${var.tag}"
-#           security_context {
-#             privileged = true
-#           }
-#           port {
-#             container_port = 8096
-#             name = "http-tcp"
-#             protocol = "TCP"
-#           }
-#           port {
-#             container_port = 8920
-#             name = "https-tcp"
-#             protocol = "TCP"
-#           }
-#           port {
-#             container_port = 1900
-#             name = "dlna-udp"
-#             protocol = "UDP"
-#           }
-#           port {
-#             container_port = 7359
-#             name = "discovery-udp"
-#             protocol = "UDP"
-#           }
-#           env {
-#             name = "JELLYFIN_PublishedServerUrl"
-#             value = "https://${var.domains[0]}"
-#           }
-#           env {
-#             name = "PGID"
-#             value = "65541"
-#           }
-#           env {
-#             name = "PUID"
-#             value = "1044"
-#           }
-#           env {
-#             name = "TZ"
-#             value = "Europe/Berlin"
-#           }
-#           volume_mount {
-#             mount_path = "/config"
-#             name = "config"
-#           }
-#           volume_mount {
-#             mount_path = "/config/plugins/configurations/SSO-Auth.xml"
-#             name = "sso-config"
-#             sub_path = "SSO-Auth.xml"
-#           }
-#           # volume_mount {
-#           #   mount_path = "/media"
-#           #   name = "media"
-#           # }
-#           dynamic "volume_mount" {
-#             for_each = toset(var.shared_pvcs)
-#             content {
-#               mount_path = "/${volume_mount.value.name}"
-#               name       = volume_mount.value.name
-#             }
-#           }
-#         }
-#         volume {
-#           name = "config"
-#           persistent_volume_claim {
-#             claim_name = "${var.name}-config"
-#           }
-#         }
-#         volume {
-#           name = "media"
-#           persistent_volume_claim {
-#             claim_name = "${var.name}-media"
-#           }
-#         }
-#         volume {
-#           name = "sso-config"
-#           config_map {
-#             name = kubernetes_config_map.sso_config.metadata[0].name
-#           }
-#         }
-#         dynamic "volume" {
-#           for_each = toset(var.shared_pvcs)
-#           content {
-#             name = volume.value.name
-#             persistent_volume_claim {
-#               claim_name = volume.value.name
-#             }
-#           }
-#         }
-#       }
-#     }
-#   }
-# }
-
-# resource "kubernetes_service" "tcp" {
-#   metadata {
-#     name = "${var.name}-tcp"
-#     namespace = var.namespace
-#   }
-#   spec {
-#     selector = {
-#       app = var.name
-#       version = var.tag
-#     }
-#     port {
-#       name = "http-tcp"
-#       port = 8096
-#       target_port = 8096
-#       protocol = "TCP"
-#     }
-#     port {
-#       name = "https-tcp"
-#       port = 8920
-#       target_port = 8920
-#       protocol = "TCP"
-#     }
-#   }
-# }
-
-# resource "kubernetes_service" "udp" {
-#   metadata {
-#     name = "${var.name}-udp"
-#     namespace = var.namespace
-#   }
-#   spec {
-#     session_affinity = "ClientIP"
-#     selector = {
-#       app = var.name
-#       version = var.tag
-#     }
-#     port {
-#       name = "dlna-udp"
-#       port = 1900
-#       target_port = 1900
-#       protocol = "UDP"
-#     }
-#     port {
-#       name = "discovery-udp"
-#       port = 7359
-#       target_port = 7359
-#       protocol = "UDP"
-#     }
-#   }
-# }
-
-# resource "kubernetes_ingress_v1" "this" {
-#   metadata {
-#     name = var.name
-#     namespace = var.namespace
-#     annotations = local.ingress_annotations
-#   }
-#   spec {
-#     ingress_class_name = var.ingress_class
-#     tls {
-#       secret_name = "${var.name}-tls"
-#       hosts = var.domains
-#     }
-#     dynamic "rule" {
-#       for_each = toset(var.domains)
-#       content {
-#         host = rule.value
-#         http {
-#           path {
-#             path = "/"
-#             backend {
-#               service {
-#                 name = "${var.name}-tcp"
-#                 port {
-#                   number = 8096
-#                 }
-#               }
-#             }
-#           }
-#         }
-#       }
-#     }
-#   }
-# }
+  values = [yamlencode({
+    schedule = {
+      enabled = var.velero_config.backup.enabled
+      schedule = var.velero_config.backup.schedule
+      namespace = var.namespace
+      retentionDays = var.velero_config.backup.retention_days
+      storageLocation = var.velero_config.backup.storage_location
+      volumeSnapshotLocation = var.velero_config.backup.volume_snapshot_location
+    }
+    
+    restore = {
+      enabled = var.velero_config.restore.enabled
+      backupName = try(var.velero_config.restore.backup_name, "")
+    }
+    
+    labelSelector = {
+      "app.kubernetes.io/name" = var.name
+    }
+  })]
+}

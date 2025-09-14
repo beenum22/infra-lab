@@ -147,3 +147,21 @@ variable "live_tv" {
     enabled = false
   }
 }
+
+variable "velero_config" {
+  type = object({
+    backup = object({
+      enabled = bool
+      schedule = string
+      retention_days = number
+      storage_location = string
+      volume_snapshot_location = string
+    })
+    restore = object({
+      enabled = bool
+      backup_name = optional(string)
+    })
+    namespace = string
+  })
+  description = "Velero configuration for backup and restore. If backup_name is not provided, restore will use latest backup from the same schedule."
+}
