@@ -26,44 +26,6 @@ generate_hcl "_apps.tf" {
       }
     }
 
-    # resource "kubernetes_persistent_volume_claim" "nfs_misc" {
-    #   metadata {
-    #     name = "nfs-misc"
-    #     namespace = kubernetes_namespace.apps.metadata[0].name
-    #     labels = {
-    #       "app.kubernetes.io/name" = "nfs-misc"
-    #     }
-    #   }
-    #   spec {
-    #     access_modes = ["ReadWriteMany"]
-    #     resources {
-    #       requests = {
-    #         storage = "10Gi"
-    #       }
-    #     }
-    #     storage_class_name = "openebs-kernel-nfs"
-    #   }
-    # }
-
-    # resource "kubernetes_persistent_volume_claim" "nfs_media" {
-    #   metadata {
-    #     name = "nfs-media"
-    #     namespace = kubernetes_namespace.apps.metadata[0].name
-    #     labels = {
-    #       "app.kubernetes.io/name" = "nfs-media"
-    #     }
-    #   }
-    #   spec {
-    #     access_modes = ["ReadWriteMany"]
-    #     resources {
-    #       requests = {
-    #         storage = "30Gi"
-    #       }
-    #     }
-    #     storage_class_name = "openebs-kernel-nfs"
-    #   }
-    # }
-
     module "jellyfin" {
       count = global.cluster.apps.jellyfin.enable ? 1 : 0
       source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/jellyfin"
@@ -107,17 +69,14 @@ generate_hcl "_apps.tf" {
           # backup_name = ""  # Optional: specific backup name, empty = latest from schedule
         }
       }
+      dns_config = {
+        zone_id = global.infrastructure.cloudflare.zone_id
+        endpoint = local.apps.jellyfin.public ? data.terraform_remote_state.cluster_configuration_stack_state.outputs.ingress_endpoints.public : data.terraform_remote_state.cluster_configuration_stack_state.outputs.ingress_endpoints.private
+        type = "CNAME"
+        proxied = local.apps.jellyfin.public ? true : false
+        ttl = local.apps.jellyfin.public ? "1" : "60"
+      }
       depends_on = [kubernetes_namespace.apps]
-    }
-
-    resource "cloudflare_dns_record" "jellyfin" {
-      for_each = toset(local.apps.jellyfin.enable ? local.apps.jellyfin.hostnames : [])
-      zone_id = global.infrastructure.cloudflare.zone_id
-      name    = each.value
-      content   = local.apps.jellyfin.public ? data.terraform_remote_state.cluster_configuration_stack_state.outputs.ingress_endpoints.public : data.terraform_remote_state.cluster_configuration_stack_state.outputs.ingress_endpoints.private
-      type    = "CNAME"
-      proxied = local.apps.jellyfin.public ? true : false
-      ttl     = local.apps.jellyfin.public ? "1" : "60"
     }
 
     module "dashy" {
