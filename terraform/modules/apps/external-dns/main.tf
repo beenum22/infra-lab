@@ -1,3 +1,6 @@
+# WARNING: This module is outdated and not maintained.
+# Use with caution if deploying.
+
 resource "helm_release" "chart" {
   name       = var.name
   repository = var.chart_url

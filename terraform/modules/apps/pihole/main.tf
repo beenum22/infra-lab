@@ -1,3 +1,6 @@
+# WARNING: This module is outdated and not maintained.
+# Use with caution if deploying.
+
 locals {
   ingress_annotations = {
     "cert-manager\\.io/cluster-issuer" = var.issuer
