@@ -1,4 +1,0 @@
-apiVersion: v2
-name: cluster-issuer
-description: A temporary Helm chart to deploy ClusterIssuer resource
-version: 0.1.0

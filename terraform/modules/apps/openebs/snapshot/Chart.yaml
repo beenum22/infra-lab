@@ -1,4 +1,0 @@
-apiVersion: v2
-name: zfs-snapshot
-description: A temporary Helm chart to deploy ZFS snapshot resource
-version: 0.1.0

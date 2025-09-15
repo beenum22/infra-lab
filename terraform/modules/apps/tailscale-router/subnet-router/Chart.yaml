@@ -1,4 +1,0 @@
-apiVersion: v2
-name: tailscale-router
-description: A temporary Helm chart to deploy Tailscale subnet router resource
-version: 0.1.0
