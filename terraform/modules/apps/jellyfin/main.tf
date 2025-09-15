@@ -1,3 +1,12 @@
+terraform {
+  required_providers {
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "~> 5"
+    }
+  }
+}
+
 locals {
   ingress_annotations = {
     "cert-manager.io/cluster-issuer" = var.issuer
@@ -677,4 +686,14 @@ resource "kubernetes_manifest" "velero_helm_release" {
       values = local.velero_values
     }
   }
+}
+
+resource "cloudflare_dns_record" "this" {
+  for_each = toset(var.domains)
+  zone_id = var.dns_config.zone_id
+  name    = each.value
+  content = var.dns_config.endpoint
+  type    = var.dns_config.type
+  proxied = var.dns_config.proxied
+  ttl     = var.dns_config.ttl
 }

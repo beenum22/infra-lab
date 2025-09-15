@@ -183,3 +183,14 @@ variable "velero_chart_url" {
   default = "https://beenum22.github.io/infra-lab"
   description = "URL of the Velero backup restore Helm chart repository."
 }
+
+variable "dns_config" {
+  type = object({
+    zone_id = string
+    endpoint = string
+    type = string
+    proxied = bool
+    ttl = string
+  })
+  description = "DNS configuration for Cloudflare records."
+}
