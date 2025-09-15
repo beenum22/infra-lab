@@ -26,14 +26,42 @@ locals {
     "cert-manager\\.io/cluster-issuer" = var.issuer
     # "kubernetes\\.io/ingress\\.class" = var.ingress_class
   }
+
+  available_plugins = {
+    cert_manager = {
+      name = "cert-manager"
+      source = "https://artifacthub.io/packages/headlamp/headlamp-plugins/headlamp_cert-manager"
+      version = var.plugins.cert_manager.version
+    }
+    flux = {
+      name = "flux"
+      source = "https://artifacthub.io/packages/headlamp/headlamp-plugins/headlamp_flux"
+      version = var.plugins.flux.version
+    }
+  }
+
+  enabled_plugins = [
+    for key, plugin in local.available_plugins : plugin
+    if var.plugins[key].enabled == true
+  ]
+
+  plugins_config = length(local.enabled_plugins) > 0 ? yamlencode({
+    plugins = local.enabled_plugins
+  }) : ""
   values = {
     config = {
-      pluginsDir = "/build/plugins"
+      inCluster = true
+      pluginsDir = "/headlamp/plugins"
+      watchPlugins = true
       oidc = {
         secret = {
           create = false
         }
       }
+    }
+    pluginsManager = {
+      enabled = length(local.enabled_plugins) > 0
+      configContent = local.plugins_config
     }
     ingress = {
       enabled = true
@@ -58,35 +86,6 @@ locals {
         hosts = jsondecode(jsonencode(var.domains))
       }]
     }
-    # initContainers = [
-    #   {
-    #     name  = "headlamp-plugins"
-    #     image = "ghcr.io/headlamp-k8s/headlamp-plugin-flux:v0.2.0"
-    #     command = [
-    #       "/bin/sh",
-    #       "-c",
-    #       "mkdir -p /build/plugins && cp -r /plugins/* /build/plugins/"
-    #     ]
-    #     volumeMounts = [
-    #       {
-    #         mountPath = "/build/plugins"
-    #         name      = "headlamp-plugins"
-    #       }
-    #     ]
-    #   }
-    # ]
-    volumeMounts = [
-      {
-        name      = "headlamp-plugins"
-        mountPath = "/build/plugins"
-      }
-    ]
-    volumes = [
-      {
-        name = "headlamp-plugins"
-        emptyDir = {}
-      }
-    ]
   }
 }
 

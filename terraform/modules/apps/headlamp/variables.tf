@@ -56,9 +56,20 @@ variable "domains" {
   description = "List of domains for which the Headlamp ingress will be configured."
 }
 
-# TODO: Plugins need to be configured properly
 variable "plugins" {
-  type = list(string)
-  default = []
-  description = "List of plugins to enable in Headlamp."
+  type = object({
+    cert_manager = optional(object({
+      enabled = bool
+      version = optional(string, "0.1.0")
+    }), { enabled = true, version = "0.1.0" })
+    flux = optional(object({
+      enabled = bool
+      version = optional(string, "0.4.0")
+    }), { enabled = true, version = "0.4.0" })
+  })
+  default = {
+    cert_manager = { enabled = true, version = "0.1.0" }
+    flux = { enabled = true, version = "0.4.0" }
+  }
+  description = "Configure Headlamp plugins with enable/disable and version settings."
 }
