@@ -2,13 +2,10 @@ locals {
   ingress_annotations = {
     "cert-manager.io/cluster-issuer" = var.issuer
     "kubernetes.io/ingress.class" = var.ingress_class
-    # "nginx.ingress.kubernetes.io/ssl-redirect" = "true"
     "nginx.ingress.kubernetes.io/proxy-set-headers" = jsonencode({
       "X-Forwarded-Proto" = "https"
       "X-Forwarded-Port"  = "443"
       "X-Forwarded-Host"  = "$host"
-      # "X-Forwarded-For"   = "$proxy_add_x_forwarded_for"
-      # "X-Real-IP"         = "$remote_addr"
     })
   }
 
@@ -148,6 +145,25 @@ locals {
           value = "https://${var.domains[0]}"
         }
       ]
+    }
+  }
+  velero_values = {
+    schedule = {
+      enabled = var.velero_config.backup.enabled
+      schedule = var.velero_config.backup.schedule
+      namespace = var.namespace
+      retentionDays = var.velero_config.backup.retention_days
+      storageLocation = var.velero_config.backup.storage_location
+      volumeSnapshotLocation = var.velero_config.backup.volume_snapshot_location
+    }
+
+    restore = {
+      enabled = var.velero_config.restore.enabled
+      backupName = var.velero_config.restore.backup_name != null ? var.velero_config.restore.backup_name : ""
+    }
+
+    labelSelector = {
+      "app.kubernetes.io/name" = var.name
     }
   }
 }
@@ -607,29 +623,58 @@ moved {
 
 # PVC Backup and Restore using velero-backup-restore chart
 resource "helm_release" "velero_backup" {
-  count = (var.velero_config.backup.enabled || var.velero_config.restore.enabled) ? 1 : 0
-  
+  count = (var.velero_config.backup.enabled || var.velero_config.restore.enabled) && !var.flux_managed ? 1 : 0
+
   name       = "${var.name}-backup"
-  chart      = "../../../charts/velero-backup-restore"
+  repository = var.velero_chart_url
+  chart      = var.velero_chart_name
+  version    = var.velero_chart_version
   namespace  = var.velero_config.namespace
 
-  values = [yamlencode({
-    schedule = {
-      enabled = var.velero_config.backup.enabled
-      schedule = var.velero_config.backup.schedule
-      namespace = var.namespace
-      retentionDays = var.velero_config.backup.retention_days
-      storageLocation = var.velero_config.backup.storage_location
-      volumeSnapshotLocation = var.velero_config.backup.volume_snapshot_location
+  values = [yamlencode(local.velero_values)]
+}
+
+resource "kubernetes_manifest" "velero_helm_repo" {
+  count = (var.velero_config.backup.enabled || var.velero_config.restore.enabled) && var.flux_managed ? 1 : 0
+  manifest = {
+    apiVersion = "source.toolkit.fluxcd.io/v1"
+    kind       = "HelmRepository"
+    metadata = {
+      name      = var.velero_chart_name
+      namespace = var.velero_config.namespace
     }
-    
-    restore = {
-      enabled = var.velero_config.restore.enabled
-      backupName = try(var.velero_config.restore.backup_name, "")
+    spec = {
+      interval = "5m"
+      url      = var.velero_chart_url
     }
-    
-    labelSelector = {
-      "app.kubernetes.io/name" = var.name
+  }
+}
+
+resource "kubernetes_manifest" "velero_helm_release" {
+  count = (var.velero_config.backup.enabled || var.velero_config.restore.enabled) && var.flux_managed ? 1 : 0
+  manifest = {
+    apiVersion = "helm.toolkit.fluxcd.io/v2"
+    kind       = "HelmRelease"
+    metadata = {
+      name      = "${var.name}-backup"
+      namespace = var.velero_config.namespace
     }
-  })]
+    spec = {
+      interval = "1m"
+      releaseName = "${var.name}-backup"
+      chart = {
+        spec = {
+          chart   = var.velero_chart_name
+          version = var.velero_chart_version
+          sourceRef = {
+            kind     = "HelmRepository"
+            name     = var.velero_chart_name
+            namespace = var.velero_config.namespace
+          }
+        }
+      }
+      targetNamespace = var.velero_config.namespace
+      values = local.velero_values
+    }
+  }
 }

@@ -165,3 +165,21 @@ variable "velero_config" {
   })
   description = "Velero configuration for backup and restore. If backup_name is not provided, restore will use latest backup from the same schedule."
 }
+
+variable "velero_chart_name" {
+  type = string
+  default = "velero-backup-restore"
+  description = "Name of the Velero backup restore Helm chart."
+}
+
+variable "velero_chart_version" {
+  type = string
+  default = "0.1.0"
+  description = "Version of the Velero backup restore Helm chart."
+}
+
+variable "velero_chart_url" {
+  type = string
+  default = "https://beenum22.github.io/infra-lab"
+  description = "URL of the Velero backup restore Helm chart repository."
+}
