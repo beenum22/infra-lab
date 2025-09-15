@@ -6,34 +6,6 @@ generate_hcl "_dns.tf" {
       }
     }
 
-#    module "pihole" {
-#      source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/pihole"
-#      namespace = kubernetes_namespace.dns.metadata.0.name
-#      expose = true
-#      domains = [
-#        "pihole.moinmoin.fyi"
-#      ]
-#      password = global.secrets.pihole_password
-#      ingress_class = global.project.ingress_class
-#      ingress_hostname = global.project.ingress_hostname
-#      issuer = module.cert_manager.issuer
-#      storage_class = global.project.storage_class
-#      depends_on = [
-#        kubernetes_namespace.dns
-#      ]
-#    }
-
-#    module "external_dns" {
-#      source = "${terramate.root.path.fs.absolute}/terraform/modules/apps/external-dns"
-#      namespace = kubernetes_namespace.dns.metadata.0.name
-#      pihole_server = "http://pihole-web.dns.svc.cluster.local"
-#      pihole_password = global.secrets.pihole_password
-#      depends_on = [
-#        kubernetes_namespace.dns,
-#        module.pihole
-#      ]
-#    }
-
     data "kubernetes_service" "cluster_dns" {
       metadata {
         name = "kube-dns"
