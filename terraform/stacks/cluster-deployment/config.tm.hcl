@@ -2,11 +2,12 @@
 globals "terraform" {
   providers = [
     "tailscale",
-    "cloudflare",
-    "oci",
     "talos",
     "helm",
     "external",
+    "time",
+    "local",
+    "null",
   ]
 
   remote_states = {
@@ -25,32 +26,32 @@ generate_hcl "_talos_cluster.tf" {
 
     data "helm_template" "flannel" {
       name  = "flannel"
-      chart = "https://github.com/flannel-io/flannel/releases/latest/download/flannel.tgz"
+      chart = "https://github.com/flannel-io/flannel/releases/download/v0.27.3/flannel.tgz"
       namespace = "kube-system"
-      set {
+      set = [{
         name = "podCidr"
         value = global.infrastructure.talos.cluster_cidrs[0]
-      }
-      set {
+      },
+      {
         name = "podCidrv6"
         value = global.infrastructure.talos.cluster_cidrs[1]
-      }
-      set {
+      },
+      {
         name = "flannel.backend"
         value = "host-gw"
-      }
-      set {
+      },
+      {
         name  = "flannel.args[0]"
         value = "--iface=tailscale0"
-      }
-      set {
+      },
+      {
         name  = "flannel.args[1]"
         value = "--ip-masq"
-      }
-      set {
+      },
+      {
         name  = "flannel.args[2]"
         value = "--kube-subnet-mgr"
-      }
+      }]
     }
 
     module "talos_node" {
