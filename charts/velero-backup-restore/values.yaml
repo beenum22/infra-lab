@@ -6,7 +6,8 @@ schedule:
   enabled: false
   schedule: "0 2 * * *"
   namespace: "apps"
-  retentionDays: 7
+  # Retention can be specified as days (e.g., "7d") or hours (e.g., "168h")
+  retention: "7d"
   storageLocation: "default"
   volumeSnapshotLocation: "default"
   
@@ -40,4 +41,4 @@ global:
   
   # Default backup settings
   defaultSchedule: "0 2 * * *"  # Daily at 2 AM
-  defaultRetentionDays: 7
+  defaultRetention: "7d"

@@ -10,7 +10,7 @@ metadata:
 spec:
   schedule: {{ .Values.schedule.schedule | quote }}
   template:
-    ttl: {{ mul .Values.schedule.retentionDays 24 }}h
+    ttl: {{ if kindIs "string" .Values.schedule.retention }}{{ if hasSuffix "d" .Values.schedule.retention }}{{ mul (trimSuffix "d" .Values.schedule.retention | int) 24 }}h{{ else if hasSuffix "h" .Values.schedule.retention }}{{ .Values.schedule.retention }}{{ else }}{{ .Values.schedule.retention }}h{{ end }}{{ else }}{{ .Values.schedule.retention }}h{{ end }}
     
     # Configurable resource backup with volume snapshots
     includedNamespaces:

@@ -1,6 +1,6 @@
 # Velero Backup Restore Helm Chart
 
-This Helm chart provides automated backup and restore for Kubernetes resources using Velero with data movement to object storage.
+This Helm chart provides automated backup and restore for Kubernetes resources using Velero with focus on PVC volume snapshots.
 
 ## Installation
 
@@ -13,93 +13,99 @@ helm install my-backup-restore ./charts/velero-backup-restore -n backup
 ### Basic Usage
 
 ```yaml
-schedules:
-  - name: daily-apps-backup
-    schedule: "0 2 * * *"  # Daily at 2 AM
-    template:
-      ttl: "168h"  # 7 days retention
-      includedNamespaces:
-        - apps
-        - default
-      snapshotVolumes: true
+schedule:
+  enabled: true
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  namespace: "apps"
+  retention: "7d"  # 7 days retention (supports "7d", "168h", or plain numbers)
+  includedResources:
+    - persistentvolumeclaims
+  snapshotVolumes: true
+  snapshotMoveData: true
 
-  - name: weekly-full-backup
-    schedule: "0 3 * * 0"  # Weekly on Sunday at 3 AM
-    template:
-      ttl: "720h"  # 30 days retention
-      snapshotVolumes: true
-      labelSelector:
-        matchLabels:
-          backup: "weekly"
+labelSelector:
+  app.kubernetes.io/name: "my-app"
+```
+
+### Retention Configuration
+
+The chart supports flexible retention formats:
+
+- **Days**: `"7d"`, `"14d"`, `"30d"` - automatically converted to hours
+- **Hours**: `"168h"`, `"336h"`, `"720h"` - used directly
+- **Plain numbers**: `168`, `336` - treated as hours
+
+Examples:
+```yaml
+schedule:
+  retention: "7d"    # 7 days = 168 hours
+  retention: "48h"   # 48 hours directly
+  retention: 72      # 72 hours
 ```
 
 ### Values Configuration
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `schedules` | List of backup schedules to create | `[]` |
-| `schedules[].name` | Name of the schedule | Required |
-| `schedules[].schedule` | Cron expression for backup timing | `global.defaultSchedule` |
-| `schedules[].template.ttl` | Backup retention time | `global.defaultTtl` |
-| `schedules[].template.includedNamespaces` | Namespaces to backup | `[]` |
-| `schedules[].template.excludedNamespaces` | Namespaces to exclude | `[]` |
-| `schedules[].template.snapshotVolumes` | Whether to snapshot volumes | `true` |
-| `global.storageLocation` | Default storage location | `"default"` |
-| `global.volumeSnapshotLocations` | Default volume snapshot locations | `["default"]` |
-| `global.defaultTtl` | Default backup retention | `"168h"` |
-| `global.defaultSchedule` | Default cron schedule | `"0 2 * * *"` |
-
-### Advanced Configuration
-
-```yaml
-schedules:
-  - name: app-specific-backup
-    schedule: "0 1 * * *"
-    template:
-      ttl: "336h"  # 14 days
-      includedNamespaces:
-        - production
-      labelSelector:
-        matchLabels:
-          app.kubernetes.io/name: "my-app"
-      hooks:
-        resources:
-          - name: database-backup
-            includedNamespaces:
-              - production
-            excludedResources:
-              - secrets
-            pre:
-              - exec:
-                  container: postgres
-                  command:
-                    - /bin/bash
-                    - -c
-                    - "pg_dump mydb > /backup/dump.sql"
-```
+| `schedule.enabled` | Enable scheduled backup | `false` |
+| `schedule.schedule` | Cron expression for backup timing | `"0 2 * * *"` |
+| `schedule.namespace` | Target namespace for backup | `"apps"` |
+| `schedule.retention` | Backup retention (supports days/hours) | `"7d"` |
+| `schedule.includedResources` | Resource types to include | `["persistentvolumeclaims"]` |
+| `schedule.snapshotVolumes` | Create volume snapshots | `true` |
+| `schedule.snapshotMoveData` | Move snapshot data to object storage | `true` |
+| `schedule.storageLocation` | Storage location name | `"default"` |
+| `schedule.volumeSnapshotLocation` | Volume snapshot location | `"default"` |
+| `restore.enabled` | Enable restore resource | `false` |
+| `restore.backupName` | Backup name to restore from | `""` |
+| `labelSelector` | Label selector for targeting resources | `{}` |
+| `global.storageLocation` | Global default storage location | `"default"` |
+| `global.volumeSnapshotLocation` | Global default volume snapshot location | `"default"` |
+| `global.defaultSchedule` | Global default cron schedule | `"0 2 * * *"` |
+| `global.defaultRetention` | Global default retention | `"7d"` |
 
 ## Examples
 
-### Daily Application Backup
+### Daily PVC Backup with 14-day retention
 ```yaml
-schedules:
-  - name: daily-apps
-    schedule: "0 2 * * *"
-    template:
-      includedNamespaces:
-        - apps
-        - monitoring
-      ttl: "168h"
+schedule:
+  enabled: true
+  schedule: "0 2 * * *"
+  namespace: "production"
+  retention: "14d"  # 14 days
+  includedResources:
+    - persistentvolumeclaims
+  snapshotVolumes: true
+  snapshotMoveData: true
+
+labelSelector:
+  app.kubernetes.io/name: "database"
 ```
 
-### Weekly Full Cluster Backup
+### Short-term backup with hourly retention
 ```yaml
-schedules:
-  - name: weekly-full
-    schedule: "0 3 * * 0"
-    template:
-      ttl: "720h"
-      snapshotVolumes: true
+schedule:
+  enabled: true
+  schedule: "0 */6 * * *"  # Every 6 hours
+  namespace: "apps"
+  retention: "48h"  # 48 hours
+  includedResources:
+    - persistentvolumeclaims
+    - configmaps
+    - secrets
+```
+
+### Restore from backup
+```yaml
+schedule:
+  enabled: false
+
+restore:
+  enabled: true
+  backupName: "my-backup-20231201-120000"
+
+labelSelector:
+  app.kubernetes.io/name: "my-app"
 ```
 
 ## Prerequisites
