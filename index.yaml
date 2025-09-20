@@ -2,6 +2,27 @@ apiVersion: v1
 entries:
   velero-backup-restore:
   - apiVersion: v2
+    appVersion: 1.16.2
+    created: "2025-09-20T21:12:40.994472393Z"
+    description: Automated backup and restore for Kubernetes resources using Velero
+    digest: c0b4bf072ec3cbbde4388ad80ff51a4ac47025f1718dd728bc35ef9b727c091d
+    keywords:
+    - backup
+    - restore
+    - velero
+    - kubernetes
+    - scheduling
+    - automation
+    - disaster-recovery
+    - pvc
+    - volume-snapshots
+    maintainers:
+    - name: infra-lab
+    name: velero-backup-restore
+    urls:
+    - https://github.com/beenum22/infra-lab/releases/download/velero-backup-restore-0.2.0/velero-backup-restore-0.2.0.tgz
+    version: 0.2.0
+  - apiVersion: v2
     appVersion: "1.0"
     created: "2025-09-15T12:03:11.937354204Z"
     description: Automated backup and restore for Kubernetes resources using Velero
@@ -22,4 +43,4 @@ entries:
     urls:
     - https://github.com/beenum22/infra-lab/releases/download/velero-backup-restore-0.1.0/velero-backup-restore-0.1.0.tgz
     version: 0.1.0
-generated: "2025-09-15T12:03:11.937365014Z"
+generated: "2025-09-20T21:12:40.994487842Z"
